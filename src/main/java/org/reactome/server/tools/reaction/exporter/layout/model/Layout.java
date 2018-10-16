@@ -21,12 +21,15 @@ public class Layout implements HasPosition {
 
     private ReactionGlyph reactionGlyph;
 
-    private Map<String, EntityGlyph> entities = new HashMap<>();
+    private Collection<EntityGlyph> entities;
 
     private CompartmentGlyph compartmentRoot;
 
     private Map<String, CompartmentGlyph> compartments = new HashMap<>();
 
+    public void add(EntityGlyph entityGlyph){
+        entities.add(entityGlyph);
+    }
 
     public Collection<CompartmentGlyph> getCompartments() {
         return compartments.values();
@@ -38,7 +41,7 @@ public class Layout implements HasPosition {
     }
 
     public Collection<EntityGlyph> getEntities() {
-        return entities.values();
+        return entities;
     }
 
     public ReactionGlyph getReaction() {
@@ -67,6 +70,8 @@ public class Layout implements HasPosition {
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
     public void setParticipants(Collection<EntityGlyph> participants){
+        Map<String, EntityGlyph> entities = new HashMap<>();
+
         for (EntityGlyph participant : participants) {
             EntityGlyph g = entities.get(participant.getStId());
             if(g!=null) {
@@ -96,6 +101,8 @@ public class Layout implements HasPosition {
         compartmentRoot = this.compartments.computeIfAbsent(treeRoot.getAccession(), a -> new CompartmentGlyph(treeRoot));
 
         buildCompartmentHierarchy(compartmentRoot, treeRoot);
+
+        this.entities = entities.values();
     }
 
     private void buildCompartmentHierarchy(CompartmentGlyph cg, GoTerm term) {
