@@ -102,7 +102,7 @@ public class Layout implements HasPosition {
 
         buildCompartmentHierarchy(compartmentRoot, treeRoot);
 
-        this.entities = entities.values();
+        this.entities = new HashSet<>(entities.values());
     }
 
     private void buildCompartmentHierarchy(CompartmentGlyph cg, GoTerm term) {
