@@ -25,8 +25,10 @@ public enum RenderableClass {
     NOTE("Note"),
     PROCESS_NODE("ProcessNode"),
     PROTEIN("Protein"),
+    PROTEIN_DRUG("ProteinDrug"),
     REACTION("ReactionGlyph"),
     RNA("RNA"),
+    RNA_DRUG("RNADrug"),
     SHADOW("Shadow"),
 
     ENTITY_SET_AND_MEMBER_LINK("EntitySetAndMemberLink"),
@@ -47,6 +49,8 @@ public enum RenderableClass {
         if (databaseObject instanceof Complex) return COMPLEX;
         if (databaseObject instanceof SimpleEntity) return CHEMICAL;
         if (databaseObject instanceof ChemicalDrug) return CHEMICAL_DRUG;
+        if (databaseObject instanceof ProteinDrug) return PROTEIN_DRUG;
+        if (databaseObject instanceof RNADrug) return RNA_DRUG;
         if (databaseObject instanceof EntityWithAccessionedSequence) {
             EntityWithAccessionedSequence ewas = (EntityWithAccessionedSequence) databaseObject;
             ReferenceSequence rs = ewas.getReferenceEntity();
