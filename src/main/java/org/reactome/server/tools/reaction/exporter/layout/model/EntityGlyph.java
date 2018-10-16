@@ -7,8 +7,6 @@ import org.reactome.server.graph.domain.model.PhysicalEntity;
 import org.reactome.server.graph.domain.model.ReferenceMolecule;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,7 +23,7 @@ public class EntityGlyph extends AbstractGlyph {
     private Collection<Role> roles = new HashSet<>();
 
     //Populated in this class
-    private Collection<AttachmentGlyph> attachments = null;
+    private Collection<AttachmentGlyph> attachments = new ArrayList<>();
     private RenderableClass renderableClass;
     private Boolean trivial = null; //Only true for trivial molecules. Null in any other case
 
@@ -49,7 +47,7 @@ public class EntityGlyph extends AbstractGlyph {
     }
 
     @JsonIgnore
-    public List<Compartment> getCompartments() {
+    List<Compartment> getCompartments() {
         return pe.getCompartment();
     }
 
@@ -89,28 +87,14 @@ public class EntityGlyph extends AbstractGlyph {
     public void setPhysicalEntity(PhysicalEntity pe) {
         this.pe = pe;
         renderableClass = RenderableClass.getRenderableClass(pe);
-        attachments = new ArrayList<>();
 
-        try {
-            Method getReferenceEntity = pe.getClass().getMethod("getReferenceEntity");
-            ReferenceMolecule rm = (ReferenceMolecule) getReferenceEntity.invoke(pe);
-            //trivial ONLY true for trivial molecules. NULL in any other case (never false)
-            if (rm != null && rm.getTrivial() != null && rm.getTrivial()) trivial = true;
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassCastException e) {
-            //Nothing here
-        }
+        ReferenceMolecule rm = pe.getSingleValue("getReferenceEntity");
+        //trivial ONLY true for trivial molecules. NULL in any other case (never false)
+        if (rm != null && rm.getTrivial() != null && rm.getTrivial()) trivial = true;
 
-        try {
-            Method getHasModifiedResidue = pe.getClass().getMethod("getHasModifiedResidue");
-            //noinspection unchecked
-            List<AbstractModifiedResidue> modifiedResidues = (List<AbstractModifiedResidue>) getHasModifiedResidue.invoke(pe);
-            if (modifiedResidues != null) {
-                for (AbstractModifiedResidue modifiedResidue : modifiedResidues) {
-                    attachments.add(new AttachmentGlyph(modifiedResidue));
-                }
-            }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            //Nothing here
+        Collection<AbstractModifiedResidue> modifiedResidues = pe.getMultiValue("getHasModifiedResidue");
+        for (AbstractModifiedResidue modifiedResidue : modifiedResidues) {
+            attachments.add(new AttachmentGlyph(modifiedResidue));
         }
     }
 
