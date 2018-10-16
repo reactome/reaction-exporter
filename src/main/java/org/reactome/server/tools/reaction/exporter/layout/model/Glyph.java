@@ -1,5 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
 /**
@@ -8,6 +9,7 @@ import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public interface Glyph extends HasPosition {
 
     Long getId();

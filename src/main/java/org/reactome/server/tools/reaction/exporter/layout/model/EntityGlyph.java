@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.AbstractModifiedResidue;
 import org.reactome.server.graph.domain.model.Compartment;
 import org.reactome.server.graph.domain.model.PhysicalEntity;
+import org.reactome.server.graph.domain.model.ReferenceMolecule;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
 import java.lang.reflect.InvocationTargetException;
@@ -24,11 +25,12 @@ public class EntityGlyph extends AbstractGlyph {
     private Collection<Role> roles = new HashSet<>();
 
     //Populated in this class
-    private Collection<AttachmentGlyph> attachements = null;
+    private Collection<AttachmentGlyph> attachments = null;
     private RenderableClass renderableClass;
+    private Boolean trivial = null; //Only true for trivial molecules. Null in any other case
 
-    public Collection<AttachmentGlyph> getAttachements() {
-        return attachements;
+    public Collection<AttachmentGlyph> getAttachments() {
+        return attachments;
     }
 
     @JsonIgnore
@@ -43,7 +45,6 @@ public class EntityGlyph extends AbstractGlyph {
 
     @Override
     public RenderableClass getRenderableClass() {
-        if (renderableClass == null) renderableClass = RenderableClass.getRenderableClass(pe);
         return renderableClass;
     }
 
@@ -53,11 +54,18 @@ public class EntityGlyph extends AbstractGlyph {
     }
 
     @JsonIgnore
-    public String getStId(){
+    public String getStId() {
         return pe.getStId();
     }
 
-    protected void addRole(Role role){
+    /**
+     * @return true for trivial molecules. NULL in any other case
+     */
+    public Boolean isTrivial() {
+        return trivial;
+    }
+
+    protected void addRole(Role role) {
         roles.add(role);
     }
 
@@ -65,14 +73,25 @@ public class EntityGlyph extends AbstractGlyph {
     @SuppressWarnings("unused")
     public void setPhysicalEntity(PhysicalEntity pe) {
         this.pe = pe;
-        attachements = new ArrayList<>();
+        renderableClass = RenderableClass.getRenderableClass(pe);
+        attachments = new ArrayList<>();
+
+        try {
+            Method getReferenceEntity = pe.getClass().getMethod("getReferenceEntity");
+            ReferenceMolecule rm = (ReferenceMolecule) getReferenceEntity.invoke(pe);
+            //trivial ONLY true for trivial molecules. NULL in any other case (never false)
+            if (rm != null && rm.getTrivial() != null && rm.getTrivial()) trivial = true;
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassCastException e) {
+            //Nothing here
+        }
+
         try {
             Method getHasModifiedResidue = pe.getClass().getMethod("getHasModifiedResidue");
             //noinspection unchecked
             List<AbstractModifiedResidue> modifiedResidues = (List<AbstractModifiedResidue>) getHasModifiedResidue.invoke(pe);
             if (modifiedResidues != null) {
                 for (AbstractModifiedResidue modifiedResidue : modifiedResidues) {
-                    attachements.add(new AttachmentGlyph(modifiedResidue));
+                    attachments.add(new AttachmentGlyph(modifiedResidue));
                 }
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -82,7 +101,7 @@ public class EntityGlyph extends AbstractGlyph {
 
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
-    public void setRole(Role role){
+    public void setRole(Role role) {
         roles.add(role);
     }
 
