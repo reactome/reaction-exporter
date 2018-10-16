@@ -29,7 +29,22 @@ public class EntityGlyph extends AbstractGlyph {
     private RenderableClass renderableClass;
     private Boolean trivial = null; //Only true for trivial molecules. Null in any other case
 
-    public Collection<AttachmentGlyph> getAttachments() {
+	public EntityGlyph() {
+	}
+
+	public EntityGlyph(EntityGlyph entity) {
+		super();
+		pe = entity.pe;
+		trivial = entity.trivial;
+		if (entity.attachments != null) {
+			attachments = new ArrayList<>();
+			for (AttachmentGlyph attachment : entity.attachments) {
+				attachments.add(new AttachmentGlyph(attachment));
+			}
+		}
+	}
+
+	public Collection<AttachmentGlyph> getAttachments() {
         return attachments;
     }
 

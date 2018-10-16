@@ -35,7 +35,12 @@ public class AttachmentGlyph extends AbstractGlyph {
         //name = amr.getDisplayName().contains("-phospho-") ? "P" : "";
     }
 
-    @Override
+    public AttachmentGlyph(AttachmentGlyph attachement) {
+        super();
+        name = attachement.name;
+    }
+
+	@Override
     public String getName() {
         return name;
     }
