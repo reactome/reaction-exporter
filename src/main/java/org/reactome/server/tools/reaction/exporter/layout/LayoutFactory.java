@@ -4,7 +4,6 @@ import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
-import org.reactome.server.tools.reaction.exporter.layout.model.ReactionGlyph;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,29 +18,23 @@ public class LayoutFactory {
     
     private static final String QUERY = "" +
             "MATCH (rle:ReactionLikeEvent{stId:{stId}}) " +
-            "OPTIONAL MATCH (rle)-[i:input]->(input:PhysicalEntity) " +
-            "WITH rle, COLLECT(DISTINCT CASE input WHEN NULL THEN NULL ELSE {stoichiometry: i.stoichiometry, pe: input} END) AS inputs " +
-            "OPTIONAL MATCH (rle)-[o:output]->(output:PhysicalEntity) " +
-            "WITH rle, inputs, COLLECT(DISTINCT CASE output WHEN NULL THEN NULL ELSE {stoichiometry: o.stoichiometry, pe: output} END) AS outputs " +
-            "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(catalyst:PhysicalEntity) " +
-            "WITH rle, inputs, outputs, COLLECT(DISTINCT CASE catalyst WHEN NULL THEN NULL ELSE {stoichiometry: 1, pe: catalyst} END) AS catalysts " +
-            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(negative:PhysicalEntity) " +
-            "WITH rle, inputs, outputs, catalysts, COLLECT(DISTINCT CASE negative WHEN NULL THEN NULL ELSE  {stoichiometry: 1, pe: negative} END) AS positiveRegulators " +
-            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(positive:PhysicalEntity) " +
-            "WITH rle, inputs, outputs, catalysts, positiveRegulators, COLLECT(DISTINCT CASE positive WHEN NULL THEN NULL ELSE {stoichiometry: 1, pe: positive} END) AS negativeRegulators " +
-            "OPTIONAL MATCH (rle)-[:compartment]->(c:Compartment) " +
-            "RETURN rle, " +
-            "       inputs, " +
-            "       outputs, " +
-            "       catalysts, " +
-            "       positiveRegulators, " +
-            "       negativeRegulators";
+            "OPTIONAL MATCH (rle)-[i:input]->(pei:PhysicalEntity) " +
+            "WITH rle, COLLECT(DISTINCT CASE pei WHEN NULL THEN NULL ELSE {physicalEntity: pei, role:{n: i.stoichiometry, type: 'input'}} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[o:output]->(peo:PhysicalEntity) " +
+            "WITH rle, ps + COLLECT(DISTINCT CASE peo WHEN NULL THEN NULL ELSE {physicalEntity: peo, role:{n: o.stoichiometry, type: 'output'}} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(pec:PhysicalEntity) " +
+            "WITH rle, ps + COLLECT(DISTINCT CASE pec WHEN NULL THEN NULL ELSE {physicalEntity: pec, role:{n: 1, type: 'catalyst'}} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(pen:PhysicalEntity) " +
+            "WITH rle, ps + COLLECT(DISTINCT CASE pen WHEN NULL THEN NULL ELSE {physicalEntity: pen, role:{n: 1, type: 'negative'}} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pep:PhysicalEntity) " +
+            "WITH rle, ps + COLLECT(DISTINCT CASE pep WHEN NULL THEN NULL ELSE {physicalEntity: pep, role:{n: 1, type: 'positive'}} END) AS ps " +
+            "RETURN rle AS reactionLikeEvent, ps AS participants";
     
     public static Layout getReactionLikeEventLayout(AdvancedDatabaseObjectService ads, ReactionLikeEvent rle) {
         Map<String, Object> params = new HashMap<>();
         params.put("stId", rle.getStId());
         try {
-            return new Layout(ads.getCustomQueryResult(ReactionGlyph.class, QUERY,  params));
+            return ads.getCustomQueryResult(Layout.class, QUERY,  params);
         } catch (CustomQueryException e) {
             //TODO: log -> e.printStackTrace();
             e.printStackTrace();

@@ -7,9 +7,22 @@ package org.reactome.server.tools.reaction.exporter.layout.common;
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public enum EntityRole {
-    INPUT,
-    OUTPUT,
-    CATALYST,
-    NEGATIVE_REGULATOR,
-    POSITIVE_REGULATOR
+    INPUT("input"),
+    OUTPUT("output"),
+    CATALYST("catalyst"),
+    NEGATIVE_REGULATOR("negative"),
+    POSITIVE_REGULATOR("positive");
+
+    private String role;
+
+    EntityRole(String role) {
+        this.role = role;
+    }
+
+    public static EntityRole get(String role){
+        for (EntityRole value : values()) {
+            if(value.role.equals(role.toLowerCase())) return value;
+        }
+        return null;
+    }
 }

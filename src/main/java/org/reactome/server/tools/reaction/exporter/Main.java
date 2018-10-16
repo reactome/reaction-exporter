@@ -41,7 +41,8 @@ public class Main {
         AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
 
         //ReactionLikeEvent rle = dos.findById("R-HSA-6791223");
-        ReactionLikeEvent rle = dos.findById("R-HSA-211734");
+        //ReactionLikeEvent rle = dos.findById("R-HSA-211734");
+        ReactionLikeEvent rle = dos.findById("R-HSA-1362408");
 
         Layout rxn = LayoutFactory.getReactionLikeEventLayout(ads, rle);
 

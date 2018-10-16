@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -18,22 +19,13 @@ import java.util.List;
  */
 public class EntityGlyph extends AbstractGlyph {
 
-    private Integer stoichiometry;
+    //From the query
     private PhysicalEntity pe;
+    private Collection<Role> roles = new HashSet<>();
 
-    private RenderableClass renderableClass;
-
+    //Populated in this class
     private Collection<AttachmentGlyph> attachements = null;
-
-
-    @Override
-    public String getName() {
-        return pe.getName().get(0);
-    }
-
-    public Integer getStoichiometry() {
-        return stoichiometry;
-    }
+    private RenderableClass renderableClass;
 
     public Collection<AttachmentGlyph> getAttachements() {
         return attachements;
@@ -45,12 +37,33 @@ public class EntityGlyph extends AbstractGlyph {
     }
 
     @Override
+    public String getName() {
+        return pe.getName().get(0);
+    }
+
+    @Override
     public RenderableClass getRenderableClass() {
         if (renderableClass == null) renderableClass = RenderableClass.getRenderableClass(pe);
         return renderableClass;
     }
 
-    public void setPe(PhysicalEntity pe) {
+    @JsonIgnore
+    public Collection<Role> getRoles() {
+        return roles;
+    }
+
+    @JsonIgnore
+    public String getStId(){
+        return pe.getStId();
+    }
+
+    protected void addRole(Role role){
+        roles.add(role);
+    }
+
+    // This setter is called automatically by the graph-core marshaller
+    @SuppressWarnings("unused")
+    public void setPhysicalEntity(PhysicalEntity pe) {
         this.pe = pe;
         attachements = new ArrayList<>();
         try {
@@ -67,11 +80,17 @@ public class EntityGlyph extends AbstractGlyph {
         }
     }
 
+    // This setter is called automatically by the graph-core marshaller
+    @SuppressWarnings("unused")
+    public void setRole(Role role){
+        roles.add(role);
+    }
+
     @Override
     public String toString() {
         return "EntityGlyph{" +
-                "n=" + stoichiometry +
-                ", pe=" + pe.getStId() +
+                "pe=" + getName() +
+                ", roles=" + roles +
                 '}';
     }
 }
