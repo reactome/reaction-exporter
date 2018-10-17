@@ -26,6 +26,7 @@ public class EntityGlyph extends AbstractGlyph {
     private Boolean trivial = null; //Only true for trivial molecules. Null in any other case
 
 	public EntityGlyph() {
+	    super();
 	}
 
 	public EntityGlyph(EntityGlyph entity) {
@@ -98,13 +99,11 @@ public class EntityGlyph extends AbstractGlyph {
             attachments.add(new AttachmentGlyph(modifiedResidue));
         }
     }
-
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
     public void setRole(Role role) {
         roles.add(role);
     }
-
     @Override
     public String toString() {
         return "EntityGlyph{" +
