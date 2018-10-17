@@ -16,9 +16,11 @@ public enum RenderableClass {
     CHEMICAL_DRUG("ChemicalDrug"),
     COMPARTMENT("Compartment"),
     COMPLEX("Complex"),
+    COMPLEX_DRUG("ComplexDrug"),
     ENCAPSULATED_NODE("EncapsulatedNode"),
     ENTITY("Entity"),
     ENTITY_SET("EntitySet"),
+    ENTITY_SET_DRUG("EntitySetDrug"),
     FLOW_LINE("FlowLine"),
     GENE("Gene"),
     INTERACTION("Interaction"),
@@ -26,7 +28,7 @@ public enum RenderableClass {
     PROCESS_NODE("ProcessNode"),
     PROTEIN("Protein"),
     PROTEIN_DRUG("ProteinDrug"),
-    REACTION("ReactionGlyph"),
+    REACTION("Reaction"),
     RNA("RNA"),
     RNA_DRUG("RNADrug"),
     SHADOW("Shadow"),
@@ -45,8 +47,18 @@ public enum RenderableClass {
     }
 
     public static RenderableClass getRenderableClass(DatabaseObject databaseObject) {
-        if (databaseObject instanceof EntitySet) return ENTITY_SET;
-        if (databaseObject instanceof Complex) return COMPLEX;
+        return getRenderableClass(databaseObject, false);
+    }
+
+    /**
+     * @param databaseObject the object associated with the glyph
+     * @param drug For entities, the query in {@LayoutFactory} assigns it to true for {@Drug} class instances and for
+     *             {@Complexes} or {@EntitySets} class instances containing one of the previous ones
+     * @return The associated {@RenderableClass} with the previous parameters
+     */
+    public static RenderableClass getRenderableClass(DatabaseObject databaseObject, Boolean drug) {
+        if (databaseObject instanceof EntitySet) return drug ? ENTITY_SET_DRUG : ENTITY_SET;
+        if (databaseObject instanceof Complex) return drug ? COMPLEX_DRUG : COMPLEX;
         if (databaseObject instanceof SimpleEntity) return CHEMICAL;
         if (databaseObject instanceof ChemicalDrug) return CHEMICAL_DRUG;
         if (databaseObject instanceof ProteinDrug) return PROTEIN_DRUG;
