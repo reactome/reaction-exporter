@@ -63,34 +63,6 @@ public class Position {
         this.my = this.y + height;
     }
 
-//    private void setSize() {
-//        final Dimension2D dimension = TextUtils.splitText(displayName);
-//        switch (renderableClass) {
-//            case CHEMICAL:
-//            case CHEMICAL_DRUG:
-//            case COMPLEX:
-//            case ENTITY:
-//            case PROTEIN:
-//            case RNA:
-//                setWidth(6 + dimension.getWidth());
-//                setHeight(6 + dimension.getHeight());
-//                break;
-//            case ENCAPSULATED_NODE:
-//            case PROCESS_NODE:
-//            case ENTITY_SET:
-//                setWidth(15 + dimension.getWidth());
-//                setHeight(15 + dimension.getHeight());
-//                break;
-//            case REACTION:
-//                setHeight(12);
-//                setWidth(12);
-//                break;
-//            case GENE:
-//                setWidth(6 + dimension.getWidth());
-//                setHeight(30 + dimension.getHeight());
-//        }
-//    }
-
     @JsonIgnore
     public double getMaxX() {
         return mx;
@@ -100,10 +72,6 @@ public class Position {
     public double getMaxY() {
         return my;
     }
-
-//    public Point2D getCenter() {
-//        return new Point2D.Double(cx, cy);
-//    }
 
     @JsonIgnore
     public double getCenterX() {
@@ -115,8 +83,4 @@ public class Position {
         return cy;
     }
 
-//
-//    public Rectangle2D getBoundingBox() {
-//        return new Rectangle2D.Double(x,y,width,height);
-//    }
 }

@@ -8,6 +8,9 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Utility to calculate the size of the text based of a Font and a width/height ratio.
+ */
 public class TextUtils {
 
 	private static final List<Character> WORD_SPLIT_CHARS = Arrays.asList(':', '.', '-', ',', ')', '/', '+');
@@ -18,28 +21,41 @@ public class TextUtils {
 	private static final double MIN_HEIGHT = 30;
 
 
-	private TextUtils() {}
-
-	public static Dimension2D splitText(String text) {
-		return splitText(text, DEFAULT_FONT);
+	private TextUtils() {
 	}
 
-	public static Dimension2D splitText(String text, Font font) {
+	/**
+	 * Computes the dimension of the text using 'Arial (8px)' as font and 7/3 as ratio
+	 *
+	 * @param text text to compute its width and height
+	 * @return width and height of the text once split to meet ration
+	 */
+	public static Dimension2D textDimension(String text) {
+		return textDimension(text, DEFAULT_FONT, RATIO);
+	}
+
+	/**
+	 * Computes the dimension of the text using 'Arial (8px)' as font and 7/3 as ratio
+	 * @param text text to compute its width and height
+	 * @param font font to use for the computation
+	 * @return width and height of the text once split to meet ration
+	 */
+	public static Dimension2D textDimension(String text, Font font, double ratio) {
 		// width = max of
 		// (i) constant minimum,
 		// (ii) length of largest text fragment after splitting text by separators, or
 		// (iii) a nice width
 		final int height = GRAPHICS.getFontMetrics(font).getHeight();
 		double h = height;
-		double w = h * RATIO;
+		double w = h * ratio;
 		while (fit(text, font, w, h) == null) {
 			h += height;
-			w = h * RATIO;
+			w = h * ratio;
 		}
 		if (h < MIN_HEIGHT) h = MIN_HEIGHT;
 		// Add 1 pixel top, 1 pixel bottom for rounding problems
 //		h += height;
-		w = h * RATIO;
+		w = h * ratio;
 		return new Dimension((int) Math.ceil(w), (int) Math.ceil(h));
 	}
 
