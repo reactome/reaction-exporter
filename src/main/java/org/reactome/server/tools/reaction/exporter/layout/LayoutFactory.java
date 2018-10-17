@@ -405,10 +405,12 @@ public class LayoutFactory {
      * @param b the second position for the union
      */
     private void union(Position a, Position b) {
-        a.setX(Math.min(a.getX(), b.getX()));
-        a.setY(Math.min(a.getY(), b.getY()));
+        final double minX = Math.min(a.getX(), b.getX());
+        final double minY = Math.min(a.getY(), b.getY());
         final double maxX = Math.max(a.getMaxX(), b.getMaxX());
         final double maxY = Math.max(a.getMaxY(), b.getMaxY());
+        a.setX(minX);
+        a.setY(minY);
         a.setWidth(maxX - a.getX());
         a.setHeight(maxY - a.getY());
     }
