@@ -14,6 +14,8 @@ public interface Glyph extends HasPosition {
 
     Long getId();
 
+    Long getDbId();
+
     String getName();
 
     RenderableClass getRenderableClass();

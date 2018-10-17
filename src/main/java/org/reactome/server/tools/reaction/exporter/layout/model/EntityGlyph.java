@@ -66,8 +66,12 @@ public class EntityGlyph extends AbstractGlyph {
         return roles;
     }
 
-    @JsonIgnore
-    public String getStId() {
+	@Override
+	public Long getDbId() {
+		return pe.getDbId();
+	}
+
+	public String getStId() {
         return pe.getStId();
     }
 

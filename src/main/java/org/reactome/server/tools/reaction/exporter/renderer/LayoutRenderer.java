@@ -12,14 +12,42 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+/**
+ * Renderer of a single reaction {@link Layout}. By calling {@link LayoutRenderer#compute(Layout)}, every Glyph in the
+ * layout is given a position and size (through {@link Glyph#getPosition()} property. This is a fixed/deterministic
+ * layout, with an approximate O(number of entities + number of compartments) cost.
+ */
 public class LayoutRenderer {
 
-//	private static final Graphics2D graphics = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics();
-//	private static final FontMetrics FONT_METRICS = graphics.getFontMetrics(new Font("arial", Font.BOLD, 8));
-
-
-	private static final int COMPARTMENT_PADDING = 20;
-
+	/**
+	 * Minimum distance between the compartment border and any of ints contained glyphs.
+	 */
+	private static final double COMPARTMENT_PADDING = 20;
+	/**
+	 * Minimum allocated height for any glyph. Even if glyphs have a lower height, they are placed in the middle of
+	 * this minimum distance.
+	 */
+	private static final double MIN_GLYPH_HEIGHT = 40;
+	/**
+	 * Minimum allocated width for any glyph. Even if glyphs have a lower width, they are placed in the middle of
+	 * this minimum distance.
+	 */
+	private static final double MIN_GLYPH_WIDTH = 80;
+	/**
+	 * Vertical (y-axis) distance between two glyphs.
+	 */
+	private static final double VERTICAL_PADDING = 15;
+	/**
+	 * Horizontal (x-axis) distance between two glyphs.
+	 */
+	private static final double HORIZONTAL_PADDING = 15;
+	/**
+	 * Minimum distance bewteen any glyph and the reaction glyph
+	 */
+	private static final double REACTION_MIN_DISTANCE = 120;
+	/**
+	 * Order in which nodes should be placed depending on their {@link RenderableClass}
+	 */
 	private static final List<RenderableClass> CLASS_ORDER = Arrays.asList(
 			RenderableClass.PROCESS_NODE,
 			RenderableClass.ENCAPSULATED_NODE,
@@ -30,14 +58,18 @@ public class LayoutRenderer {
 			RenderableClass.CHEMICAL,
 			RenderableClass.GENE,
 			RenderableClass.ENTITY);
+	/**
+	 * Comparator that puts false elements before true elements.
+	 */
 	private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
-	private static final int MIN_GLYPH_HEIGHT = 40;
-	private static final double VERTICAL_PADDING = 15;
-	private static final double MIN_GLYPH_WIDTH = 80;
-	private static final double HORIZONTAL_PADDING = 15;
-	private static final double REACTION_MIN_DISTANCE = 120;
 
-	public void apply(Layout layout) {
+	/**
+	 * Computes the positions of the glyphs inside the layout and adds the necessary segments to get a fully functional
+	 * Reactome like Layout.
+	 *
+	 * @param layout the object to calculate its positions.
+	 */
+	public void compute(Layout layout) {
 		addDuplicates(layout);
 		layoutReaction(layout);
 		layoutParticipants(layout);
@@ -46,13 +78,15 @@ public class LayoutRenderer {
 	}
 
 	private void addDuplicates(Layout layout) {
-		// Duplicate entities
-		// only when roles are not consecutive
-		// in case it is in two or three consecutive roles, no duplication is needed
+		// Entities are duplicated only when they have roles that are no consecutive around the reaction
+		// This happens only in 2 cases:
+		//   (i)  an input is also an output, but neither catalyst nor regulator
+		//   (ii) a catalyst is also a regulator, but neither an input nor output
 		final List<EntityGlyph> added = new ArrayList<>();
 		for (EntityGlyph entity : layout.getEntities()) {
 			final Collection<Role> roles = entity.getRoles();
 			if (roles.size() > 1) {
+				// Extract the role types
 				final Set<EntityRole> roleSet = roles.stream().map(Role::getType).collect(Collectors.toSet());
 				if (roleSet.equals(EnumSet.of(EntityRole.INPUT, EntityRole.OUTPUT))
 						|| roleSet.equals(EnumSet.of(EntityRole.CATALYST, EntityRole.POSITIVE_REGULATOR))
@@ -65,8 +99,8 @@ public class LayoutRenderer {
 					added.add(copy);
 					addCopyToCompartment(layout, entity, copy);
 				} else if (roleSet.equals(EnumSet.of(EntityRole.CATALYST, EntityRole.NEGATIVE_REGULATOR, EntityRole.POSITIVE_REGULATOR))) {
-					// Special case: catalyst/positive/negative
-					// In this case we split in 2 entities: catalyst and positive/negative
+					// Special case: catalyst/positive/negative. Should it happen?
+					// In this case we split it in 2 entities: catalyst and positive/negative
 					final Role role = roles.stream().filter(r -> r.getType() == EntityRole.CATALYST).findFirst().orElse(null);
 					final EntityGlyph copy = new EntityGlyph(entity);
 					copy.setRole(role);
@@ -79,14 +113,48 @@ public class LayoutRenderer {
 		for (EntityGlyph entity : added) {
 			layout.add(entity);
 		}
-		for (EntityGlyph entity : layout.getEntities()) {
-			setSize(entity);
-		}
 	}
 
 
+	private void addCopyToCompartment(Layout layout, EntityGlyph entity, EntityGlyph copy) {
+		for (CompartmentGlyph compartment : layout.getCompartments()) {
+			if (compartment.getContainedGlyphs().contains(entity)) {
+				compartment.getContainedGlyphs().add(copy);
+				break;
+			}
+		}
+	}
+
+	private void layoutReaction(Layout layout) {
+		setSize(layout.getReaction());
+		layout.getReaction().getPosition().setCenter(0, 0);
+	}
+
+	private void layoutParticipants(Layout layout) {
+		for (EntityGlyph entity : layout.getEntities()) {
+			setSize(entity);
+		}
+		final Map<EntityRole, Collection<EntityGlyph>> participants = new HashMap<>();
+		for (EntityGlyph entity : layout.getEntities()) {
+			for (Role role : entity.getRoles()) {
+				participants.computeIfAbsent(role.getType(), r -> new ArrayList<>()).add(entity);
+			}
+		}
+		inputs(layout, participants.get(EntityRole.INPUT));
+		outputs(layout, participants.get(EntityRole.OUTPUT));
+		catalysts(layout, participants.get(EntityRole.CATALYST));
+		final ArrayList<EntityGlyph> regulators = new ArrayList<>(participants.getOrDefault(EntityRole.NEGATIVE_REGULATOR, Collections.emptyList()));
+		regulators.addAll(participants.getOrDefault(EntityRole.POSITIVE_REGULATOR, Collections.emptyList()));
+		regulators(layout, regulators);
+	}
+
+	private void setSize(ReactionGlyph reaction) {
+		reaction.getPosition().setHeight(12);
+		reaction.getPosition().setWidth(12);
+	}
+
 	private void setSize(EntityGlyph glyph) {
-		final Dimension2D dimension = TextUtils.splitText(glyph.getName());
+		final Dimension2D textDimension = TextUtils.textDimension(glyph.getName());
 		switch (glyph.getRenderableClass()) {
 			case ATTACHMENT:
 				glyph.getPosition().setWidth(12);
@@ -101,53 +169,21 @@ public class LayoutRenderer {
 			case PROTEIN_DRUG:
 			case RNA:
 			case RNA_DRUG:
-				glyph.getPosition().setWidth(6 + dimension.getWidth());
-				glyph.getPosition().setHeight(6 + dimension.getHeight());
+				glyph.getPosition().setWidth(6 + textDimension.getWidth());
+				glyph.getPosition().setHeight(6 + textDimension.getHeight());
 				break;
 			case ENCAPSULATED_NODE:
 			case PROCESS_NODE:
 			case ENTITY_SET:
 			case ENTITY_SET_DRUG:
-				glyph.getPosition().setWidth(15 + dimension.getWidth());
-				glyph.getPosition().setHeight(15 + dimension.getHeight());
-				break;
-			case REACTION:
-				glyph.getPosition().setHeight(12);
-				glyph.getPosition().setWidth(12);
+				glyph.getPosition().setWidth(15 + textDimension.getWidth());
+				glyph.getPosition().setHeight(15 + textDimension.getHeight());
 				break;
 			case GENE:
-				glyph.getPosition().setWidth(6 + dimension.getWidth());
-				glyph.getPosition().setHeight(30 + dimension.getHeight());
+				glyph.getPosition().setWidth(6 + textDimension.getWidth());
+				glyph.getPosition().setHeight(30 + textDimension.getHeight());
 				break;
 		}
-	}
-
-	private void addCopyToCompartment(Layout layout, EntityGlyph entity, EntityGlyph copy) {
-		for (CompartmentGlyph compartment : layout.getCompartments()) {
-			if (compartment.getContainedGlyphs().contains(entity)) {
-				compartment.getContainedGlyphs().add(copy);
-				break;
-			}
-		}
-	}
-
-	private void layoutReaction(Layout layout) {
-		layout.getReaction().getPosition().setCenter(0, 0);
-	}
-
-	private void layoutParticipants(Layout layout) {
-		final Map<EntityRole, Collection<EntityGlyph>> participants = new HashMap<>();
-		for (EntityGlyph entity : layout.getEntities()) {
-			for (Role role : entity.getRoles()) {
-				participants.computeIfAbsent(role.getType(), r -> new ArrayList<>()).add(entity);
-			}
-		}
-		inputs(layout, participants.get(EntityRole.INPUT));
-		outputs(layout, participants.get(EntityRole.OUTPUT));
-		catalysts(layout, participants.get(EntityRole.CATALYST));
-		final ArrayList<EntityGlyph> regulators = new ArrayList<>(participants.getOrDefault(EntityRole.NEGATIVE_REGULATOR, Collections.emptyList()));
-		regulators.addAll(participants.getOrDefault(EntityRole.POSITIVE_REGULATOR, Collections.emptyList()));
-		regulators(layout, regulators);
 	}
 
 	private void inputs(Layout layout, Collection<EntityGlyph> entities) {
@@ -319,179 +355,4 @@ public class LayoutRenderer {
 		a.setWidth(maxX - a.getX());
 		a.setHeight(maxY - a.getY());
 	}
-
-
-//	private LayoutResult layoutInputs(CompartmentGlyph compartment, java.util.List<EntityGlyph> nodes, double distance) {
-//		int laidOut = 0;
-//		double thisDistance = 0;
-//		for (CompartmentGlyph child : compartment.getChildren()) {
-//			final LayoutResult layoutResult = layoutInputs(child, nodes, distance);
-//			laidOut += layoutResult.elements;
-//			if (thisDistance < layoutResult.distance)
-//				thisDistance = layoutResult.distance;
-//		}
-//		final java.util.List<EntityGlyph> entities = nodes.stream()
-//				.filter(EntityGlyph -> EntityGlyph.getCompartment() == compartment)
-//				.sorted(PARTICIPANT_COMPARATOR)
-//				.collect(Collectors.toList());
-//
-//		if (entities.isEmpty()) return new LayoutResult(laidOut, thisDistance + COMPARTMENT_PADDING);
-//
-//		final double maxHeight = entities.stream().mapToDouble(LayoutObject::getHeight).max().orElse(40) + 5;
-//		final double maxWidth = entities.stream().mapToDouble(LayoutObject::getWidth).max().orElse(120) + COMPARTMENT_PADDING;
-//
-//		// Forces a grid for entities
-////		final int elementsPerCol = (int) (MAX_HEIGHT / maxHeight);
-//		// One column inputs
-//		final int elementsPerCol = nodes.size();
-//		final int cols = ceilIntegerDivision(entities.size(), elementsPerCol);
-//
-//		final double vShift = elementsPerCol * maxHeight * 0.5 - 0.5 * maxHeight;
-//
-//		// Using grid of (cols x elementsPerCol)
-//		for (int i = 0; i < entities.size(); i++) {
-//			final int col = (laidOut + i) / elementsPerCol;
-//			int row = (laidOut + i) % elementsPerCol;
-//			if (col == cols - 1) {
-//				final int lastColEmpties = (cols * elementsPerCol) % entities.size();
-//				row += lastColEmpties / 2;
-//			}
-//			final double x = distance + col * maxWidth + thisDistance;
-//			final double y = row * maxHeight - vShift;
-//			entities.get(i).setCenter(-x, y);
-//		}
-//		return new LayoutResult(entities.size() + laidOut, thisDistance + cols * maxWidth + COMPARTMENT_PADDING);
-//	}
-//
-//	private LayoutResult layoutOutputs(CompartmentGlyph compartment, java.util.List<EntityGlyph> nodes, double distance) {
-//		int laidOut = 0;
-//		double thisDistance = 0;
-//		for (CompartmentGlyph child : compartment.getChildren()) {
-//			final LayoutResult layoutResult = layoutOutputs(child, nodes, distance);
-//			laidOut += layoutResult.elements;
-//			if (thisDistance < layoutResult.distance)
-//				thisDistance = layoutResult.distance;
-//		}
-//		final java.util.List<EntityGlyph> entities = nodes.stream()
-//				.filter(EntityGlyph -> EntityGlyph.getCompartment() == compartment)
-//				.sorted(PARTICIPANT_COMPARATOR)
-//				.collect(Collectors.toList());
-//
-//		if (entities.isEmpty()) return new LayoutResult(laidOut, thisDistance + COMPARTMENT_PADDING);
-//
-//		final double maxHeight = entities.stream().mapToDouble(LayoutObject::getHeight).max().orElse(40) + 5;
-//		final double maxWidth = entities.stream().mapToDouble(LayoutObject::getWidth).max().orElse(120) + COMPARTMENT_PADDING;
-//
-//		// Forces a grid for entities
-////		final int elementsPerCol = (int) (MAX_HEIGHT / maxHeight);
-//		// One column inputs
-//		final int elementsPerCol = nodes.size();
-//		final int cols = ceilIntegerDivision(entities.size(), elementsPerCol);
-//
-//		final double vShift = elementsPerCol * maxHeight * 0.5 - 0.5 * maxHeight;
-//
-//		// Using grid of (cols x elementsPerCol)
-//		for (int i = 0; i < entities.size(); i++) {
-//			final int col = (laidOut + i) / elementsPerCol;
-//			int row = (laidOut + i) % elementsPerCol;
-//			if (col == cols - 1) {
-//				final int lastColEmpties = (cols * elementsPerCol) % entities.size();
-//				row += lastColEmpties / 2;
-//			}
-//			final double x = distance + col * maxWidth + thisDistance;
-//			final double y = row * maxHeight - vShift;
-//			entities.get(i).setCenter(x, y);
-//		}
-//		return new LayoutResult(entities.size() + laidOut, thisDistance + cols * maxWidth + COMPARTMENT_PADDING);
-//	}
-//
-//	private LayoutResult layoutCatalysts(ReactionGlyph reaction, CompartmentGlyph compartment, java.util.List<EntityGlyph> nodes, double distance) {
-//		int laidOut = 0;
-//		double thisDistance = 0;
-//		for (CompartmentGlyph child : compartment.getChildren()) {
-//			final LayoutResult result = layoutCatalysts(reaction, child, nodes, distance);
-//			laidOut += result.elements;
-//			if (thisDistance < result.distance)
-//				thisDistance = result.distance;
-//		}
-//		final java.util.List<EntityGlyph> entities = nodes.stream()
-//				.filter(entity -> entity.getCompartment() == compartment)
-//				.sorted(PARTICIPANT_COMPARATOR)
-//				.collect(Collectors.toList());
-//
-//		if (entities.isEmpty()) return new LayoutResult(laidOut, thisDistance + COMPARTMENT_PADDING);
-//
-//		final double maxHeight = entities.stream().mapToDouble(LayoutObject::getHeight).max().orElse(40) + 5;
-//		final double maxWidth = entities.stream().mapToDouble(LayoutObject::getWidth).max().orElse(120) + COMPARTMENT_PADDING;
-//
-//		final int elementsPerRow = (int) (MAX_WIDTH / maxWidth);
-//		final int rows = ceilIntegerDivision(entities.size(), elementsPerRow);
-//
-//		// Using size
-//		for (int i = 0; i < entities.size(); i++) {
-//			// order in the total elements laid out
-//			int absoluteOrder = (laidOut + i) % elementsPerRow;
-//			// order in the side of the circle
-//			int relativeOrder = absoluteOrder / 2;
-//			double x = relativeOrder * maxWidth;
-//			if (nodes.size() % 2 == 0) x += 0.5 * maxWidth;
-//			if (absoluteOrder % 2 == 1) x = -x;
-//
-//			double y = distance + thisDistance + (i / elementsPerRow) * maxHeight;
-//			entities.get(i).setCenter(x, -y);
-//		}
-//		return new LayoutResult(entities.size() + laidOut, thisDistance + rows * maxHeight + COMPARTMENT_PADDING);
-//	}
-//
-//	private LayoutResult layoutRegulators(ReactionGlyph reaction, CompartmentGlyph compartment, java.util.List<EntityGlyph> nodes, double distance) {
-//		int laidOut = 0;
-//		double thisDistance = 0;
-//		for (CompartmentGlyph child : compartment.getChildren()) {
-//			final LayoutResult result = layoutRegulators(reaction, child, nodes, distance);
-//			laidOut += result.elements;
-//			if (thisDistance < result.distance)
-//				thisDistance = result.distance;
-//		}
-//		final List<EntityGlyph> entities = nodes.stream()
-//				.filter(EntityGlyph -> EntityGlyph.getCompartment() == compartment)
-//				.sorted(PARTICIPANT_COMPARATOR)
-//				.collect(Collectors.toList());
-//
-//		if (entities.isEmpty()) return new LayoutResult(laidOut, thisDistance + COMPARTMENT_PADDING);
-//
-//		final double maxHeight = entities.stream().mapToDouble(LayoutObject::getHeight).max().orElse(40) + 5;
-//		final double maxWidth = entities.stream().mapToDouble(LayoutObject::getWidth).max().orElse(120) + COMPARTMENT_PADDING;
-//
-//		final int elementsPerRow = (int) (MAX_WIDTH / maxWidth);
-//		final int rows = ceilIntegerDivision(entities.size(), elementsPerRow);
-//
-//		// Using size
-//		for (int i = 0; i < entities.size(); i++) {
-//			// order in the total elements laid out
-//			int absoluteOrder = (laidOut + i) % elementsPerRow;
-//			// order in the side of the circle
-//			int relativeOrder = absoluteOrder / 2;
-//			double x = relativeOrder * maxWidth;
-//			if (nodes.size() % 2 == 0) x += 0.5 * maxWidth;
-//			if (absoluteOrder % 2 == 1) x = -x;
-//
-//			double y = distance + thisDistance + (i / elementsPerRow) * maxHeight;
-//			entities.get(i).setCenter(x, y);
-//		}
-//		return new LayoutResult(entities.size() + laidOut, thisDistance + rows * maxHeight + COMPARTMENT_PADDING);
-//	}
-//
-//	private int ceilIntegerDivision(int num, int divisor) {
-//		return (divisor + num - 1) / divisor;
-//	}
-//
-//	private class LayoutResult {
-//		private int elements;
-//		private double distance;
-//
-//		LayoutResult(int elements, double distance) {
-//			this.elements = elements;
-//			this.distance = distance;
-//		}
-//	}
 }

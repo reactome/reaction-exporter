@@ -9,15 +9,21 @@ import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass
  */
 public class ReactionGlyph extends AbstractGlyph {
 
+    private Long dbId;
     private String stId;
     private String name;
     private RenderableClass renderableClass;
 
     ReactionGlyph(ReactionLikeEvent rle) {
         super();
+        dbId = rle.getDbId();
         stId = rle.getStId();
         name = rle.getDisplayName();
         renderableClass = RenderableClass.getRenderableClass(rle);
+    }
+
+    public String getStId() {
+        return stId;
     }
 
     @Override
@@ -28,6 +34,11 @@ public class ReactionGlyph extends AbstractGlyph {
     @Override
     public RenderableClass getRenderableClass() {
         return renderableClass;
+    }
+
+    @Override
+    public Long getDbId() {
+        return dbId;
     }
 
     @Override
