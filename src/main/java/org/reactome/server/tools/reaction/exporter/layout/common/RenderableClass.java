@@ -2,6 +2,7 @@ package org.reactome.server.tools.reaction.exporter.layout.common;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.tools.reaction.exporter.layout.LayoutFactory;
 
 /**
  * For a given DatabaseObject instance, this class returns the RenderableClass
@@ -52,9 +53,9 @@ public enum RenderableClass {
 
     /**
      * @param databaseObject the object associated with the glyph
-     * @param drug For entities, the query in {@LayoutFactory} assigns it to true for {@Drug} class instances and for
-     *             {@Complexes} or {@EntitySets} class instances containing one of the previous ones
-     * @return The associated {@RenderableClass} with the previous parameters
+     * @param drug For entities, the query in {@link LayoutFactory} assigns it to true for {@link Drug} class instances
+     *             and for {@link Complex} or {@link EntitySet} class instances containing one of the previous ones
+     * @return The associated {@link RenderableClass} with the previous parameters
      */
     public static RenderableClass getRenderableClass(DatabaseObject databaseObject, Boolean drug) {
         if (databaseObject instanceof EntitySet) return drug ? ENTITY_SET_DRUG : ENTITY_SET;
