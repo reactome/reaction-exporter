@@ -11,12 +11,18 @@ import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.reaction.exporter.config.ReactomeNeo4jConfig;
 import org.reactome.server.tools.reaction.exporter.layout.LayoutFactory;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
+import org.reactome.server.tools.reaction.exporter.renderer.LayoutRenderer;
+import org.reactome.server.tools.reaction.exporter.renderer.RenderArgs;
+
+import java.awt.image.BufferedImage;
 
 /**
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class Main {
+
+    private final static LayoutRenderer RENDERER = new LayoutRenderer();
 
     public static void main(String[] args) throws JSAPException {
 
@@ -53,6 +59,8 @@ public class Main {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+
+        final BufferedImage image = RENDERER.render(new RenderArgs(), rxn);
 
         System.out.println("Done");
     }
