@@ -23,4 +23,10 @@ public class Coordinate {
     public Integer getY() {
         return y;
     }
+
+    public void move(int dx, int dy) {
+        x += dx;
+        y += dy;
+
+    }
 }

@@ -391,7 +391,7 @@ public class LayoutFactory {
         position.setWidth(position.getWidth() + 2 * COMPARTMENT_PADDING);
         position.setHeight(position.getHeight() + 2 * COMPARTMENT_PADDING);
 
-        compartment.setLabelPosition(position.getCenterX(), 0.5 * COMPARTMENT_PADDING);
+        compartment.getLabelPosition().move((int) position.getCenterX(), (int) (position.getY() + COMPARTMENT_PADDING / 2));
     }
 
     /**
@@ -428,6 +428,7 @@ public class LayoutFactory {
 
         for (CompartmentGlyph compartment : layout.getCompartments()) {
             compartment.getPosition().move(dx, dy);
+            compartment.getLabelPosition().move((int) dx, (int) dy);
         }
 
         for (EntityGlyph entity : layout.getEntities()) {

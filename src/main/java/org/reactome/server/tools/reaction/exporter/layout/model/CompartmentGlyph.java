@@ -25,8 +25,7 @@ public class CompartmentGlyph extends AbstractGlyph {
 
     private Collection<Glyph> containedGlyphs = new HashSet<>();
 
-    private double tx;
-    private double ty;
+    private Coordinate labelPosition = new Coordinate(0,0);
 
     CompartmentGlyph(Compartment compartment) {
         super();
@@ -90,12 +89,7 @@ public class CompartmentGlyph extends AbstractGlyph {
     }
 
     public Coordinate getLabelPosition() {
-        return new Coordinate((int) tx, (int) ty);
-    }
-
-    public void setLabelPosition(double x, double y) {
-        tx = x;
-        ty = y;
+        return labelPosition;
     }
 
     @Override
