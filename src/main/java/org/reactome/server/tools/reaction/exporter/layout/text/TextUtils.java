@@ -14,7 +14,7 @@ import java.util.List;
 public class TextUtils {
 
 	private static final List<Character> WORD_SPLIT_CHARS = Arrays.asList(':', '.', '-', ',', ')', '/', '+');
-	private static final Font DEFAULT_FONT = new Font("arial", Font.PLAIN, 8);
+	private static final Font DEFAULT_FONT = new Font("arial", Font.BOLD, 8);
 	private static final Graphics2D GRAPHICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics();
 
 	private static final double RATIO = 7. / 3;  // (4 / 3) ^ 3
@@ -54,7 +54,6 @@ public class TextUtils {
 		}
 		if (h < MIN_HEIGHT) h = MIN_HEIGHT;
 		// Add 1 pixel top, 1 pixel bottom for rounding problems
-//		h += height;
 		w = h * ratio;
 		return new Dimension((int) Math.ceil(w), (int) Math.ceil(h));
 	}
