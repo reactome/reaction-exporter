@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.renderer.text;
+package org.reactome.server.tools.reaction.exporter.layout.text;
 
 import java.awt.*;
 import java.awt.geom.Dimension2D;

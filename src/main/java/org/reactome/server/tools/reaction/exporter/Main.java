@@ -39,14 +39,13 @@ public class Main {
         // Access the data using our service layer.
         DatabaseObjectService dos = ReactomeGraphCore.getService(DatabaseObjectService.class);
 
-        ReactionLikeEvent rle = dos.findById("R-HSA-6791223");
+//        ReactionLikeEvent rle = dos.findById("R-HSA-6791223");
         //ReactionLikeEvent rle = dos.findById("R-HSA-211734");
-        //ReactionLikeEvent rle = dos.findById("R-HSA-1362408");
+        ReactionLikeEvent rle = dos.findById("R-HSA-1362408");
 
         AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         LayoutFactory layoutFactory = new LayoutFactory(ads);
         Layout rxn = layoutFactory.getReactionLikeEventLayout(rle);
-
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(rxn);
