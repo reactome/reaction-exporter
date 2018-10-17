@@ -130,10 +130,11 @@ public class LayoutFactory {
         layoutParticipants(layout);
         layoutCompartments(layout);
         computeDimension(layout);
+        moveToOrigin(layout);
         return layout;
     }
 
-	private void addDuplicates(Layout layout) {
+    private void addDuplicates(Layout layout) {
         // Entities are duplicated only when they have roles that are no consecutive around the reaction
         // This happens only in 2 cases:
         //   (i)  an input is also an output, but neither catalyst nor regulator
@@ -417,4 +418,25 @@ public class LayoutFactory {
 			union(layout.getPosition(), compartment.getPosition());
 		}
 	}
+
+    private void moveToOrigin(Layout layout) {
+        final double dx = -layout.getPosition().getX();
+        final double dy = -layout.getPosition().getY();
+
+        layout.getPosition().move(dx, dy);
+
+        layout.getReaction().getPosition().move(dx, dy);
+
+        for (CompartmentGlyph compartment : layout.getCompartments()) {
+            compartment.getPosition().move(dx, dy);
+        }
+
+        for (EntityGlyph entity : layout.getEntities()) {
+            entity.getPosition().move(dx, dy);
+            for (AttachmentGlyph attachment : entity.getAttachments()) {
+                attachment.getPosition().move(dx, dy);
+            }
+        }
+
+    }
 }

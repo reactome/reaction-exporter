@@ -83,4 +83,8 @@ public class Position {
         return cy;
     }
 
+    public void move(double dx, double dy) {
+        setX(x + dx);
+        setY(y + dy);
+    }
 }
