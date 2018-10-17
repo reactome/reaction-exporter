@@ -143,8 +143,8 @@ public class TextRenderer {
         final int textHeight = graphics.getFontMetrics().getHeight();
         final int textWidth = computeWidth(text, graphics.getFont());
         final int x = coordinate.getX() - textWidth / 2;
-        final int y = coordinate.getY() - textHeight / 2;
-        graphics.drawString(text, x, y);
+        final int baseline = coordinate.getY() + textHeight / 2;
+        graphics.drawString(text, x, baseline);
 
     }
 }

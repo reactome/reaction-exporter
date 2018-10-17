@@ -4,6 +4,7 @@ import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
+import org.reactome.server.tools.reaction.exporter.renderer.glyph.RendererFactory;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.ProfileFactory;
 import org.reactome.server.tools.reaction.exporter.renderer.text.TextRenderer;
@@ -26,21 +27,13 @@ public class LayoutRenderer {
         graphics.scale(factor, factor);
         graphics.setFont(DEFAULT_FONT);
         for (CompartmentGlyph compartment : layout.getCompartments()) {
-            draw(compartment, graphics, profile);
-            graphics.setPaint(new Color(122, 122, 122, 122));
-            final Position position = compartment.getPosition();
-            graphics.fill(new Rectangle2D.Double(position.getX(), position.getY(), position.getWidth(), position.getHeight()));
+            drawCompartment(compartment, graphics, profile);
         }
-
+        for (CompartmentGlyph compartment : layout.getCompartments()) {
+            drawCompartmentText(compartment, graphics, profile);
+        }
         for (EntityGlyph entity : layout.getEntities()) {
-            final Position position = entity.getPosition();
-            final Rectangle2D.Double rect = new Rectangle2D.Double(position.getX(), position.getY(), position.getWidth(), position.getHeight());
-            graphics.setPaint(Color.RED);
-            graphics.draw(rect);
-            graphics.setPaint(Color.GREEN);
-            graphics.fill(rect);
-            graphics.setPaint(Color.BLUE);
-            TextRenderer.draw(entity.getName(), entity.getPosition(), graphics);
+            drawGlyph(entity, graphics, profile);
         }
         System.out.println(layout.getEntities().size() + " entities");
 
@@ -57,11 +50,10 @@ public class LayoutRenderer {
         return (x - min) / (max - min) * (dest_max - dest_min) + dest_min;
     }
 
-    private void draw(CompartmentGlyph compartment, Graphics2D graphics, DiagramProfile profile) {
-        final Stroke stroke = StrokeStyle.BORDER.get(false);
+    private void drawCompartment(CompartmentGlyph compartment, Graphics2D graphics, DiagramProfile profile) {
+        final Stroke stroke = StrokeStyle.BORDER.getStroke();
         final Color fill = profile.getCompartment().getFill();
         final Color border = profile.getCompartment().getStroke();
-        final Color text = profile.getCompartment().getText();
         final Position position = compartment.getPosition();
         final Rectangle2D.Double rect = new Rectangle2D.Double(position.getX(), position.getY(), position.getWidth(), position.getHeight());
         graphics.setPaint(fill);
@@ -69,7 +61,15 @@ public class LayoutRenderer {
         graphics.setPaint(border);
         graphics.setStroke(stroke);
         graphics.draw(rect);
+    }
+
+    private void drawCompartmentText(CompartmentGlyph compartment, Graphics2D graphics, DiagramProfile profile) {
+        final Color text = profile.getCompartment().getText();
         graphics.setPaint(text);
         TextRenderer.draw(compartment.getName(), compartment.getLabelPosition(), graphics);
+    }
+
+    private void drawGlyph(EntityGlyph entity, Graphics2D graphics, DiagramProfile profile) {
+        RendererFactory.getRenderer(entity.getRenderableClass()).draw(entity, graphics, profile);
     }
 }
