@@ -87,4 +87,14 @@ public class Position {
         setX(x + dx);
         setY(y + dy);
     }
+
+    @Override
+    public String toString() {
+        return "Position{" +
+                "x=" + x +
+                ", y=" + y +
+                ", w=" + width +
+                ", h=" + height +
+                '}';
+    }
 }
