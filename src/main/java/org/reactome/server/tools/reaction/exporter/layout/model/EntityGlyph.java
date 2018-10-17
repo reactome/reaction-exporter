@@ -18,6 +18,7 @@ public class EntityGlyph extends AbstractGlyph {
     //From the query
     private PhysicalEntity pe;
     private Collection<Role> roles = new HashSet<>();
+    private Boolean drug;
 
     //Populated in this class
     private Collection<AttachmentGlyph> attachments = new ArrayList<>();
@@ -40,6 +41,7 @@ public class EntityGlyph extends AbstractGlyph {
 
     @Override
     public RenderableClass getRenderableClass() {
+        if(renderableClass == null) renderableClass = RenderableClass.getRenderableClass(pe, drug);
         return renderableClass;
     }
 
@@ -68,7 +70,6 @@ public class EntityGlyph extends AbstractGlyph {
     @SuppressWarnings("unused")
     public void setPhysicalEntity(PhysicalEntity pe) {
         this.pe = pe;
-        renderableClass = RenderableClass.getRenderableClass(pe);
 
         ReferenceEntity re = pe.getSingleValue("getReferenceEntity");
         if (re instanceof ReferenceMolecule){

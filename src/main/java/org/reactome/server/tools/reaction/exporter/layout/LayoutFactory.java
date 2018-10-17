@@ -28,16 +28,21 @@ public class LayoutFactory {
 
     private static final String QUERY = "" +
             "MATCH (rle:ReactionLikeEvent{stId:{stId}}) " +
-            "OPTIONAL MATCH (rle)-[i:input]->(pei:PhysicalEntity) " +
-            "WITH rle, COLLECT(DISTINCT CASE pei WHEN NULL THEN NULL ELSE {physicalEntity: pei, role:{n: i.stoichiometry, type: 'input'}} END) AS ps " +
-            "OPTIONAL MATCH (rle)-[o:output]->(peo:PhysicalEntity) " +
-            "WITH rle, ps + COLLECT(DISTINCT CASE peo WHEN NULL THEN NULL ELSE {physicalEntity: peo, role:{n: o.stoichiometry, type: 'output'}} END) AS ps " +
-            "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(pec:PhysicalEntity) " +
-            "WITH rle, ps + COLLECT(DISTINCT CASE pec WHEN NULL THEN NULL ELSE {physicalEntity: pec, role:{n: 1, type: 'catalyst'}} END) AS ps " +
-            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(pen:PhysicalEntity) " +
-            "WITH rle, ps + COLLECT(DISTINCT CASE pen WHEN NULL THEN NULL ELSE {physicalEntity: pen, role:{n: 1, type: 'negative'}} END) AS ps " +
-            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pep:PhysicalEntity) " +
-            "WITH rle, ps + COLLECT(DISTINCT CASE pep WHEN NULL THEN NULL ELSE {physicalEntity: pep, role:{n: 1, type: 'positive'}} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[i:input]->(pe:PhysicalEntity) " +
+            "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
+            "WITH rle, COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: i.stoichiometry, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[o:output]->(pe:PhysicalEntity) " +
+            "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
+            "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: o.stoichiometry, type: 'output'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(pe:PhysicalEntity) " +
+            "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
+            "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(pe:PhysicalEntity) " +
+            "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
+            "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pe:PhysicalEntity) " +
+            "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
+            "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "RETURN rle AS reactionLikeEvent, ps AS participants";
 
     public Layout getReactionLikeEventLayout(ReactionLikeEvent rle) {
