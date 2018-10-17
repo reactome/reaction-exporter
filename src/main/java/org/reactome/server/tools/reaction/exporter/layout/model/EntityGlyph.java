@@ -1,10 +1,7 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.reactome.server.graph.domain.model.AbstractModifiedResidue;
-import org.reactome.server.graph.domain.model.Compartment;
-import org.reactome.server.graph.domain.model.PhysicalEntity;
-import org.reactome.server.graph.domain.model.ReferenceMolecule;
+import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
 import java.util.ArrayList;
@@ -73,9 +70,12 @@ public class EntityGlyph extends AbstractGlyph {
         this.pe = pe;
         renderableClass = RenderableClass.getRenderableClass(pe);
 
-        ReferenceMolecule rm = pe.getSingleValue("getReferenceEntity");
-        //trivial ONLY true for trivial molecules. NULL in any other case (never false)
-        if (rm != null && rm.getTrivial() != null && rm.getTrivial()) trivial = true;
+        ReferenceEntity re = pe.getSingleValue("getReferenceEntity");
+        if (re instanceof ReferenceMolecule){
+            ReferenceMolecule rm = (ReferenceMolecule) re;
+            //trivial ONLY true for trivial molecules. NULL in any other case (never false)
+            if(rm.getTrivial() != null && rm.getTrivial()) trivial = true;
+        }
 
         Collection<AbstractModifiedResidue> modifiedResidues = pe.getMultiValue("getHasModifiedResidue");
         for (AbstractModifiedResidue modifiedResidue : modifiedResidues) {
