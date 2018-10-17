@@ -116,15 +116,13 @@ public class LayoutFactory {
         }
     }
 
-
-
     /**
      * Computes the positions of the glyphs inside the layout and adds the necessary segments to get a fully functional
      * Reactome like Layout.
      *
      * @param layout the object to calculate its positions.
      */
-    public Layout compute(Layout layout) {
+    private Layout compute(Layout layout) {
         addDuplicates(layout);
         layoutReaction(layout);
         layoutParticipants(layout);
@@ -191,18 +189,23 @@ public class LayoutFactory {
         for (EntityGlyph entity : layout.getEntities()) {
             setSize(entity);
         }
-        final Map<EntityRole, Collection<EntityGlyph>> participants = new HashMap<>();
-        for (EntityGlyph entity : layout.getEntities()) {
-            for (Role role : entity.getRoles()) {
-                participants.computeIfAbsent(role.getType(), r -> new ArrayList<>()).add(entity);
-            }
-        }
+        final Map<EntityRole, Collection<EntityGlyph>> participants = getEntityMap(layout);
         inputs(layout, participants.get(EntityRole.INPUT));
         outputs(layout, participants.get(EntityRole.OUTPUT));
         catalysts(layout, participants.get(EntityRole.CATALYST));
         final ArrayList<EntityGlyph> regulators = new ArrayList<>(participants.getOrDefault(EntityRole.NEGATIVE_REGULATOR, Collections.emptyList()));
         regulators.addAll(participants.getOrDefault(EntityRole.POSITIVE_REGULATOR, Collections.emptyList()));
         regulators(layout, regulators);
+    }
+
+    private Map<EntityRole, Collection<EntityGlyph>> getEntityMap(Layout layout) {
+        final Map<EntityRole, Collection<EntityGlyph>> participants = new HashMap<>();
+        for (EntityGlyph entity : layout.getEntities()) {
+            for (Role role : entity.getRoles()) {
+                participants.computeIfAbsent(role.getType(), r -> new ArrayList<>()).add(entity);
+            }
+        }
+        return participants;
     }
 
     private void setSize(ReactionGlyph reaction) {
@@ -288,6 +291,7 @@ public class LayoutFactory {
     }
 
     private void catalysts(Layout layout, Collection<EntityGlyph> entities) {
+        if (entities == null || entities.isEmpty()) return;
         final ArrayList<EntityGlyph> catalysts = new ArrayList<>(entities);
         catalysts.sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
@@ -310,6 +314,7 @@ public class LayoutFactory {
     }
 
     private void regulators(Layout layout, Collection<EntityGlyph> entities) {
+        if (entities == null || entities.isEmpty()) return;
         final ArrayList<EntityGlyph> regulators = new ArrayList<>(entities);
         regulators.sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
@@ -364,7 +369,7 @@ public class LayoutFactory {
                 .filter(entityGlyph -> compartment.getContainedGlyphs().contains(entityGlyph))
                 .collect(Collectors.toList());
         if (glyphs.isEmpty()) return COMPARTMENT_PADDING;
-        final double height = entities.stream().map(Glyph::getPosition).mapToDouble(Position::getHeight).max().orElse((double) MIN_GLYPH_HEIGHT) + VERTICAL_PADDING;
+        final double height = entities.stream().map(Glyph::getPosition).mapToDouble(Position::getHeight).max().orElse(MIN_GLYPH_HEIGHT) + VERTICAL_PADDING;
         final double x = REACTION_MIN_DISTANCE + startY + 0.5 * height;
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
