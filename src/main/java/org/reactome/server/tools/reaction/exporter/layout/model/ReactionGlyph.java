@@ -11,11 +11,13 @@ public class ReactionGlyph extends AbstractGlyph {
 
     private String stId;
     private String name;
+    private RenderableClass renderableClass;
 
     ReactionGlyph(ReactionLikeEvent rle) {
         super();
         stId = rle.getStId();
         name = rle.getDisplayName();
+        renderableClass = RenderableClass.getRenderableClass(rle);
     }
 
     @Override
@@ -25,7 +27,7 @@ public class ReactionGlyph extends AbstractGlyph {
 
     @Override
     public RenderableClass getRenderableClass() {
-        return RenderableClass.REACTION;
+        return renderableClass;
     }
 
     @Override
