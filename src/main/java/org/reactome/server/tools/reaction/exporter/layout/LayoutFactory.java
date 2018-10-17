@@ -4,6 +4,8 @@ import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,8 +16,16 @@ import java.util.Map;
  *
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
  */
+@Component
 public class LayoutFactory {
-    
+
+    private AdvancedDatabaseObjectService ads;
+
+    @Autowired
+    public LayoutFactory(AdvancedDatabaseObjectService ads) {
+        this.ads = ads;
+    }
+
     private static final String QUERY = "" +
             "MATCH (rle:ReactionLikeEvent{stId:{stId}}) " +
             "OPTIONAL MATCH (rle)-[i:input]->(pei:PhysicalEntity) " +
@@ -29,12 +39,12 @@ public class LayoutFactory {
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pep:PhysicalEntity) " +
             "WITH rle, ps + COLLECT(DISTINCT CASE pep WHEN NULL THEN NULL ELSE {physicalEntity: pep, role:{n: 1, type: 'positive'}} END) AS ps " +
             "RETURN rle AS reactionLikeEvent, ps AS participants";
-    
-    public static Layout getReactionLikeEventLayout(AdvancedDatabaseObjectService ads, ReactionLikeEvent rle) {
+
+    public Layout getReactionLikeEventLayout(ReactionLikeEvent rle) {
         Map<String, Object> params = new HashMap<>();
         params.put("stId", rle.getStId());
         try {
-            return ads.getCustomQueryResult(Layout.class, QUERY,  params);
+            return ads.getCustomQueryResult(Layout.class, QUERY, params);
         } catch (CustomQueryException e) {
             //TODO: log -> e.printStackTrace();
             e.printStackTrace();
