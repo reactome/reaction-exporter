@@ -1,6 +1,7 @@
 package org.reactome.server.tools.reaction.exporter.renderer.glyph.reaction;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
+import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.reactome.server.tools.reaction.exporter.layout.model.ReactionGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Segment;
 import org.reactome.server.tools.reaction.exporter.renderer.canvas.ImageCanvas;
@@ -15,7 +16,7 @@ import java.awt.geom.Rectangle2D;
 public abstract class ReactionRenderer implements Renderer<ReactionGlyph> {
 
     @Override
-    public void draw(ReactionGlyph entity, ImageCanvas canvas, DiagramProfile profile) {
+    public void draw(ReactionGlyph entity, ImageCanvas canvas, DiagramProfile profile, Layout layout) {
         final Shape shape = getShape(entity);
         fill(entity, canvas, profile, shape);
         border(entity, canvas, profile, shape);

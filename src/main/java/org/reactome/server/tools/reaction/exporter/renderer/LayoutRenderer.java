@@ -37,12 +37,12 @@ public class LayoutRenderer {
         ImageCanvas canvas = new ImageCanvas();
         final Renderer<CompartmentGlyph> renderer = RendererFactory.getRenderer(RenderableClass.COMPARTMENT);
         for (CompartmentGlyph compartment : layout.getCompartments()) {
-            renderer.draw(compartment, canvas, profile);
+            renderer.draw(compartment, canvas, profile, layout);
         }
         for (EntityGlyph entity : layout.getEntities()) {
-            RendererFactory.getRenderer(entity.getRenderableClass()).draw(entity, canvas, profile);
+            RendererFactory.getRenderer(entity.getRenderableClass()).draw(entity, canvas, profile, layout);
         }
-        RendererFactory.getRenderer(layout.getReaction().getRenderableClass()).draw(layout.getReaction(), canvas, profile);
+        RendererFactory.getRenderer(layout.getReaction().getRenderableClass()).draw(layout.getReaction(), canvas, profile, layout);
         return canvas;
     }
 

@@ -189,15 +189,13 @@ public class LayoutFactory {
     private void layoutReaction(Layout layout) {
         final ReactionGlyph reaction = layout.getReaction();
         setSize(reaction);
-        reaction.getPosition().setCenter(0, 0);
+        final Position position = reaction.getPosition();
+        position.setCenter(0, 0);
         // Add backbones
-        reaction.getSegments().add(new Segment(
-                new Coordinate(reaction.getPosition().getX(), reaction.getPosition().getCenterY()),
-                new Coordinate(reaction.getPosition().getX() - BACKBONE_LENGTH, reaction.getPosition().getCenterY())));
-        reaction.getSegments().add(new Segment(
-                new Coordinate(reaction.getPosition().getMaxX(), reaction.getPosition().getCenterY()),
-                new Coordinate(reaction.getPosition().getMaxX() + BACKBONE_LENGTH, reaction.getPosition().getCenterY())
-        ));
+        reaction.getSegments().add(new Segment(position.getX(), position.getCenterY(),
+                position.getX() - BACKBONE_LENGTH, position.getCenterY()));
+        reaction.getSegments().add(new Segment(position.getMaxX(), position.getCenterY(),
+                position.getMaxX() + BACKBONE_LENGTH, position.getCenterY()));
     }
 
     private void layoutParticipants(Layout layout) {
@@ -279,6 +277,14 @@ public class LayoutFactory {
         final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
         layoutVerticalEntities(layout.getCompartmentRoot(), inputs, yOffset, heightPerGlyph, (glyph, coord) ->
                 placeEntity(glyph, new Coordinate(-coord.getX(), coord.getY())));
+        final Position reactionPosition = layout.getReaction().getPosition();
+        final double port = reactionPosition.getX() - BACKBONE_LENGTH;
+        final double vRule = port - REACTION_MIN_DISTANCE;
+        for (EntityGlyph entity : inputs) {
+            final Position position = entity.getPosition();
+            entity.getConnector().getSegments().add(new Segment(position.getMaxX(), position.getCenterY(), vRule, position.getCenterY()));
+            entity.getConnector().getSegments().add(new Segment(vRule, position.getCenterY(), port, reactionPosition.getCenterY()));
+        }
     }
 
     private void outputs(Layout layout, Collection<EntityGlyph> entities) {
@@ -299,6 +305,14 @@ public class LayoutFactory {
         final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
         layoutVerticalEntities(layout.getCompartmentRoot(), outputs, yOffset, heightPerGlyph, (glyph, coord) ->
                 placeEntity(glyph, coord));
+        final Position reactionPosition = layout.getReaction().getPosition();
+        final double port = reactionPosition.getMaxX() + BACKBONE_LENGTH;
+        final double vRule = port + REACTION_MIN_DISTANCE;
+        for (EntityGlyph entity : outputs) {
+            final Position position = entity.getPosition();
+            entity.getConnector().getSegments().add(new Segment(position.getX(), position.getCenterY(), vRule, position.getCenterY()));
+            entity.getConnector().getSegments().add(new Segment(vRule, position.getCenterY(), port, reactionPosition.getCenterY()));
+        }
     }
 
     private void catalysts(Layout layout, Collection<EntityGlyph> entities) {
@@ -358,11 +372,11 @@ public class LayoutFactory {
                 width = input.getPosition().getWidth();
         }
         width += HORIZONTAL_PADDING;
-        final double x = REACTION_MIN_DISTANCE + startX + 0.5 * width;
+        final double x = REACTION_MIN_DISTANCE + startX + width;
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
             final double y = -yOffset + i * heightPerGlyph;
-            apply.accept(glyph, new Coordinate((int) x, (int) y));
+            apply.accept(glyph, new Coordinate(x, y));
         }
         return COMPARTMENT_PADDING + width;
     }
@@ -381,7 +395,7 @@ public class LayoutFactory {
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
             final double y = -xOffset + i * widthPerGlyph;
-            apply.accept(glyph, new Coordinate((int) -x, (int) y));
+            apply.accept(glyph, new Coordinate(-x, y));
         }
         return COMPARTMENT_PADDING + height;
     }
@@ -465,6 +479,10 @@ public class LayoutFactory {
             for (AttachmentGlyph attachment : entity.getAttachments()) {
                 attachment.getPosition().move(dx, dy);
             }
+            for (Segment segment : entity.getConnector().getSegments()) {
+                segment.getFrom().move(dx, dy);
+                segment.getTo().move(dx, dy);
+            }
         }
 
     }
@@ -520,6 +538,6 @@ public class LayoutFactory {
     }
 
     private void addConnectors(EntityGlyph entity) {
-
+        final Position position = entity.getPosition();
     }
 }

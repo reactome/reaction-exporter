@@ -1,5 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.renderer.glyph.reaction;
 
+import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.reactome.server.tools.reaction.exporter.layout.model.ReactionGlyph;
 import org.reactome.server.tools.reaction.exporter.renderer.canvas.ImageCanvas;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
@@ -21,8 +22,8 @@ public class DissociationReactionRenderer extends ReactionRenderer {
     }
 
     @Override
-    public void draw(ReactionGlyph entity, ImageCanvas canvas, DiagramProfile profile) {
-        super.draw(entity, canvas, profile);
+    public void draw(ReactionGlyph entity, ImageCanvas canvas, DiagramProfile profile, Layout layout) {
+        super.draw(entity, canvas, profile, layout);
         canvas.getNodeBorder().add(ShapeFactory.getOval(entity.getPosition(), 3), getBorderColor(entity, profile), StrokeStyle.BORDER.getNormal());
     }
 }

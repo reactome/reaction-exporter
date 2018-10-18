@@ -25,6 +25,8 @@ public class EntityGlyph extends AbstractGlyph {
     private RenderableClass renderableClass;
     private Boolean trivial = null; //Only true for trivial molecules. Null in any other case
 
+    private Connector connector = new Connector();
+
 	public EntityGlyph() {
 	    super();
 	}
@@ -112,6 +114,15 @@ public class EntityGlyph extends AbstractGlyph {
     public void setRole(Role role) {
         roles.add(role);
     }
+
+    public Connector getConnector() {
+        return connector;
+    }
+
+    public void setConnector(Connector connector) {
+        this.connector = connector;
+    }
+
     @Override
     public String toString() {
         return "EntityGlyph{" +

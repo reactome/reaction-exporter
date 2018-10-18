@@ -12,6 +12,11 @@ public class Segment {
         this.to = to;
     }
 
+    public Segment(double fx, double fy, double tx, double ty) {
+        this.from = new Coordinate(fx, fy);
+        this.to = new Coordinate(tx, ty);
+    }
+
     public Coordinate getFrom() {
         return from;
     }
