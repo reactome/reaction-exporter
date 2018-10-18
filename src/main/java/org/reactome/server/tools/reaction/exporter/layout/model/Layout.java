@@ -138,6 +138,7 @@ public class Layout implements HasPosition {
         if (rle == null || delta == null) return;
         RenderableClass rc;
         if (rle instanceof BlackBoxEvent) rc = RenderableClass.OMITTED_REACTION;
+        else if (!rle.getCatalystActivity().isEmpty()) rc = RenderableClass.TRANSFORMATION_REACTION;
         else if (delta > 0) rc = RenderableClass.BINDING_REACTION;
         else if (delta < 0) rc = RenderableClass.DISSOCIATION_REACTION;
         else rc = RenderableClass.TRANSFORMATION_REACTION;
