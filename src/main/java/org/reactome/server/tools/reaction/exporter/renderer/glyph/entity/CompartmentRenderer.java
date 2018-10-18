@@ -12,9 +12,9 @@ import java.awt.*;
 public class CompartmentRenderer implements Renderer<CompartmentGlyph> {
     @Override
     public void draw(CompartmentGlyph compartment, ImageCanvas canvas, DiagramProfile profile) {
-        final Shape rect = ShapeFactory.roundedRectangle(compartment.getPosition());
-        canvas.getCompartmentFillLayer().add(rect, profile.getCompartment().getFill());
-        canvas.getCompartmentBorderLayer().add(rect, profile.getCompartment().getStroke(), StrokeStyle.BORDER.getNormal());
-        canvas.getCompartmentTextLayer().add(compartment.getName(), compartment.getLabelPosition(), profile.getCompartment().getText());
+        final Shape rect = ShapeFactory.getRoundedRectangle(compartment.getPosition());
+        canvas.getCompartmentFill().add(rect, profile.getCompartment().getFill());
+        canvas.getCompartmentBorder().add(rect, profile.getCompartment().getStroke(), StrokeStyle.BORDER.getNormal());
+        canvas.getCompartmentText().add(compartment.getName(), compartment.getLabelPosition(), profile.getCompartment().getText());
     }
 }

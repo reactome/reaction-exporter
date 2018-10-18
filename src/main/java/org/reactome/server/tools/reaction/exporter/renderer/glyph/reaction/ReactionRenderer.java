@@ -26,7 +26,7 @@ public abstract class ReactionRenderer implements Renderer<ReactionGlyph> {
     }
 
     protected void fill(ReactionGlyph entity, ImageCanvas canvas, DiagramProfile profile, Shape shape) {
-        canvas.getNodeFillLayer().add(shape, getFillColor(entity, profile));
+        canvas.getNodeFill().add(shape, getFillColor(entity, profile));
     }
 
     protected Paint getFillColor(ReactionGlyph entity, DiagramProfile profile) {
@@ -34,7 +34,7 @@ public abstract class ReactionRenderer implements Renderer<ReactionGlyph> {
     }
 
     protected void border(ReactionGlyph entity, ImageCanvas canvas, DiagramProfile profile, Shape shape) {
-        canvas.getNodeBorderLayer().add(shape, getBorderColor(entity, profile), StrokeStyle.BORDER.getNormal());
+        canvas.getNodeBorder().add(shape, getBorderColor(entity, profile), StrokeStyle.BORDER.getNormal());
     }
 
     protected Color getBorderColor(ReactionGlyph entity, DiagramProfile profile) {
@@ -43,7 +43,7 @@ public abstract class ReactionRenderer implements Renderer<ReactionGlyph> {
     }
 
     protected void text(ReactionGlyph entity, ImageCanvas canvas, DiagramProfile profile) {
-        canvas.getNodeTextLayer().add(getText(), entity.getPosition(), getTextColor(entity, profile), 0);
+        canvas.getNodeText().add(getText(), entity.getPosition(), getTextColor(entity, profile), 0);
     }
 
     protected String getText() {

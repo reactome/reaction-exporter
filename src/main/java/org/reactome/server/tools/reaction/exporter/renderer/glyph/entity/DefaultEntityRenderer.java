@@ -27,10 +27,10 @@ public abstract class DefaultEntityRenderer implements Renderer<EntityGlyph> {
     }
 
     protected void border(EntityGlyph entity, ImageCanvas canvas, DiagramProfile profile, Shape rect) {
-        canvas.getNodeBorderLayer().add(rect, getBorderColor(entity, profile), StrokeStyle.BORDER.getNormal());
+        canvas.getNodeBorder().add(rect, getBorderColor(entity, profile), StrokeStyle.BORDER.getNormal());
     }
 
-    private Color getBorderColor(EntityGlyph entity, DiagramProfile profile) {
+    protected Color getBorderColor(EntityGlyph entity, DiagramProfile profile) {
         if (entity.isDisease() != null && entity.isDisease())
             return profile.getProperties().getDisease();
         return getColorProfile(profile).getStroke();
@@ -41,16 +41,16 @@ public abstract class DefaultEntityRenderer implements Renderer<EntityGlyph> {
     }
 
     protected void fill(EntityGlyph entity, ImageCanvas canvas, DiagramProfile profile, Shape rect) {
-        canvas.getNodeFillLayer().add(rect, getFillColor(entity, profile));
+        canvas.getNodeFill().add(rect, getFillColor(entity, profile));
     }
 
-    private Color getFillColor(EntityGlyph entity, DiagramProfile profile) {
+    protected Color getFillColor(EntityGlyph entity, DiagramProfile profile) {
         return getColorProfile(profile).getFill();
     }
 
     protected void text(EntityGlyph entity, ImageCanvas canvas, DiagramProfile profile) {
         final Color color = getTextColor(entity, profile);
-        canvas.getNodeTextLayer().add(entity.getName(), entity.getPosition(), color, 3);
+        canvas.getNodeText().add(entity.getName(), entity.getPosition(), color, 3);
     }
 
     protected Color getTextColor(EntityGlyph entity, DiagramProfile profile) {
