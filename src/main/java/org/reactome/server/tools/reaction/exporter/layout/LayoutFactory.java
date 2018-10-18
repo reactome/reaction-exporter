@@ -187,7 +187,7 @@ public class LayoutFactory {
 
     private void layoutReaction(Layout layout) {
         setSize(layout.getReaction());
-        layout.getReaction().getPosition().move(0, 0);
+        layout.getReaction().getPosition().setCenter(0, 0);
     }
 
     private void layoutParticipants(Layout layout) {
