@@ -1,11 +1,13 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.reactome.server.graph.domain.model.BlackBoxEvent;
 import org.reactome.server.graph.domain.model.Compartment;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.tools.reaction.exporter.goontology.GoTerm;
 import org.reactome.server.tools.reaction.exporter.goontology.GoTreeFactory;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
+import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
 import java.util.*;
 
@@ -27,7 +29,10 @@ public class Layout implements HasPosition {
 
     private Map<String, CompartmentGlyph> compartments = new HashMap<>();
 
-    public void add(EntityGlyph entityGlyph){
+    private ReactionLikeEvent rle = null;
+    private Integer delta = null;
+
+    public void add(EntityGlyph entityGlyph) {
         entities.add(entityGlyph);
     }
 
@@ -55,7 +60,7 @@ public class Layout implements HasPosition {
 
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
-    public void setReactionLikeEvent(ReactionLikeEvent rle){
+    public void setReactionLikeEvent(ReactionLikeEvent rle) {
         reactionGlyph = new ReactionGlyph(rle);
 
         //noinspection LoopStatementThatDoesntLoop
@@ -65,23 +70,26 @@ public class Layout implements HasPosition {
             cg.addGlyph(reactionGlyph);
             break; //We only want to assign the reaction to the first compartment in the list
         }
+
+        setReactionGlyphRenderableClass();
     }
 
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
-    public void setParticipants(Collection<EntityGlyph> participants){
+    public void setParticipants(Collection<EntityGlyph> participants) {
         Map<String, EntityGlyph> entities = new HashMap<>();
 
         for (EntityGlyph participant : participants) {
             EntityGlyph g = entities.get(participant.getStId());
-            if(g!=null) {
+            if (g != null) {
                 //In this case participant ONLY has one role
                 g.addRole(participant.getRoles().iterator().next());
-            }else{
+            } else {
                 entities.put(participant.getStId(), participant);
             }
         }
 
+        delta = 0;
         for (EntityGlyph participant : entities.values()) {
             //noinspection LoopStatementThatDoesntLoop
             for (Compartment compartment : participant.getCompartments()) {
@@ -89,6 +97,15 @@ public class Layout implements HasPosition {
                 CompartmentGlyph cg = compartments.computeIfAbsent(acc, i -> new CompartmentGlyph(compartment));
                 cg.addGlyph(participant);
                 break; //We only want to assign the participant to the first compartment in the list
+            }
+
+            //Taking advantage of the iteration of the participants to calculate the differential 'delta' between the
+            //number of inputs and outputs that will later on be used to set the renderable class of the reaction
+            for (Role role : participant.getRoles()) {
+                switch (role.getType()) {
+                    case INPUT:     delta += role.getStoichiometry();   break;
+                    case OUTPUT:    delta -= role.getStoichiometry();   break;
+                }
             }
         }
 
@@ -100,7 +117,9 @@ public class Layout implements HasPosition {
         GoTerm treeRoot = GoTreeFactory.getTree(compartments);
         compartmentRoot = this.compartments.computeIfAbsent(treeRoot.getAccession(), a -> new CompartmentGlyph(treeRoot));
 
+
         buildCompartmentHierarchy(compartmentRoot, treeRoot);
+        setReactionGlyphRenderableClass();
 
         this.entities = new HashSet<>(entities.values());
     }
@@ -112,5 +131,14 @@ public class Layout implements HasPosition {
             aux.setParent(cg);
             buildCompartmentHierarchy(aux, goTerm);
         }
+    }
+
+    private void setReactionGlyphRenderableClass() {
+        if (rle == null || delta == null) return;
+        RenderableClass rc = RenderableClass.TRANSFORMATION_REACTION;
+        if (delta > 0) rc = RenderableClass.BINDING_REACTION;
+        else if (delta < 0) rc = RenderableClass.DISSOCIATION_REACTION;
+        else if (rle instanceof BlackBoxEvent) rc = RenderableClass.OMITTED_REACTION;
+        reactionGlyph.setRenderableClass(rc);
     }
 }

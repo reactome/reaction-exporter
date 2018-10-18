@@ -22,20 +22,30 @@ public enum RenderableClass {
     ENTITY("Entity"),
     ENTITY_SET("EntitySet"),
     ENTITY_SET_DRUG("EntitySetDrug"),
-    FLOW_LINE("FlowLine"),
     GENE("Gene"),
-    INTERACTION("Interaction"),
-    NOTE("Note"),
-    PROCESS_NODE("ProcessNode"),
     PROTEIN("Protein"),
     PROTEIN_DRUG("ProteinDrug"),
-    REACTION("Reaction"),
     RNA("RNA"),
     RNA_DRUG("RNADrug"),
-    SHADOW("Shadow"),
 
-    ENTITY_SET_AND_MEMBER_LINK("EntitySetAndMemberLink"),
-    ENTITY_SET_AND_ENTITY_SET_LINK("EntitySetAndEntitySetLink");
+    PROCESS_NODE("ProcessNode"),
+
+    //Other renderable classes
+    //SHADOW("Shadow"),
+    //INTERACTION("Interaction"),
+    //NOTE("Note"),
+
+    //Line renderable classes,
+    //FLOW_LINE("FlowLine"),
+    //ENTITY_SET_AND_MEMBER_LINK("EntitySetAndMemberLink"),
+    //ENTITY_SET_AND_ENTITY_SET_LINK("EntitySetAndEntitySetLink"),
+
+    //Reaction renderable classes
+    BINDING_REACTION("Biding"),
+    DISSOCIATION_REACTION("Dissociation"),
+    OMITTED_REACTION("Omitted"),
+    TRANSFORMATION_REACTION("Transformation"),
+    UNCERTAIN_REACTION("Uncertain");
 
     public final String name;
 
@@ -75,7 +85,7 @@ public enum RenderableClass {
         if (databaseObject instanceof OtherEntity) return ENTITY;
         if (databaseObject instanceof Polymer) return ENTITY;
 
-        if (databaseObject instanceof ReactionLikeEvent) return REACTION;
+        if (databaseObject instanceof ReactionLikeEvent) return BINDING_REACTION;
         if (databaseObject instanceof Pathway) return PROCESS_NODE;
         if (databaseObject instanceof Compartment) return COMPARTMENT;
 

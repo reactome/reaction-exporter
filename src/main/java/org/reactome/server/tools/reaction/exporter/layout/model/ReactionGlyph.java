@@ -20,7 +20,6 @@ public class ReactionGlyph extends AbstractGlyph {
         dbId = rle.getDbId();
         stId = rle.getStId();
         name = rle.getDisplayName();
-        renderableClass = RenderableClass.getRenderableClass(rle);
         disease = rle.getIsInDisease() ? true : null;
     }
 
@@ -45,6 +44,10 @@ public class ReactionGlyph extends AbstractGlyph {
 
     public Boolean isDisease() {
         return disease;
+    }
+
+    void setRenderableClass(RenderableClass renderableClass) {
+        this.renderableClass = renderableClass;
     }
 
     @Override
