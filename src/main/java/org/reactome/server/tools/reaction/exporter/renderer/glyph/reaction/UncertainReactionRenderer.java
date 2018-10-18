@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.renderer.glyph;
+package org.reactome.server.tools.reaction.exporter.renderer.glyph.reaction;
 
 import org.reactome.server.tools.reaction.exporter.layout.model.ReactionGlyph;
 import org.reactome.server.tools.reaction.exporter.renderer.utils.ShapeFactory;

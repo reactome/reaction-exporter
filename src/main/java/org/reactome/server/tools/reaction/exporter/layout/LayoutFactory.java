@@ -261,7 +261,7 @@ public class LayoutFactory {
         }
         heightPerGlyph += VERTICAL_PADDING;
         final double totalHeight = heightPerGlyph * inputs.size();
-        final double yOffset = 0.5 * totalHeight;
+        final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
         layoutVerticalEntities(layout.getCompartmentRoot(), inputs, yOffset, heightPerGlyph, (glyph, coord) ->
                 glyph.getPosition().setCenter(-coord.getX(), coord.getY()));
     }
@@ -281,7 +281,7 @@ public class LayoutFactory {
         }
         heightPerGlyph += VERTICAL_PADDING;
         final double totalHeight = heightPerGlyph * outputs.size();
-        final double yOffset = 0.5 * totalHeight;
+        final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
         layoutVerticalEntities(layout.getCompartmentRoot(), outputs, yOffset, heightPerGlyph, (glyph, coord) ->
                 glyph.getPosition().setCenter(coord.getX(), coord.getY()));
     }
@@ -302,7 +302,7 @@ public class LayoutFactory {
         }
         widthPerGlyph += HORIZONTAL_PADDING;
         final double totalWidth = widthPerGlyph * catalysts.size();
-        final double xOffset = 0.5 * totalWidth;
+        final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
         layoutHorizontalEntities(layout.getCompartmentRoot(), catalysts, xOffset, widthPerGlyph, (glyph, coord) ->
                 glyph.getPosition().setCenter(coord.getY(), coord.getX()));
     }
@@ -323,7 +323,7 @@ public class LayoutFactory {
         }
         widthPerGlyph += HORIZONTAL_PADDING;
         final double totalWidth = widthPerGlyph * regulators.size();
-        final double xOffset = 0.5 * totalWidth;
+        final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
         layoutHorizontalEntities(layout.getCompartmentRoot(), regulators, xOffset, widthPerGlyph, (glyph, coord) ->
                 glyph.getPosition().setCenter(coord.getY(), -coord.getX()));
     }

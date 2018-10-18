@@ -2,6 +2,8 @@ package org.reactome.server.tools.reaction.exporter.renderer.glyph;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
+import org.reactome.server.tools.reaction.exporter.renderer.glyph.entity.*;
+import org.reactome.server.tools.reaction.exporter.renderer.glyph.reaction.*;
 
 import java.util.EnumMap;
 import java.util.Map;

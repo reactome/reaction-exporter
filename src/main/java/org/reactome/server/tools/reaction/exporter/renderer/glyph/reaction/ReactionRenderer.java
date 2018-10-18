@@ -1,8 +1,9 @@
-package org.reactome.server.tools.reaction.exporter.renderer.glyph;
+package org.reactome.server.tools.reaction.exporter.renderer.glyph.reaction;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.ReactionGlyph;
 import org.reactome.server.tools.reaction.exporter.renderer.canvas.ImageCanvas;
+import org.reactome.server.tools.reaction.exporter.renderer.glyph.Renderer;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
 import org.reactome.server.tools.reaction.exporter.renderer.utils.StrokeStyle;
 

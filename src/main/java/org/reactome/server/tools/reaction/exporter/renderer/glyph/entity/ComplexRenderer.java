@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.renderer.glyph;
+package org.reactome.server.tools.reaction.exporter.renderer.glyph.entity;
 
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;

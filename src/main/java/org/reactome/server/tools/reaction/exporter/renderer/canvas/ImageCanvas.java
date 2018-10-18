@@ -1,6 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.renderer.canvas;
 
-import org.reactome.server.tools.reaction.exporter.renderer.glyph.DrugHelper;
+import org.reactome.server.tools.reaction.exporter.renderer.glyph.entity.DrugHelper;
 
 import java.awt.*;
 import java.util.Arrays;
