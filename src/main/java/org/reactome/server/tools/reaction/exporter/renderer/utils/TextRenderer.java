@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.renderer.text;
+package org.reactome.server.tools.reaction.exporter.renderer.utils;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.Coordinate;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;

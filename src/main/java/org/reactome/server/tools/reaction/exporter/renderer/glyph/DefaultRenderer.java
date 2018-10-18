@@ -2,10 +2,10 @@ package org.reactome.server.tools.reaction.exporter.renderer.glyph;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
-import org.reactome.server.tools.reaction.exporter.renderer.StrokeStyle;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.NodeColorProfile;
-import org.reactome.server.tools.reaction.exporter.renderer.text.TextRenderer;
+import org.reactome.server.tools.reaction.exporter.renderer.utils.StrokeStyle;
+import org.reactome.server.tools.reaction.exporter.renderer.utils.TextRenderer;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;

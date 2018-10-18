@@ -7,7 +7,8 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.reactome.server.tools.reaction.exporter.renderer.glyph.RendererFactory;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.ProfileFactory;
-import org.reactome.server.tools.reaction.exporter.renderer.text.TextRenderer;
+import org.reactome.server.tools.reaction.exporter.renderer.utils.StrokeStyle;
+import org.reactome.server.tools.reaction.exporter.renderer.utils.TextRenderer;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;

@@ -3,7 +3,7 @@ package org.reactome.server.tools.reaction.exporter.renderer.glyph;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
-import org.reactome.server.tools.reaction.exporter.renderer.text.TextRenderer;
+import org.reactome.server.tools.reaction.exporter.renderer.utils.TextRenderer;
 
 import java.awt.*;
 
