@@ -8,23 +8,23 @@ package org.reactome.server.tools.reaction.exporter.layout.common;
  */
 public class Coordinate {
 
-    private Integer x;
-    private Integer y;
+    private Double x;
+    private Double y;
 
-    public Coordinate(int x, int y) {
+    public Coordinate(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    public Integer getX() {
+    public Double getX() {
         return x;
     }
 
-    public Integer getY() {
+    public Double getY() {
         return y;
     }
 
-    public void move(int dx, int dy) {
+    public void move(double dx, double dy) {
         x += dx;
         y += dy;
 

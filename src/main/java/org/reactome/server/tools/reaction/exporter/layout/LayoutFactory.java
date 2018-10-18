@@ -73,6 +73,7 @@ public class LayoutFactory {
     private static final int REACTION_SIZE = 12;
     private static final int ATTACHMENT_SIZE = REACTION_SIZE;
     private static final int ATTACHMENT_PADDING = 2;
+    private static final double BACKBONE_LENGTH = 20;
 
     private AdvancedDatabaseObjectService ads;// Lets add 2 pixels of padding
     private static final double BOX_SIZE = ATTACHMENT_SIZE + 2 * ATTACHMENT_PADDING;
@@ -134,6 +135,7 @@ public class LayoutFactory {
         layoutCompartments(layout);
         computeDimension(layout);
         moveToOrigin(layout);
+        removeExtracellular(layout);
         return layout;
     }
 
@@ -175,7 +177,6 @@ public class LayoutFactory {
         }
     }
 
-
     private void addCopyToCompartment(Layout layout, EntityGlyph entity, EntityGlyph copy) {
         for (CompartmentGlyph compartment : layout.getCompartments()) {
             if (compartment.getContainedGlyphs().contains(entity)) {
@@ -186,8 +187,17 @@ public class LayoutFactory {
     }
 
     private void layoutReaction(Layout layout) {
-        setSize(layout.getReaction());
-        layout.getReaction().getPosition().setCenter(0, 0);
+        final ReactionGlyph reaction = layout.getReaction();
+        setSize(reaction);
+        reaction.getPosition().setCenter(0, 0);
+        // Add backbones
+        reaction.getSegments().add(new Segment(
+                new Coordinate(reaction.getPosition().getX(), reaction.getPosition().getCenterY()),
+                new Coordinate(reaction.getPosition().getX() - BACKBONE_LENGTH, reaction.getPosition().getCenterY())));
+        reaction.getSegments().add(new Segment(
+                new Coordinate(reaction.getPosition().getMaxX(), reaction.getPosition().getCenterY()),
+                new Coordinate(reaction.getPosition().getMaxX() + BACKBONE_LENGTH, reaction.getPosition().getCenterY())
+        ));
     }
 
     private void layoutParticipants(Layout layout) {
@@ -226,10 +236,13 @@ public class LayoutFactory {
             case COMPLEX:
             case COMPLEX_DRUG:
             case ENTITY:
-            case PROTEIN:
             case PROTEIN_DRUG:
             case RNA:
             case RNA_DRUG:
+                glyph.getPosition().setWidth(6 + textDimension.getWidth());
+                glyph.getPosition().setHeight(6 + textDimension.getHeight());
+                break;
+            case PROTEIN:
                 glyph.getPosition().setWidth(6 + textDimension.getWidth());
                 glyph.getPosition().setHeight(6 + textDimension.getHeight());
                 layoutAttachments(glyph);
@@ -380,6 +393,7 @@ public class LayoutFactory {
                 attachment.getPosition().move(entity.getPosition().getX(), entity.getPosition().getY());
             }
         }
+        addConnectors(entity);
     }
 
     private void layoutCompartments(Layout layout) {
@@ -436,6 +450,10 @@ public class LayoutFactory {
         layout.getPosition().move(dx, dy);
 
         layout.getReaction().getPosition().move(dx, dy);
+        for (Segment segment : layout.getReaction().getSegments()) {
+            segment.getFrom().move(dx, dy);
+            segment.getTo().move(dx, dy);
+        }
 
         for (CompartmentGlyph compartment : layout.getCompartments()) {
             compartment.getPosition().move(dx, dy);
@@ -495,5 +513,13 @@ public class LayoutFactory {
                 }
             }
         }
+    }
+
+    private void removeExtracellular(Layout layout) {
+        layout.getCompartments().remove(layout.getCompartmentRoot());
+    }
+
+    private void addConnectors(EntityGlyph entity) {
+
     }
 }

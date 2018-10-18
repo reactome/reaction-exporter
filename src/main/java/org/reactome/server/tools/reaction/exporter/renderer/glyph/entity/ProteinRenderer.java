@@ -37,7 +37,7 @@ public class ProteinRenderer extends DefaultEntityRenderer {
             final Shape rectangle = ShapeFactory.rectangle(attachment.getPosition());
             canvas.getAttachmentFill().add(rectangle, fillColor);
             canvas.getAttachmentBorder().add(rectangle, borderColor, StrokeStyle.BORDER.getNormal());
-            canvas.getAttachmentText().add(attachment.getName(), entity.getPosition(), textColor, 0);
+            canvas.getAttachmentText().add(attachment.getName(), attachment.getPosition(), textColor, 0);
         }
     }
 }

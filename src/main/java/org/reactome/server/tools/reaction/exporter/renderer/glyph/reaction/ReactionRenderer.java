@@ -2,9 +2,11 @@ package org.reactome.server.tools.reaction.exporter.renderer.glyph.reaction;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.ReactionGlyph;
+import org.reactome.server.tools.reaction.exporter.layout.model.Segment;
 import org.reactome.server.tools.reaction.exporter.renderer.canvas.ImageCanvas;
 import org.reactome.server.tools.reaction.exporter.renderer.glyph.Renderer;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
+import org.reactome.server.tools.reaction.exporter.renderer.utils.ShapeFactory;
 import org.reactome.server.tools.reaction.exporter.renderer.utils.StrokeStyle;
 
 import java.awt.*;
@@ -18,6 +20,7 @@ public abstract class ReactionRenderer implements Renderer<ReactionGlyph> {
         fill(entity, canvas, profile, shape);
         border(entity, canvas, profile, shape);
         text(entity, canvas, profile);
+        segments(entity, canvas, profile);
     }
 
     protected Shape getShape(ReactionGlyph entity) {
@@ -53,5 +56,13 @@ public abstract class ReactionRenderer implements Renderer<ReactionGlyph> {
     protected Color getTextColor(ReactionGlyph entity, DiagramProfile profile) {
         if (entity.isDisease() != null && entity.isDisease()) return profile.getProperties().getDisease();
         return profile.getReaction().getText();
+    }
+
+    private void segments(ReactionGlyph entity, ImageCanvas canvas, DiagramProfile profile) {
+        final Color borderColor = getBorderColor(entity, profile);
+        for (Segment segment : entity.getSegments()) {
+            final Shape line = ShapeFactory.getLine(segment);
+            canvas.getSegments().add(line, borderColor, StrokeStyle.SEGMENT.getNormal());
+        }
     }
 }

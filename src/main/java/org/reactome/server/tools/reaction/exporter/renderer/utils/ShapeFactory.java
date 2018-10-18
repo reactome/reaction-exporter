@@ -1,6 +1,7 @@
 package org.reactome.server.tools.reaction.exporter.renderer.utils;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
+import org.reactome.server.tools.reaction.exporter.layout.model.Segment;
 
 import java.awt.*;
 import java.awt.geom.*;
@@ -317,5 +318,9 @@ public class ShapeFactory {
 
     public static Shape getOval(Position position, int padding) {
         return new Ellipse2D.Double(position.getX() + padding, position.getY() + padding, position.getWidth() - 2 * padding, position.getHeight() - 2 * padding);
+    }
+
+    public static Shape getLine(Segment segment) {
+        return new Line2D.Double(segment.getFrom().getX(), segment.getFrom().getY(), segment.getTo().getX(), segment.getTo().getY());
     }
 }

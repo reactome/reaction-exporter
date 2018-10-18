@@ -55,7 +55,7 @@ public class Main {
 //        ReactionLikeEvent rle = dos.findById("R-HSA-9015379");
         // R-HSA-72107,R-HSA-5205661,R-HSA-5205663,R-HSA-5205681,R-HSA-5617820,R-HSA-8948146,R-HSA-6814559,R-HSA-6787403,R-HSA-6791221,R-HSA-6785722,R-HSA-112381,R-HSA-6791223
 //        ReactionLikeEvent rle = dos.findById("R-HSA-1218824");
-        // R-HSA-140664, 69144
+        // R-HSA-140664, 69144, 68947
         ReactionLikeEvent rle = dos.findById(config.getString("stId"));
         AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         LayoutFactory layoutFactory = new LayoutFactory(ads);

@@ -149,9 +149,9 @@ public class TextRenderer {
     public static void draw(String text, Coordinate coordinate, Graphics2D graphics) {
         final int textHeight = graphics.getFontMetrics().getHeight();
         final int textWidth = computeWidth(text, graphics, graphics.getFont());
-        final int x = coordinate.getX() - textWidth / 2;
-        int baseline = coordinate.getY() + textHeight / 2;
-        baseline -= graphics.getFontMetrics().getAscent() / 2;
-        graphics.drawString(text, x, baseline);
+        final double x = coordinate.getX() - 0.5 * textWidth;
+        double baseline = coordinate.getY() + 0.5 * textHeight;
+        baseline -= 0.5 * graphics.getFontMetrics().getAscent();
+        graphics.drawString(text, (float) x, (float) baseline);
     }
 }

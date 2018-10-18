@@ -20,10 +20,14 @@ public class ImageCanvas {
     private DrawLayer attachmentBorder = new DrawLayer();
     private TextLayer attachmentText = new TextLayer();
 
+    private DrawLayer segments = new DrawLayer();
+
     private final Collection<Layer> layers = Arrays.asList(
             compartmentFill,
             compartmentBorder,
             compartmentText,
+
+            segments,
 
             nodeFill,
             nodeBorder,
@@ -74,4 +78,9 @@ public class ImageCanvas {
     public TextLayer getAttachmentText() {
         return attachmentText;
     }
+
+    public DrawLayer getSegments() {
+        return segments;
+    }
+
 }
