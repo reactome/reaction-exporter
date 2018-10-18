@@ -8,7 +8,7 @@ import org.reactome.server.tools.reaction.exporter.renderer.profile.NodeColorPro
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
-public class ChemicalRenderer extends DefaultRenderer {
+public class ChemicalRenderer extends DefaultEntityRenderer {
 
     @Override
     protected NodeColorProfile getColorProfile(DiagramProfile profile) {

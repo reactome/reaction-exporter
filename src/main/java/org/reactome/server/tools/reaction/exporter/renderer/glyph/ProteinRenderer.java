@@ -8,7 +8,7 @@ import org.reactome.server.tools.reaction.exporter.renderer.profile.NodeColorPro
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
-public class ProteinRenderer extends DefaultRenderer {
+public class ProteinRenderer extends DefaultEntityRenderer {
 
     private static final int ROUNDED_RECTANGLE_ARC = 8;
 

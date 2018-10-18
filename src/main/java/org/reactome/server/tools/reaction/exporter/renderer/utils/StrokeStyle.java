@@ -12,7 +12,7 @@ import static java.awt.BasicStroke.JOIN_MITER;
  */
 public enum StrokeStyle {
     SEGMENT(1),
-    BORDER (2);
+    BORDER(2);
 
     private final Stroke normal;
     private final Stroke dashed;
@@ -20,6 +20,10 @@ public enum StrokeStyle {
     StrokeStyle(float width) {
         normal = new BasicStroke(width, CAP_BUTT, JOIN_MITER);
         dashed = new BasicStroke(width, CAP_BUTT, JOIN_MITER, 5f, new float[]{5f, 5f}, 5f);
+    }
+
+    public final Stroke get(boolean dashed) {
+        return dashed ? this.dashed : normal;
     }
 
     public final Stroke getNormal() {

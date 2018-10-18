@@ -21,9 +21,14 @@ public class RendererFactory {
         RENDERER_MAP.put(RenderableClass.PROTEIN_DRUG, new ProteinDrugRenderer());
         RENDERER_MAP.put(RenderableClass.RNA, new RnaRenderer());
         RENDERER_MAP.put(RenderableClass.RNA_DRUG, new RnaDrugRenderer());
+        RENDERER_MAP.put(RenderableClass.REACTION, new ReactionRenderer());
     }
 
     public static Renderer getRenderer(RenderableClass renderableClass) {
-        return RENDERER_MAP.getOrDefault(renderableClass, RENDERER_MAP.get(RenderableClass.ENTITY));
+        final Renderer renderer = RENDERER_MAP.get(renderableClass);
+        if (renderer == null) {
+            throw new IllegalArgumentException("There is no renderer for class " + renderableClass);
+        }
+        return renderer;
     }
 }

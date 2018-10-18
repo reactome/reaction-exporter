@@ -1,10 +1,9 @@
 package org.reactome.server.tools.reaction.exporter.renderer.glyph;
 
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
+import org.reactome.server.tools.reaction.exporter.renderer.canvas.ImageCanvas;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.NodeColorProfile;
-
-import java.awt.*;
 
 public class ProteinDrugRenderer extends ProteinRenderer {
 
@@ -14,9 +13,9 @@ public class ProteinDrugRenderer extends ProteinRenderer {
     }
 
     @Override
-    public void draw(EntityGlyph entity, Graphics2D graphics, DiagramProfile profile) {
-        super.draw(entity, graphics, profile);
-        DrugHelper.addDrugText(entity, graphics, 0, 0);
+    public void draw(EntityGlyph entity, ImageCanvas canvas, DiagramProfile profile) {
+        super.draw(entity, canvas, profile);
+        DrugHelper.addDrugText(entity, canvas, getTextColor(entity, profile), 0, 0);
     }
 
 }

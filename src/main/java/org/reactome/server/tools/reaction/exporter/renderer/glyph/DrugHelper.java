@@ -2,16 +2,17 @@ package org.reactome.server.tools.reaction.exporter.renderer.glyph;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
+import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
+import org.reactome.server.tools.reaction.exporter.renderer.canvas.ImageCanvas;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
-import org.reactome.server.tools.reaction.exporter.renderer.utils.TextRenderer;
 
 import java.awt.*;
 
 /**
  * Adds a method for drug classes to render the Rx text.
  * <p><b>Note:</b> Since all Renderable* classes already extend another class
- * (at least {@link DefaultRenderer}), we cannot create a RenderableDrug class with the
- * {@link DefaultRenderer#draw(EntityGlyph, Graphics2D, DiagramProfile)} overridden, that's why we
+ * (at least {@link DefaultEntityRenderer}), we cannot create a RenderableDrug class with the
+ * {@link Renderer#draw(Glyph, ImageCanvas, DiagramProfile)} overridden, that's why we
  * implemented this helper class.
  */
 public class DrugHelper {
@@ -38,17 +39,17 @@ public class DrugHelper {
 
 	/**
 	 * Adds a Rx text in the bottom right corner of the node.
-	 *
-	 * @param node          the node where to place the text
+	 *  @param node          the node where to place the text
 	 * @
+	 * @param color
 	 * @param xOff          distance between the text and the right margin of the node
 	 * @param yOff          distance between the text and the bottom margin of the node
 	 */
-	static void addDrugText(EntityGlyph node, Graphics2D graphics, double xOff, double yOff) {
+	static void addDrugText(EntityGlyph node, ImageCanvas canvas, Color color, double xOff, double yOff) {
 		final Position position = new Position();
 		position.setX(node.getPosition().getMaxX() - WIDTH - xOff);
 		position.setY(position.getMaxY() - HEIGHT - yOff);
-		TextRenderer.draw(RX, position, graphics);
+		canvas.getNodeTextLayer().add(RX, position, color, 0);
 	}
 
 }

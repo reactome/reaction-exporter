@@ -1,17 +1,16 @@
 package org.reactome.server.tools.reaction.exporter.renderer;
 
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
+import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
+import org.reactome.server.tools.reaction.exporter.renderer.canvas.ImageCanvas;
+import org.reactome.server.tools.reaction.exporter.renderer.glyph.Renderer;
 import org.reactome.server.tools.reaction.exporter.renderer.glyph.RendererFactory;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.ProfileFactory;
-import org.reactome.server.tools.reaction.exporter.renderer.utils.StrokeStyle;
-import org.reactome.server.tools.reaction.exporter.renderer.utils.TextRenderer;
 
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 public class LayoutRenderer {
@@ -20,6 +19,8 @@ public class LayoutRenderer {
 
     public BufferedImage render(RenderArgs args, Layout layout) {
         final DiagramProfile profile = ProfileFactory.get(args.getProfile());
+        ImageCanvas canvas = toCanvas(layout, profile);
+
         final double factor = Math.sqrt(scale(args.getQuality()));
         final int width = (int) Math.ceil(factor * layout.getPosition().getWidth());
         final int height = (int) Math.ceil(factor * layout.getPosition().getHeight());
@@ -27,18 +28,22 @@ public class LayoutRenderer {
         final Graphics2D graphics = image.createGraphics();
         graphics.scale(factor, factor);
         graphics.setFont(DEFAULT_FONT);
+
+        canvas.render(graphics);
+        return image;
+    }
+
+    private ImageCanvas toCanvas(Layout layout, DiagramProfile profile) {
+        ImageCanvas canvas = new ImageCanvas();
+        final Renderer renderer = RendererFactory.getRenderer(RenderableClass.COMPARTMENT);
         for (CompartmentGlyph compartment : layout.getCompartments()) {
-            drawCompartment(compartment, graphics, profile);
-        }
-        for (CompartmentGlyph compartment : layout.getCompartments()) {
-            drawCompartmentText(compartment, graphics, profile);
+            renderer.draw(compartment, canvas, profile);
         }
         for (EntityGlyph entity : layout.getEntities()) {
-            drawGlyph(entity, graphics, profile);
+            RendererFactory.getRenderer(entity.getRenderableClass()).draw(entity, canvas, profile);
         }
-        System.out.println(layout.getEntities().size() + " entities");
-
-        return image;
+        RendererFactory.getRenderer(layout.getReaction().getRenderableClass()).draw(layout.getReaction(), canvas, profile);
+        return canvas;
     }
 
     private double scale(int quality) {
@@ -49,28 +54,5 @@ public class LayoutRenderer {
 
     private double interpolate(double x, double min, double max, double dest_min, double dest_max) {
         return (x - min) / (max - min) * (dest_max - dest_min) + dest_min;
-    }
-
-    private void drawCompartment(CompartmentGlyph compartment, Graphics2D graphics, DiagramProfile profile) {
-        final Stroke stroke = StrokeStyle.BORDER.getNormal();
-        final Color fill = profile.getCompartment().getFill();
-        final Color border = profile.getCompartment().getStroke();
-        final Position position = compartment.getPosition();
-        final Rectangle2D.Double rect = new Rectangle2D.Double(position.getX(), position.getY(), position.getWidth(), position.getHeight());
-        graphics.setPaint(fill);
-        graphics.fill(rect);
-        graphics.setPaint(border);
-        graphics.setStroke(stroke);
-        graphics.draw(rect);
-    }
-
-    private void drawCompartmentText(CompartmentGlyph compartment, Graphics2D graphics, DiagramProfile profile) {
-        final Color text = profile.getCompartment().getText();
-        graphics.setPaint(text);
-        TextRenderer.draw(compartment.getName(), compartment.getLabelPosition(), graphics);
-    }
-
-    private void drawGlyph(EntityGlyph entity, Graphics2D graphics, DiagramProfile profile) {
-        RendererFactory.getRenderer(entity.getRenderableClass()).draw(entity, graphics, profile);
     }
 }

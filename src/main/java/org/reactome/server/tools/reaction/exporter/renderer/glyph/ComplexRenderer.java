@@ -7,7 +7,7 @@ import org.reactome.server.tools.reaction.exporter.renderer.utils.ShapeFactory;
 
 import java.awt.*;
 
-public class ComplexRenderer extends DefaultRenderer {
+public class ComplexRenderer extends DefaultEntityRenderer {
 
     @Override
     protected NodeColorProfile getColorProfile(DiagramProfile profile) {
