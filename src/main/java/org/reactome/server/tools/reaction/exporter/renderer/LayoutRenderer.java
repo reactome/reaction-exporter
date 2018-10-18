@@ -35,7 +35,7 @@ public class LayoutRenderer {
 
     private ImageCanvas toCanvas(Layout layout, DiagramProfile profile) {
         ImageCanvas canvas = new ImageCanvas();
-        final Renderer renderer = RendererFactory.getRenderer(RenderableClass.COMPARTMENT);
+        final Renderer<CompartmentGlyph> renderer = RendererFactory.getRenderer(RenderableClass.COMPARTMENT);
         for (CompartmentGlyph compartment : layout.getCompartments()) {
             renderer.draw(compartment, canvas, profile);
         }

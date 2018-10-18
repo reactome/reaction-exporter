@@ -6,5 +6,5 @@ import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfi
 
 public interface Renderer<T extends Glyph> {
 
-    void draw(T entity, ImageCanvas canvas, DiagramProfile profile);
+    void draw(T glyph, ImageCanvas canvas, DiagramProfile profile);
 }

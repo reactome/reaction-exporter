@@ -310,4 +310,8 @@ public class ShapeFactory {
     public static Shape getCornedRectangle(Position position) {
         return getCornedRectangle(position.getX(), position.getY(), position.getWidth(), position.getHeight());
     }
+
+    public static Shape getOval(Position position) {
+        return new Ellipse2D.Double(position.getX(), position.getY(), position.getWidth(), position.getHeight());
+    }
 }
