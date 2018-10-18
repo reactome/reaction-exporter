@@ -61,6 +61,7 @@ public class Layout implements HasPosition {
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
     public void setReactionLikeEvent(ReactionLikeEvent rle) {
+        this.rle = rle;
         reactionGlyph = new ReactionGlyph(rle);
 
         //noinspection LoopStatementThatDoesntLoop
@@ -136,9 +137,9 @@ public class Layout implements HasPosition {
     private void setReactionGlyphRenderableClass() {
         if (rle == null || delta == null) return;
         RenderableClass rc = RenderableClass.TRANSFORMATION_REACTION;
-        if (delta > 0) rc = RenderableClass.BINDING_REACTION;
+        if (rle instanceof BlackBoxEvent) rc = RenderableClass.OMITTED_REACTION;
+        else if (delta > 0) rc = RenderableClass.BINDING_REACTION;
         else if (delta < 0) rc = RenderableClass.DISSOCIATION_REACTION;
-        else if (rle instanceof BlackBoxEvent) rc = RenderableClass.OMITTED_REACTION;
         reactionGlyph.setRenderableClass(rc);
     }
 }
