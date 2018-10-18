@@ -41,7 +41,7 @@ public enum RenderableClass {
     //ENTITY_SET_AND_ENTITY_SET_LINK("EntitySetAndEntitySetLink"),
 
     //Reaction renderable classes
-    BINDING_REACTION("Biding"),
+    BINDING_REACTION("Binding"),
     DISSOCIATION_REACTION("Dissociation"),
     OMITTED_REACTION("Omitted"),
     TRANSFORMATION_REACTION("Transformation"),
