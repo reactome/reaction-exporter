@@ -136,10 +136,11 @@ public class Layout implements HasPosition {
 
     private void setReactionGlyphRenderableClass() {
         if (rle == null || delta == null) return;
-        RenderableClass rc = RenderableClass.TRANSFORMATION_REACTION;
+        RenderableClass rc;
         if (rle instanceof BlackBoxEvent) rc = RenderableClass.OMITTED_REACTION;
         else if (delta > 0) rc = RenderableClass.BINDING_REACTION;
         else if (delta < 0) rc = RenderableClass.DISSOCIATION_REACTION;
+        else rc = RenderableClass.TRANSFORMATION_REACTION;
         reactionGlyph.setRenderableClass(rc);
     }
 }
