@@ -4,7 +4,6 @@ import org.reactome.server.tools.reaction.exporter.layout.common.Coordinate;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -16,8 +15,6 @@ import java.util.List;
 public class TextRenderer {
 
     private static final List<Character> WORD_SPLIT_CHARS = Arrays.asList(':', '.', '-', ',', ')', '/', '+');
-    private static final Graphics2D GRAPHICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics();
-
 
     private TextRenderer() {
     }
@@ -35,7 +32,7 @@ public class TextRenderer {
         // Fit the text
         Font font = graphics.getFont();
         List<String> lines;
-        while ((lines = fit(text, font, position.getWidth(), position.getHeight())) == null)
+        while ((lines = fit(text, graphics, font, position.getWidth(), position.getHeight())) == null)
             font = font.deriveFont(font.getSize() - 1f);
 
         // Impossible to fit even with font size 1. May happen with thumbnails.
@@ -54,7 +51,7 @@ public class TextRenderer {
         yOffset += graphics.getFontMetrics().getAscent();
         for (int i = 0; i < lines.size(); i++) {
             final String line = lines.get(i);
-            final int lineWidth = computeWidth(line, font);
+            final int lineWidth = computeWidth(line, graphics, font);
             final float left = (float) (centerX - 0.5 * lineWidth);
             final float base = (float) (yOffset + i * lineHeight);
             graphics.drawString(line, left, base);
@@ -68,11 +65,11 @@ public class TextRenderer {
      * returns an empty list to indicate that text is impossible to be shown,
      * probably because image size is too small.
      */
-    private static List<String> fit(String text, Font font, double maxWidth, double maxHeight) {
+    private static List<String> fit(String text, Graphics2D graphics, Font font, double maxWidth, double maxHeight) {
         if (font.getSize() < 1) return Collections.emptyList();
         // Test if text fits in 1 line
-        if (computeWidth(text, font) < maxWidth
-                && computeHeight(1, font) < maxHeight)
+        if (computeWidth(text, graphics, font) < maxWidth
+                && computeHeight(1, graphics, font) < maxHeight)
             return Collections.singletonList(text);
 
         final List<String> lines = new LinkedList<>();
@@ -81,7 +78,7 @@ public class TextRenderer {
         String temp;
         for (String word : words) {
             temp = line.isEmpty() ? word : line + " " + word;
-            if (computeWidth(temp, font) < maxWidth)
+            if (computeWidth(temp, graphics, font) < maxWidth)
                 line = temp;
             else {
                 // Split word in smaller parts and add as much parts as possible
@@ -90,18 +87,18 @@ public class TextRenderer {
                 boolean firstPart = true;
                 for (String part : parts) {
                     // If the part can't fit a line, the text won't fit
-                    if (computeWidth(part, font) > maxWidth)
+                    if (computeWidth(part, graphics, font) > maxWidth)
                         return null;
                     if (line.isEmpty()) temp = part;
                     else if (firstPart) temp = line + " " + part;
                     else temp = line + part;
-                    if (computeWidth(temp, font) < maxWidth)
+                    if (computeWidth(temp, graphics, font) < maxWidth)
                         line = temp;
                     else {
                         // Start a new line with part
                         lines.add(line);
                         line = part;
-                        if (computeHeight(lines.size(), font) > maxHeight)
+                        if (computeHeight(lines.size(), graphics, font) > maxHeight)
                             return null;
                     }
                     firstPart = false;
@@ -109,7 +106,7 @@ public class TextRenderer {
             }
         }
         if (!line.isEmpty()) lines.add(line);
-        if (computeHeight(lines.size(), font) > maxHeight)
+        if (computeHeight(lines.size(), graphics, font) > maxHeight)
             return null;
         else return lines;
     }
@@ -135,12 +132,12 @@ public class TextRenderer {
         return strings;
     }
 
-    private static int computeHeight(int lines, Font font) {
-        return lines * GRAPHICS.getFontMetrics(font).getHeight();
+    private static int computeHeight(int lines, Graphics2D graphics, Font font) {
+        return lines * graphics.getFontMetrics(font).getHeight();
     }
 
-    private static int computeWidth(String text, Font font) {
-        return GRAPHICS.getFontMetrics(font).charsWidth(text.toCharArray(), 0, text.length());
+    private static int computeWidth(String text, Graphics2D graphics, Font font) {
+        return graphics.getFontMetrics(font).charsWidth(text.toCharArray(), 0, text.length());
     }
 
     /**
@@ -151,7 +148,7 @@ public class TextRenderer {
      */
     public static void draw(String text, Coordinate coordinate, Graphics2D graphics) {
         final int textHeight = graphics.getFontMetrics().getHeight();
-        final int textWidth = computeWidth(text, graphics.getFont());
+        final int textWidth = computeWidth(text, graphics, graphics.getFont());
         final int x = coordinate.getX() - textWidth / 2;
         int baseline = coordinate.getY() + textHeight / 2;
         baseline -= graphics.getFontMetrics().getAscent() / 2;
