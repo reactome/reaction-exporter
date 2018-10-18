@@ -82,6 +82,10 @@ public class EntityGlyph extends AbstractGlyph {
         return trivial;
     }
 
+    public Boolean isDisease() {
+        return pe.getInDisease() ? true : null;
+    }
+
     protected void addRole(Role role) {
         roles.add(role);
     }

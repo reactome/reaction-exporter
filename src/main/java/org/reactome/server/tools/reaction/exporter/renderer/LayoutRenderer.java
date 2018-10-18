@@ -51,7 +51,7 @@ public class LayoutRenderer {
     }
 
     private void drawCompartment(CompartmentGlyph compartment, Graphics2D graphics, DiagramProfile profile) {
-        final Stroke stroke = StrokeStyle.BORDER.getStroke();
+        final Stroke stroke = StrokeStyle.BORDER.getNormal();
         final Color fill = profile.getCompartment().getFill();
         final Color border = profile.getCompartment().getStroke();
         final Position position = compartment.getPosition();

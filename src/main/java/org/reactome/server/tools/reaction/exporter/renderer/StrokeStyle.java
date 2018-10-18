@@ -11,20 +11,22 @@ import static java.awt.BasicStroke.JOIN_MITER;
  * @author Lorente-Arencibia, Pascual (pasculorente@gmail.com)
  */
 public enum StrokeStyle {
-    /**
-     * width: 1
-     */
     SEGMENT(1),
     BORDER (2);
 
-    private final Stroke stroke;
+    private final Stroke normal;
+    private final Stroke dashed;
 
     StrokeStyle(float width) {
-        stroke = new BasicStroke(width, CAP_BUTT, JOIN_MITER);
+        normal = new BasicStroke(width, CAP_BUTT, JOIN_MITER);
+        dashed = new BasicStroke(width, CAP_BUTT, JOIN_MITER, 5f, new float[]{5f, 5f}, 5f);
     }
 
+    public final Stroke getNormal() {
+        return normal;
+    }
 
-    public final Stroke getStroke() {
-        return stroke;
+    public Stroke getDashed() {
+        return dashed;
     }
 }

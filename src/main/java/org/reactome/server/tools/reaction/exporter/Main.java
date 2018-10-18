@@ -14,7 +14,10 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.reactome.server.tools.reaction.exporter.renderer.LayoutRenderer;
 import org.reactome.server.tools.reaction.exporter.renderer.RenderArgs;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
@@ -47,7 +50,9 @@ public class Main {
 
 //        ReactionLikeEvent rle = dos.findById("R-HSA-6791223");
         //ReactionLikeEvent rle = dos.findById("R-HSA-211734");
-        ReactionLikeEvent rle = dos.findById("R-HSA-1362408");
+//        ReactionLikeEvent rle = dos.findById("R-HSA-1362408");
+//        ReactionLikeEvent rle = dos.findById("R-HSA-9015379");
+        ReactionLikeEvent rle = dos.findById("R-HSA-1218824");
 
         AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         LayoutFactory layoutFactory = new LayoutFactory(ads);
@@ -60,8 +65,12 @@ public class Main {
             e.printStackTrace();
         }
 
-        final BufferedImage image = RENDERER.render(new RenderArgs(), rxn);
-
+        final BufferedImage image = RENDERER.render(new RenderArgs().setQuality(10), rxn);
+        try {
+            ImageIO.write(image, "png", new FileOutputStream("reaction.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println("Done");
     }
 }

@@ -1,4 +1,4 @@
 package org.reactome.server.tools.reaction.exporter.renderer.glyph;
 
-public class EntityRenderer extends Renderer {
+public class EntityRenderer extends DefaultRenderer {
 }

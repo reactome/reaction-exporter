@@ -22,6 +22,15 @@ public class TextRenderer {
     private TextRenderer() {
     }
 
+    public static void draw(String text, Position position, Graphics2D graphics, double padding) {
+        final Position padded = new Position();
+        padded.setX(position.getX() + padding);
+        padded.setY(position.getY() + padding);
+        padded.setWidth(position.getWidth() - 2 * padding);
+        padded.setHeight(position.getHeight() - 2 * padding);
+        draw(text, padded, graphics);
+    }
+
     public static void draw(String text, Position position, Graphics2D graphics) {
         // Fit the text
         Font font = graphics.getFont();
@@ -136,15 +145,16 @@ public class TextRenderer {
 
     /**
      * Draws text in coordinate, where coordinate is the center of the text
-     * @param text text to draw
+     *
+     * @param text       text to draw
      * @param coordinate center of the text
      */
     public static void draw(String text, Coordinate coordinate, Graphics2D graphics) {
         final int textHeight = graphics.getFontMetrics().getHeight();
         final int textWidth = computeWidth(text, graphics.getFont());
         final int x = coordinate.getX() - textWidth / 2;
-        final int baseline = coordinate.getY() + textHeight / 2;
+        int baseline = coordinate.getY() + textHeight / 2;
+        baseline -= graphics.getFontMetrics().getAscent() / 2;
         graphics.drawString(text, x, baseline);
-
     }
 }

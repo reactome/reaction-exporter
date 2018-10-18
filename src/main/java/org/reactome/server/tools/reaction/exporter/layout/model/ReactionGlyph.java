@@ -13,6 +13,7 @@ public class ReactionGlyph extends AbstractGlyph {
     private String stId;
     private String name;
     private RenderableClass renderableClass;
+    private Boolean disease;
 
     ReactionGlyph(ReactionLikeEvent rle) {
         super();
@@ -20,6 +21,7 @@ public class ReactionGlyph extends AbstractGlyph {
         stId = rle.getStId();
         name = rle.getDisplayName();
         renderableClass = RenderableClass.getRenderableClass(rle);
+        disease = rle.getIsInDisease() ? true : null;
     }
 
     public String getStId() {
@@ -39,6 +41,10 @@ public class ReactionGlyph extends AbstractGlyph {
     @Override
     public Long getDbId() {
         return dbId;
+    }
+
+    public Boolean isDisease() {
+        return disease;
     }
 
     @Override
