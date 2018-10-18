@@ -35,7 +35,8 @@ public class Main {
                         new FlaggedOption("host",     JSAP.STRING_PARSER, "localhost", JSAP.NOT_REQUIRED, 'h', "host",     "The neo4j host"),
                         new FlaggedOption("port",     JSAP.STRING_PARSER, "7474",      JSAP.NOT_REQUIRED, 'p', "port",     "The neo4j port"),
                         new FlaggedOption("user",     JSAP.STRING_PARSER, "neo4j",     JSAP.NOT_REQUIRED, 'u', "user",     "The neo4j user"),
-                        new FlaggedOption("password", JSAP.STRING_PARSER, "neo4j",     JSAP.REQUIRED,     'd', "password", "The neo4j password")
+                        new FlaggedOption("password", JSAP.STRING_PARSER, "neo4j",     JSAP.REQUIRED,     'd', "password", "The neo4j password"),
+                        new FlaggedOption("stId",     JSAP.STRING_PARSER,  null,       JSAP.REQUIRED,     's', "stId",     "Reaction stable identifier")
                 }
         );
 
@@ -52,8 +53,9 @@ public class Main {
         //ReactionLikeEvent rle = dos.findById("R-HSA-211734");
 //        ReactionLikeEvent rle = dos.findById("R-HSA-1362408");
 //        ReactionLikeEvent rle = dos.findById("R-HSA-9015379");
-        ReactionLikeEvent rle = dos.findById("R-HSA-1218824");
-
+        // R-HSA-72107,R-HSA-5205661,R-HSA-5205663,R-HSA-5205681,R-HSA-5617820,R-HSA-8948146,R-HSA-6814559,R-HSA-6787403,R-HSA-6791221,R-HSA-6785722,R-HSA-112381,R-HSA-6791223
+//        ReactionLikeEvent rle = dos.findById("R-HSA-1218824");
+        ReactionLikeEvent rle = dos.findById(config.getString("stId"));
         AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         LayoutFactory layoutFactory = new LayoutFactory(ads);
         Layout rxn = layoutFactory.getReactionLikeEventLayout(rle);
