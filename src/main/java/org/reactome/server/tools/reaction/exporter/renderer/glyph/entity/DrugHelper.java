@@ -5,7 +5,6 @@ import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
 import org.reactome.server.tools.reaction.exporter.renderer.canvas.ImageCanvas;
 import org.reactome.server.tools.reaction.exporter.renderer.glyph.Renderer;
-import org.reactome.server.tools.reaction.exporter.renderer.glyph.entity.DefaultEntityRenderer;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
 
 import java.awt.*;
@@ -51,7 +50,7 @@ public class DrugHelper {
 		final Position position = new Position();
 		position.setX(node.getPosition().getMaxX() - WIDTH - xOff);
 		position.setY(position.getMaxY() - HEIGHT - yOff);
-		canvas.getNodeTextLayer().add(RX, position, color, 0);
+		canvas.getNodeText().add(RX, position, color, 0);
 	}
 
 }

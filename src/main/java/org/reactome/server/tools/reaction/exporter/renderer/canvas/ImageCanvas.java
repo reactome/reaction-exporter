@@ -16,6 +16,10 @@ public class ImageCanvas {
     private DrawLayer nodeBorder = new DrawLayer();
     private TextLayer nodeText = new TextLayer();
 
+    private FillLayer attachmentFill = new FillLayer();
+    private DrawLayer attachmentBorder = new DrawLayer();
+    private TextLayer attachmentText = new TextLayer();
+
     private final Collection<Layer> layers = Arrays.asList(
             compartmentFill,
             compartmentBorder,
@@ -23,7 +27,11 @@ public class ImageCanvas {
 
             nodeFill,
             nodeBorder,
-            nodeText
+            nodeText,
+
+            attachmentFill,
+            attachmentBorder,
+            attachmentText
     );
 
     public void render(Graphics2D graphics) {
@@ -31,27 +39,39 @@ public class ImageCanvas {
         layers.forEach(layer -> layer.render(graphics));
     }
 
-    public DrawLayer getNodeBorderLayer() {
+    public DrawLayer getNodeBorder() {
         return nodeBorder;
     }
 
-    public FillLayer getNodeFillLayer() {
+    public FillLayer getNodeFill() {
         return nodeFill;
     }
 
-    public TextLayer getNodeTextLayer() {
+    public TextLayer getNodeText() {
         return nodeText;
     }
 
-    public FillLayer getCompartmentFillLayer() {
+    public FillLayer getCompartmentFill() {
         return compartmentFill;
     }
 
-    public DrawLayer getCompartmentBorderLayer() {
+    public DrawLayer getCompartmentBorder() {
         return compartmentBorder;
     }
 
-    public TextLayer getCompartmentTextLayer() {
+    public TextLayer getCompartmentText() {
         return compartmentText;
+    }
+
+    public FillLayer getAttachmentFill() {
+        return attachmentFill;
+    }
+
+    public DrawLayer getAttachmentBorder() {
+        return attachmentBorder;
+    }
+
+    public TextLayer getAttachmentText() {
+        return attachmentText;
     }
 }

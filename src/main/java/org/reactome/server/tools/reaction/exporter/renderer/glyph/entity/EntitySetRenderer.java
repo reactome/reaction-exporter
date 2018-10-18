@@ -2,7 +2,6 @@ package org.reactome.server.tools.reaction.exporter.renderer.glyph.entity;
 
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.renderer.canvas.ImageCanvas;
-import org.reactome.server.tools.reaction.exporter.renderer.glyph.entity.DefaultEntityRenderer;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.DiagramProfile;
 import org.reactome.server.tools.reaction.exporter.renderer.profile.NodeColorProfile;
 import org.reactome.server.tools.reaction.exporter.renderer.utils.ShapeFactory;
@@ -20,19 +19,19 @@ public class EntitySetRenderer extends DefaultEntityRenderer {
 
     @Override
     protected Shape getShape(EntityGlyph entity) {
-        return ShapeFactory.roundedRectangle(entity.getPosition());
+        return ShapeFactory.getRoundedRectangle(entity.getPosition());
     }
 
     @Override
     public void draw(EntityGlyph entity, ImageCanvas canvas, DiagramProfile profile) {
         super.draw(entity, canvas, profile);
-        final Shape rect = ShapeFactory.roundedRectangle(entity.getPosition(), SET_PADDING);
+        final Shape rect = ShapeFactory.getRoundedRectangle(entity.getPosition(), SET_PADDING);
         border(entity, canvas, profile, rect);
     }
 
     @Override
     protected void text(EntityGlyph entity, ImageCanvas canvas, DiagramProfile profile) {
-        canvas.getNodeTextLayer().add(entity.getName(), entity.getPosition(), getTextColor(entity, profile), SET_PADDING);
+        canvas.getNodeText().add(entity.getName(), entity.getPosition(), getTextColor(entity, profile), SET_PADDING);
     }
 
 }

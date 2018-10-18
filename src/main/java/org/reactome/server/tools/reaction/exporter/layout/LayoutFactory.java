@@ -27,51 +27,55 @@ import java.util.stream.Collectors;
 @Component
 public class LayoutFactory {
 
-	/**
-	 * Minimum distance between the compartment border and any of ints contained glyphs.
-	 */
-	private static final double COMPARTMENT_PADDING = 20;
-	/**
-	 * Minimum allocated height for any glyph. Even if glyphs have a lower height, they are placed in the middle of
-	 * this minimum distance.
-	 */
-	private static final double MIN_GLYPH_HEIGHT = 40;
-	/**
-	 * Minimum allocated width for any glyph. Even if glyphs have a lower width, they are placed in the middle of
-	 * this minimum distance.
-	 */
-	private static final double MIN_GLYPH_WIDTH = 80;
-	/**
-	 * Vertical (y-axis) distance between two glyphs.
-	 */
-	private static final double VERTICAL_PADDING = 15;
-	/**
-	 * Horizontal (x-axis) distance between two glyphs.
-	 */
-	private static final double HORIZONTAL_PADDING = 15;
-	/**
-	 * Minimum distance bewteen any glyph and the reaction glyph
-	 */
-	private static final double REACTION_MIN_DISTANCE = 120;
-	/**
-	 * Order in which nodes should be placed depending on their {@link RenderableClass}
-	 */
-	private static final List<RenderableClass> CLASS_ORDER = Arrays.asList(
-			RenderableClass.PROCESS_NODE,
-			RenderableClass.ENCAPSULATED_NODE,
-			RenderableClass.COMPLEX,
-			RenderableClass.ENTITY_SET,
-			RenderableClass.PROTEIN,
-			RenderableClass.RNA,
-			RenderableClass.CHEMICAL,
-			RenderableClass.GENE,
-			RenderableClass.ENTITY);
-	/**
-	 * Comparator that puts false elements before true elements.
-	 */
-	private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
+    /**
+     * Minimum distance between the compartment border and any of ints contained glyphs.
+     */
+    private static final double COMPARTMENT_PADDING = 20;
+    /**
+     * Minimum allocated height for any glyph. Even if glyphs have a lower height, they are placed in the middle of
+     * this minimum distance.
+     */
+    private static final double MIN_GLYPH_HEIGHT = 40;
+    /**
+     * Minimum allocated width for any glyph. Even if glyphs have a lower width, they are placed in the middle of
+     * this minimum distance.
+     */
+    private static final double MIN_GLYPH_WIDTH = 80;
+    /**
+     * Vertical (y-axis) distance between two glyphs.
+     */
+    private static final double VERTICAL_PADDING = 15;
+    /**
+     * Horizontal (x-axis) distance between two glyphs.
+     */
+    private static final double HORIZONTAL_PADDING = 15;
+    /**
+     * Minimum distance bewteen any glyph and the reaction glyph
+     */
+    private static final double REACTION_MIN_DISTANCE = 120;
+    /**
+     * Order in which nodes should be placed depending on their {@link RenderableClass}
+     */
+    private static final List<RenderableClass> CLASS_ORDER = Arrays.asList(
+            RenderableClass.PROCESS_NODE,
+            RenderableClass.ENCAPSULATED_NODE,
+            RenderableClass.COMPLEX,
+            RenderableClass.ENTITY_SET,
+            RenderableClass.PROTEIN,
+            RenderableClass.RNA,
+            RenderableClass.CHEMICAL,
+            RenderableClass.GENE,
+            RenderableClass.ENTITY);
+    /**
+     * Comparator that puts false elements before true elements.
+     */
+    private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
+    private static final int REACTION_SIZE = 12;
+    private static final int ATTACHMENT_SIZE = REACTION_SIZE;
+    private static final int ATTACHMENT_PADDING = 2;
 
-    private AdvancedDatabaseObjectService ads;
+    private AdvancedDatabaseObjectService ads;// Lets add 2 pixels of padding
+    private static final double BOX_SIZE = ATTACHMENT_SIZE + 2 * ATTACHMENT_PADDING;
 
     @Autowired
     public LayoutFactory(AdvancedDatabaseObjectService ads) {
@@ -97,14 +101,15 @@ public class LayoutFactory {
             "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "RETURN rle AS reactionLikeEvent, ps AS participants";
 
-	/**
-	 * Gets the {@link Layout} of rle
-	 * @param rle a ReactionLikeEvent
-	 * @return the corresponding layout of the rle
-	 * @throws NullPointerException if rle is null
-	 */
-	public Layout getReactionLikeEventLayout(ReactionLikeEvent rle) {
-		if (rle == null) throw new NullPointerException("rle cannot be null");
+    /**
+     * Gets the {@link Layout} of rle
+     *
+     * @param rle a ReactionLikeEvent
+     * @return the corresponding layout of the rle
+     * @throws NullPointerException if rle is null
+     */
+    public Layout getReactionLikeEventLayout(ReactionLikeEvent rle) {
+        if (rle == null) throw new NullPointerException("rle cannot be null");
         Map<String, Object> params = new HashMap<>();
         params.put("stId", rle.getStId());
         try {
@@ -182,7 +187,7 @@ public class LayoutFactory {
 
     private void layoutReaction(Layout layout) {
         setSize(layout.getReaction());
-        layout.getReaction().getPosition().setCenter(0, 0);
+        layout.getReaction().getPosition().move(0, 0);
     }
 
     private void layoutParticipants(Layout layout) {
@@ -209,17 +214,13 @@ public class LayoutFactory {
     }
 
     private void setSize(ReactionGlyph reaction) {
-        reaction.getPosition().setHeight(12);
-        reaction.getPosition().setWidth(12);
+        reaction.getPosition().setHeight(REACTION_SIZE);
+        reaction.getPosition().setWidth(REACTION_SIZE);
     }
 
     private void setSize(EntityGlyph glyph) {
         final Dimension2D textDimension = TextUtils.textDimension(glyph.getName());
         switch (glyph.getRenderableClass()) {
-            case ATTACHMENT:
-                glyph.getPosition().setWidth(12);
-                glyph.getPosition().setHeight(12);
-                break;
             case CHEMICAL:
             case CHEMICAL_DRUG:
             case COMPLEX:
@@ -231,6 +232,7 @@ public class LayoutFactory {
             case RNA_DRUG:
                 glyph.getPosition().setWidth(6 + textDimension.getWidth());
                 glyph.getPosition().setHeight(6 + textDimension.getHeight());
+                layoutAttachments(glyph);
                 break;
             case ENCAPSULATED_NODE:
             case PROCESS_NODE:
@@ -263,7 +265,7 @@ public class LayoutFactory {
         final double totalHeight = heightPerGlyph * inputs.size();
         final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
         layoutVerticalEntities(layout.getCompartmentRoot(), inputs, yOffset, heightPerGlyph, (glyph, coord) ->
-                glyph.getPosition().setCenter(-coord.getX(), coord.getY()));
+                placeEntity(glyph, new Coordinate(-coord.getX(), coord.getY())));
     }
 
     private void outputs(Layout layout, Collection<EntityGlyph> entities) {
@@ -283,7 +285,7 @@ public class LayoutFactory {
         final double totalHeight = heightPerGlyph * outputs.size();
         final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
         layoutVerticalEntities(layout.getCompartmentRoot(), outputs, yOffset, heightPerGlyph, (glyph, coord) ->
-                glyph.getPosition().setCenter(coord.getX(), coord.getY()));
+                placeEntity(glyph, coord));
     }
 
     private void catalysts(Layout layout, Collection<EntityGlyph> entities) {
@@ -304,7 +306,7 @@ public class LayoutFactory {
         final double totalWidth = widthPerGlyph * catalysts.size();
         final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
         layoutHorizontalEntities(layout.getCompartmentRoot(), catalysts, xOffset, widthPerGlyph, (glyph, coord) ->
-                glyph.getPosition().setCenter(coord.getY(), coord.getX()));
+                placeEntity(glyph, new Coordinate(coord.getY(), coord.getX())));
     }
 
     private void regulators(Layout layout, Collection<EntityGlyph> entities) {
@@ -325,10 +327,10 @@ public class LayoutFactory {
         final double totalWidth = widthPerGlyph * regulators.size();
         final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
         layoutHorizontalEntities(layout.getCompartmentRoot(), regulators, xOffset, widthPerGlyph, (glyph, coord) ->
-                glyph.getPosition().setCenter(coord.getY(), -coord.getX()));
+                placeEntity(glyph, new Coordinate(coord.getY(), -coord.getX())));
     }
 
-    private double layoutVerticalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double yOffset, double heightPerGlyph, BiConsumer<Glyph, Coordinate> apply) {
+    private double layoutVerticalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double yOffset, double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
         double startX = 0;
         for (CompartmentGlyph child : compartment.getChildren()) {
             startX = Math.max(startX, layoutVerticalEntities(child, entities, yOffset, heightPerGlyph, apply));
@@ -352,7 +354,7 @@ public class LayoutFactory {
         return COMPARTMENT_PADDING + width;
     }
 
-    private double layoutHorizontalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double xOffset, double widthPerGlyph, BiConsumer<Glyph, Coordinate> apply) {
+    private double layoutHorizontalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double xOffset, double widthPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
         double startY = 0;
         for (CompartmentGlyph child : compartment.getChildren()) {
             startY = Math.max(startY, layoutHorizontalEntities(child, entities, xOffset, widthPerGlyph, apply));
@@ -369,6 +371,15 @@ public class LayoutFactory {
             apply.accept(glyph, new Coordinate((int) -x, (int) y));
         }
         return COMPARTMENT_PADDING + height;
+    }
+
+    private void placeEntity(EntityGlyph entity, Coordinate coordinate) {
+        entity.getPosition().setCenter(coordinate.getX(), coordinate.getY());
+        if (entity.getAttachments() != null) {
+            for (AttachmentGlyph attachment : entity.getAttachments()) {
+                attachment.getPosition().move(entity.getPosition().getX(), entity.getPosition().getY());
+            }
+        }
     }
 
     private void layoutCompartments(Layout layout) {
@@ -412,11 +423,11 @@ public class LayoutFactory {
         a.setHeight(maxY - a.getY());
     }
 
-	private void computeDimension(Layout layout) {
-		for (CompartmentGlyph compartment : layout.getCompartments()) {
-			union(layout.getPosition(), compartment.getPosition());
-		}
-	}
+    private void computeDimension(Layout layout) {
+        for (CompartmentGlyph compartment : layout.getCompartments()) {
+            union(layout.getPosition(), compartment.getPosition());
+        }
+    }
 
     private void moveToOrigin(Layout layout) {
         final double dx = -layout.getPosition().getX();
@@ -438,5 +449,51 @@ public class LayoutFactory {
             }
         }
 
+    }
+
+    private void layoutAttachments(EntityGlyph entity) {
+        if (entity.getAttachments() != null) {
+            final Position position = entity.getPosition();
+            double width = position.getWidth() - 2 * 8; // rounded rectangles
+            double height = position.getHeight() - 2 * 8; // rounded rectangles
+            int boxesInWidth = (int) (width / BOX_SIZE);
+            int boxesInHeight = (int) (height / BOX_SIZE);
+            int maxBoxes = 2 * (boxesInHeight + boxesInWidth);
+            while (entity.getAttachments().size() > maxBoxes) {
+                position.setWidth(position.getWidth() + BOX_SIZE);
+                position.setHeight(position.getWidth() / TextUtils.RATIO);
+                width = position.getWidth() - 2 * 8; // rounded rectangles
+                height = position.getHeight() - 2 * 8; // rounded rectangles
+                boxesInWidth = (int) (width / BOX_SIZE);
+                boxesInHeight = (int) (height / BOX_SIZE);
+                maxBoxes = 2 * (boxesInHeight + boxesInWidth);
+            }
+
+            final ArrayList<AttachmentGlyph> glyphs = new ArrayList<>(entity.getAttachments());
+            final double maxWidth = boxesInWidth * BOX_SIZE;
+            final double maxHeight = boxesInHeight * BOX_SIZE;
+            final double xOffset = 8 + 0.5 * (BOX_SIZE + width - maxWidth);
+            final double yOffset = 8 + 0.5 * (BOX_SIZE + height - maxHeight);
+            for (int i = 0; i < glyphs.size(); i++) {
+                glyphs.get(i).getPosition().setWidth(ATTACHMENT_SIZE);
+                glyphs.get(i).getPosition().setHeight(ATTACHMENT_SIZE);
+                if (i < boxesInWidth) {
+                    // Top line
+                    glyphs.get(i).getPosition().setCenter(position.getX() + xOffset + i * BOX_SIZE, position.getY());
+                } else if (i < boxesInWidth + boxesInHeight) {
+                    // Right line
+                    final int pos = i - boxesInWidth;
+                    glyphs.get(i).getPosition().setCenter(position.getMaxX(), position.getY() + yOffset + pos * BOX_SIZE);
+                } else if (i < 2 * boxesInWidth + boxesInHeight) {
+                    // Bottom line
+                    final int pos = i - boxesInWidth - boxesInHeight;
+                    glyphs.get(i).getPosition().setCenter(position.getMaxX() - xOffset - pos * BOX_SIZE, position.getMaxY());
+                } else {
+                    // Left line
+                    final int pos = i - boxesInHeight - 2 * boxesInWidth;
+                    glyphs.get(i).getPosition().setCenter(position.getX(), position.getMaxY() - yOffset - pos * BOX_SIZE);
+                }
+            }
+        }
     }
 }

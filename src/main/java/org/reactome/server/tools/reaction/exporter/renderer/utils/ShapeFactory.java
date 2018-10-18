@@ -116,12 +116,12 @@ public class ShapeFactory {
         return triangle;
     }
 
-    public static Shape roundedRectangle(Position properties) {
-        return roundedRectangle(properties.getX(), properties.getY(),
+    public static Shape getRoundedRectangle(Position properties) {
+        return getRoundedRectangle(properties.getX(), properties.getY(),
                 properties.getWidth(), properties.getHeight());
     }
 
-    public static Shape roundedRectangle(double x, double y, double width, double height) {
+    public static Shape getRoundedRectangle(double x, double y, double width, double height) {
         return new RoundRectangle2D.Double(
                 x,
                 y,
@@ -131,12 +131,12 @@ public class ShapeFactory {
                 ROUND_RECT_ARC_WIDTH);
     }
 
-    public static Shape roundedRectangle(Position prop, double padding) {
-        return roundedRectangle(prop.getX(), prop.getY(),
+    public static Shape getRoundedRectangle(Position prop, double padding) {
+        return getRoundedRectangle(prop.getX(), prop.getY(),
                 prop.getWidth(), prop.getHeight(), padding);
     }
 
-    private static Shape roundedRectangle(double x, double y, double width, double height, double padding) {
+    private static Shape getRoundedRectangle(double x, double y, double width, double height, double padding) {
         return new RoundRectangle2D.Double(
                 x + padding,
                 y + padding,
@@ -313,5 +313,9 @@ public class ShapeFactory {
 
     public static Shape getOval(Position position) {
         return new Ellipse2D.Double(position.getX(), position.getY(), position.getWidth(), position.getHeight());
+    }
+
+    public static Shape getOval(Position position, int padding) {
+        return new Ellipse2D.Double(position.getX() + padding, position.getY() + padding, position.getWidth() - 2 * padding, position.getHeight() - 2 * padding);
     }
 }

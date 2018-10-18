@@ -17,7 +17,7 @@ public class TextUtils {
 	private static final Font DEFAULT_FONT = new Font("arial", Font.BOLD, 8);
 	private static final Graphics2D GRAPHICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics();
 
-	private static final double RATIO = 7. / 3;  // (4 / 3) ^ 3
+	public static final double RATIO = 7. / 3;  // (4 / 3) ^ 3
 	private static final double MIN_HEIGHT = 30;
 
 
