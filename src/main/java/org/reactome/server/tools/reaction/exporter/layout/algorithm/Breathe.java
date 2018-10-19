@@ -37,9 +37,34 @@ public class Breathe implements LayoutAlgorithm {
      */
     private static final double HORIZONTAL_PADDING = 15;
     /**
-     * Minimum distance bewteen any glyph and the reaction glyph
+     * Minimum vertical distance between any glyph and the reaction glyph
      */
-    private static final double REACTION_MIN_DISTANCE = 200;
+    private static final double REACTION_MIN_V_DISTANCE = 120;
+    /**
+     * Minimum horizontal distance between any glyph and the reaction glyph
+     */
+    private static final double REACTION_MIN_H_DISTANCE = 200;
+    /**
+     * Size of reaction glyph
+     */
+    private static final int REACTION_SIZE = 12;
+    /**
+     * Size of attachment glyph
+     */
+    private static final int ATTACHMENT_SIZE = REACTION_SIZE;
+    /**
+     * Padding of attachmente glyphs
+     */
+    private static final int ATTACHMENT_PADDING = 2;
+    /**
+     * Precomputed space to allow for attachments
+     */
+    private static final double BOX_SIZE = ATTACHMENT_SIZE + 2 * ATTACHMENT_PADDING;
+    /**
+     * Length of the backbone of the reaction
+     */
+    private static final double BACKBONE_LENGTH = 20;
+
     /**
      * Order in which nodes should be placed depending on their {@link RenderableClass}
      */
@@ -57,13 +82,6 @@ public class Breathe implements LayoutAlgorithm {
      * Comparator that puts false elements before true elements.
      */
     private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
-    private static final int REACTION_SIZE = 12;
-    private static final int ATTACHMENT_SIZE = REACTION_SIZE;
-    private static final int ATTACHMENT_PADDING = 2;
-    private static final double BACKBONE_LENGTH = 20;
-    private static final EnumSet<EntityRole> INPUT_CATALYST = EnumSet.of(EntityRole.INPUT, EntityRole.CATALYST);
-    // Lets add 2 pixels of padding
-    private static final double BOX_SIZE = ATTACHMENT_SIZE + 2 * ATTACHMENT_PADDING;
 
     @Override
     public void compute(Layout layout) {
@@ -86,9 +104,8 @@ public class Breathe implements LayoutAlgorithm {
             if (roles.size() > 1) {
                 // Extract the role types
                 final ArrayList<Role> roleList = new ArrayList<>(roles);
-                for (int i = 1; i < roleList.size(); i++) {
-                    final Role role = roleList.get(i);
-                    if (INPUT_CATALYST.contains(role.getType())) continue;
+                for (final Role role : roleList) {
+                    if (role.getType() == EntityRole.INPUT || role.getType() == EntityRole.CATALYST) continue;
                     final EntityGlyph copy = new EntityGlyph(entity);
                     copy.setRole(role);
                     entity.getRoles().remove(role);
@@ -207,7 +224,7 @@ public class Breathe implements LayoutAlgorithm {
                 placeEntity(glyph, new Coordinate(-coord.getX(), coord.getY())));
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getX() - BACKBONE_LENGTH;
-        final double vRule = port - REACTION_MIN_DISTANCE;
+        final double vRule = port - REACTION_MIN_H_DISTANCE;
         for (EntityGlyph entity : inputs) {
             final Position position = entity.getPosition();
             // is catalyst and input
@@ -247,11 +264,10 @@ public class Breathe implements LayoutAlgorithm {
         heightPerGlyph += VERTICAL_PADDING;
         final double totalHeight = heightPerGlyph * outputs.size();
         final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
-        layoutVerticalEntities(layout.getCompartmentRoot(), outputs, yOffset, heightPerGlyph, (glyph, coord) ->
-                placeEntity(glyph, coord));
+        layoutVerticalEntities(layout.getCompartmentRoot(), outputs, yOffset, heightPerGlyph, this::placeEntity);
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getMaxX() + BACKBONE_LENGTH;
-        final double vRule = port + REACTION_MIN_DISTANCE;
+        final double vRule = port + REACTION_MIN_V_DISTANCE;
         for (EntityGlyph entity : outputs) {
             final Position position = entity.getPosition();
             for (Role role : entity.getRoles()) {
@@ -286,7 +302,7 @@ public class Breathe implements LayoutAlgorithm {
                 placeEntity(glyph, new Coordinate(coord.getY(), coord.getX())));
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getY();
-        final double hRule = port - REACTION_MIN_DISTANCE;
+        final double hRule = port - REACTION_MIN_V_DISTANCE;
         for (EntityGlyph entity : catalysts) {
             final Position position = entity.getPosition();
             for (Role role : entity.getRoles()) {
@@ -296,12 +312,6 @@ public class Breathe implements LayoutAlgorithm {
                 entity.getConnector().setPointer(role.getType());
             }
         }
-        final ArrayList<EntityGlyph> biRole = new ArrayList<>(entities);
-        biRole.stream().filter(entityGlyph -> entityGlyph.getRoles().stream().anyMatch(role -> role.getType() == EntityRole.INPUT))
-                .forEach(entityGlyph -> {
-
-                });
-
     }
 
     private void regulators(Layout layout, Collection<EntityGlyph> entities) {
@@ -325,7 +335,7 @@ public class Breathe implements LayoutAlgorithm {
                 placeEntity(glyph, new Coordinate(coord.getY(), -coord.getX())));
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getMaxY();
-        final double hRule = port + REACTION_MIN_DISTANCE;
+        final double hRule = port + REACTION_MIN_V_DISTANCE;
         for (EntityGlyph entity : regulators) {
             final Position position = entity.getPosition();
             for (Role role : entity.getRoles()) {
@@ -352,7 +362,7 @@ public class Breathe implements LayoutAlgorithm {
                 width = input.getPosition().getWidth();
         }
         width += HORIZONTAL_PADDING;
-        final double x = REACTION_MIN_DISTANCE + startX + width;
+        final double x = REACTION_MIN_H_DISTANCE + startX + width;
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
             final double y = -yOffset + i * heightPerGlyph;
@@ -371,7 +381,7 @@ public class Breathe implements LayoutAlgorithm {
                 .collect(Collectors.toList());
         if (glyphs.isEmpty()) return COMPARTMENT_PADDING;
         final double height = entities.stream().map(Glyph::getPosition).mapToDouble(Position::getHeight).max().orElse(MIN_GLYPH_HEIGHT) + VERTICAL_PADDING;
-        final double x = REACTION_MIN_DISTANCE + startY + 0.5 * height;
+        final double x = REACTION_MIN_V_DISTANCE + startY + 0.5 * height;
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
             final double y = -xOffset + i * widthPerGlyph;
@@ -387,7 +397,6 @@ public class Breathe implements LayoutAlgorithm {
                 attachment.getPosition().move(entity.getPosition().getX(), entity.getPosition().getY());
             }
         }
-        addConnectors(entity);
     }
 
     private void layoutCompartments(Layout layout) {
@@ -519,7 +528,4 @@ public class Breathe implements LayoutAlgorithm {
         layout.getCompartments().remove(layout.getCompartmentRoot());
     }
 
-    private void addConnectors(EntityGlyph entity) {
-        final Position position = entity.getPosition();
-    }
 }
