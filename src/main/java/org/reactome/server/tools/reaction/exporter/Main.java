@@ -16,8 +16,9 @@ import org.reactome.server.tools.reaction.exporter.renderer.RenderArgs;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
@@ -32,12 +33,13 @@ public class Main {
         // Program Arguments -h, -p, -u, -k
         SimpleJSAP jsap = new SimpleJSAP(Main.class.getName(), "Generates an image from a single reaction in reaction. Supports png, jpg, jpeg, gif, svg and pdf.",
                 new Parameter[]{
-                        new FlaggedOption("host",     JSAP.STRING_PARSER, "localhost", JSAP.NOT_REQUIRED, 'h', "host",     "The neo4j host"),
-                        new FlaggedOption("port",     JSAP.STRING_PARSER, "7474",      JSAP.NOT_REQUIRED, 'p', "port",     "The neo4j port"),
-                        new FlaggedOption("user",     JSAP.STRING_PARSER, "neo4j",     JSAP.NOT_REQUIRED, 'u', "user",     "The neo4j user"),
-                        new FlaggedOption("password", JSAP.STRING_PARSER, "neo4j",     JSAP.REQUIRED,     'd', "password", "The neo4j password"),
-                        new FlaggedOption("stId",     JSAP.STRING_PARSER,  null,       JSAP.REQUIRED,     's', "stId",     "Reaction stable identifier"),
-                        new FlaggedOption("output",   JSAP.STRING_PARSER,  null,       JSAP.REQUIRED,     'o', "output",   "Output file. Format will be detected by extension")
+                        new FlaggedOption("host", JSAP.STRING_PARSER, "localhost", JSAP.NOT_REQUIRED, 'h', "host", "The neo4j host"),
+                        new FlaggedOption("port", JSAP.STRING_PARSER, "7474", JSAP.NOT_REQUIRED, 'p', "port", "The neo4j port"),
+                        new FlaggedOption("user", JSAP.STRING_PARSER, "neo4j", JSAP.NOT_REQUIRED, 'u', "user", "The neo4j user"),
+                        new FlaggedOption("password", JSAP.STRING_PARSER, "neo4j", JSAP.REQUIRED, 'd', "password", "The neo4j password"),
+                        new FlaggedOption("stId", JSAP.STRING_PARSER, null, JSAP.REQUIRED, 's', "stId", "Reaction stable identifier"),
+                        new FlaggedOption("path", JSAP.STRING_PARSER, null, JSAP.REQUIRED, 'o', "path", "Output path. File will be named 'path'/'stId'.'format'"),
+                        new FlaggedOption("format", JSAP.STRING_PARSER, "png", JSAP.NOT_REQUIRED, 'f', "format", "Output format")
                 }
         );
 
@@ -57,7 +59,7 @@ public class Main {
         // many inputs: R-HSA-72107, R-HSA-5617820
         // many outputs: R-HSA-6785722, R-HSA-69144 (dissociation)
         // many regulators: R-HSA-6791221
-        // autocatalysis: R-HSA-6814559, R-HSA-112381, R-HSA-1362409
+        // autocatalysis: R-HSA-6814559, R-HSA-112381, R-HSA-1362408
         // reaction misplaced: R-HSA-5205661
         // wrong: R-HSA-5205663
         // attachments: R-HSA-140664
@@ -80,7 +82,14 @@ public class Main {
         // OPTIONAL MATCH (a)-[:created]->(rle)
         // RETURN rle.stId, rle.displayName, both, a.displayName
 
-        ReactionLikeEvent rle = dos.findById(config.getString("stId"));
+        final String stId = config.getString("stId");
+        final String format = config.getString("format").toLowerCase();
+        if (!Arrays.asList("png", "jpg", "jpeg", "gif", "svg", "pdf").contains(format)) {
+            System.err.println(format + " format not supported");
+            return;
+        }
+
+        ReactionLikeEvent rle = dos.findById(stId);
         AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         LayoutFactory layoutFactory = new LayoutFactory(ads);
         Layout rxn = layoutFactory.getReactionLikeEventLayout(rle);
@@ -94,7 +103,15 @@ public class Main {
 
         final BufferedImage image = RENDERER.render(new RenderArgs().setQuality(10), rxn);
         try {
-            ImageIO.write(image, "png", new FileOutputStream(config.getString("output")));
+            final File path = new File(config.getString("path"));
+            if (!path.exists()) {
+                if (!path.mkdirs()) {
+                    System.err.println("Couldn't create path " + path);
+                    return;
+                }
+            }
+            final File file = new File(path, stId + "." + format);
+            ImageIO.write(image, "png", file);
         } catch (IOException e) {
             e.printStackTrace();
         }
