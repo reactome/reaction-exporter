@@ -10,9 +10,11 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Shape {
 
-    public enum Type {ARROW, BOX, CIRCLE, DOUBLE_CIRCLE, STOP}
+
+    public enum Type {ARROW, BOX, CIRCLE, DOUBLE_CIRCLE, STOP;}
 
     private Coordinate a;
+
     private Coordinate b;
     private Coordinate c;
     private Integer r;
@@ -62,10 +64,10 @@ public class Shape {
     }
 
     private transient Double minX;
+
     private transient Double maxX;
     private transient Double minY;
     private transient Double maxY;
-
     private void setBoundaries() {
         List<Double> xx = new ArrayList<>();
         List<Double> yy = new ArrayList<>();
@@ -104,6 +106,12 @@ public class Shape {
         return x >= minX && x <= maxX && y >= minY && y <= maxY;
     }
 
+    public void move(double dx, double dy) {
+        if (a != null) a.move(dx, dy);
+        if (b != null) b.move(dx, dy);
+        if (c != null) c.move(dx, dy);
+    }
+
     public Coordinate getA() {
         return a;
     }
@@ -130,5 +138,9 @@ public class Shape {
 
     public Boolean getEmpty() {
         return empty;
+    }
+
+    public String getS() {
+        return s;
     }
 }

@@ -416,4 +416,72 @@ public class ShapeFactory {
     }
 
 
+    public static Shape from(org.reactome.server.tools.reaction.exporter.layout.model.Shape shape) {
+        switch (shape.getType()) {
+            case ARROW:
+                return (arrow(shape));
+            case BOX:
+                return (box(shape));
+            case CIRCLE:
+            case DOUBLE_CIRCLE:
+                return (circle(shape));
+            case STOP:
+                return (stop(shape));
+            default:
+                throw new RuntimeException("Do not know shape " + shape.getType());
+        }
+    }
+
+    private static Shape arrow(org.reactome.server.tools.reaction.exporter.layout.model.Shape shape) {
+        final int[] xs = new int[]{
+                shape.getA().getX().intValue(),
+                shape.getB().getX().intValue(),
+                shape.getC().getX().intValue()
+        };
+        final int[] ys = new int[]{
+                shape.getA().getY().intValue(),
+                shape.getB().getY().intValue(),
+                shape.getC().getY().intValue()
+        };
+        return new Polygon(xs, ys, xs.length);
+    }
+
+    private static Shape box(org.reactome.server.tools.reaction.exporter.layout.model.Shape shape) {
+        return new Rectangle2D.Double(
+                shape.getA().getX(),
+                shape.getA().getY(),
+                shape.getB().getX() - shape.getA().getX(),
+                shape.getB().getY() - shape.getA().getY());
+    }
+
+    private static Shape circle(org.reactome.server.tools.reaction.exporter.layout.model.Shape shape) {
+        final double x = shape.getC().getX() - shape.getR();
+        final double y = shape.getC().getY() - shape.getR();
+        return new Ellipse2D.Double(
+                x,
+                y,
+                2 * shape.getR(),
+                2 * shape.getR());
+    }
+
+    public static Shape innerCircle(org.reactome.server.tools.reaction.exporter.layout.model.Shape shape) {
+        final double x = shape.getC().getX() - shape.getR1();
+        final double y = shape.getC().getY() - shape.getR1();
+        return new Ellipse2D.Double(
+                x,
+                y,
+                2 * shape.getR1(),
+                2 * shape.getR1()
+        );
+    }
+
+    private static Shape stop(org.reactome.server.tools.reaction.exporter.layout.model.Shape shape) {
+        return new Line2D.Double(
+                shape.getA().getX(),
+                shape.getA().getY(),
+                shape.getB().getX(),
+                shape.getB().getY()
+        );
+    }
+
 }

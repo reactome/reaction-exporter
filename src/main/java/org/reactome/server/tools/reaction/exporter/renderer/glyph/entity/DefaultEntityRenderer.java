@@ -68,6 +68,12 @@ public abstract class DefaultEntityRenderer implements Renderer<EntityGlyph> {
         for (Segment segment : entity.getConnector().getSegments()) {
             canvas.getSegments().add(ShapeFactory.getLine(segment), color, StrokeStyle.SEGMENT.getNormal());
         }
+        final org.reactome.server.tools.reaction.exporter.layout.model.Shape rShape = entity.getConnector().getShape();
+        if (rShape != null) {
+            final Shape shape = ShapeFactory.from(rShape);
+            canvas.getNodeFill().add(shape, rShape.getEmpty() == null ? Color.BLACK : Color.WHITE);
+            canvas.getNodeBorder().add(shape, Color.BLACK, StrokeStyle.BORDER.getNormal());
+        }
 
     }
 }

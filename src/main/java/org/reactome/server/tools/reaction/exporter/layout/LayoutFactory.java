@@ -514,6 +514,8 @@ public class LayoutFactory {
                 segment.getFrom().move(dx, dy);
                 segment.getTo().move(dx, dy);
             }
+            if (entity.getConnector().getShape() != null) entity.getConnector().getShape().move(dx, dy);
+            if (entity.getConnector().getStoichiometry() != null) entity.getConnector().getStoichiometry().move(dx, dy);
         }
 
     }
