@@ -1,13 +1,11 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.reactome.server.graph.domain.model.BlackBoxEvent;
 import org.reactome.server.graph.domain.model.Compartment;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.tools.reaction.exporter.goontology.GoTerm;
 import org.reactome.server.tools.reaction.exporter.goontology.GoTreeFactory;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
-import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
 import java.util.*;
 
@@ -28,9 +26,6 @@ public class Layout implements HasPosition {
     private CompartmentGlyph compartmentRoot;
 
     private Map<String, CompartmentGlyph> compartments = new HashMap<>();
-
-    private ReactionLikeEvent rle = null;
-    private Integer delta = null;
 
     public void add(EntityGlyph entityGlyph) {
         entities.add(entityGlyph);
@@ -61,7 +56,6 @@ public class Layout implements HasPosition {
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
     public void setReactionLikeEvent(ReactionLikeEvent rle) {
-        this.rle = rle;
         reactionGlyph = new ReactionGlyph(rle);
 
         //noinspection LoopStatementThatDoesntLoop
@@ -72,7 +66,6 @@ public class Layout implements HasPosition {
             break; //We only want to assign the reaction to the first compartment in the list
         }
 
-        setReactionGlyphRenderableClass();
     }
 
     // This setter is called automatically by the graph-core marshaller
@@ -90,26 +83,6 @@ public class Layout implements HasPosition {
             }
         }
 
-        delta = 0;
-        for (EntityGlyph participant : entities.values()) {
-            //noinspection LoopStatementThatDoesntLoop
-            for (Compartment compartment : participant.getCompartments()) {
-                String acc = compartment.getAccession();
-                CompartmentGlyph cg = compartments.computeIfAbsent(acc, i -> new CompartmentGlyph(compartment));
-                cg.addGlyph(participant);
-                break; //We only want to assign the participant to the first compartment in the list
-            }
-
-            //Taking advantage of the iteration of the participants to calculate the differential 'delta' between the
-            //number of inputs and outputs that will later on be used to set the renderable class of the reaction
-            for (Role role : participant.getRoles()) {
-                switch (role.getType()) {
-                    case INPUT:     delta += role.getStoichiometry();   break;
-                    case OUTPUT:    delta -= role.getStoichiometry();   break;
-                }
-            }
-        }
-
         List<String> compartments = new ArrayList<>();
         for (CompartmentGlyph compartment : this.compartments.values()) {
             compartments.add("GO:" + compartment.getAccession());
@@ -120,7 +93,6 @@ public class Layout implements HasPosition {
 
 
         buildCompartmentHierarchy(compartmentRoot, treeRoot);
-        setReactionGlyphRenderableClass();
 
         this.entities = new HashSet<>(entities.values());
     }
@@ -134,14 +106,4 @@ public class Layout implements HasPosition {
         }
     }
 
-    private void setReactionGlyphRenderableClass() {
-        if (rle == null || delta == null) return;
-        RenderableClass rc;
-        if (rle instanceof BlackBoxEvent) rc = RenderableClass.OMITTED_REACTION;
-        else if (!rle.getCatalystActivity().isEmpty()) rc = RenderableClass.TRANSFORMATION_REACTION;
-        else if (delta > 0) rc = RenderableClass.BINDING_REACTION;
-        else if (delta < 0) rc = RenderableClass.DISSOCIATION_REACTION;
-        else rc = RenderableClass.TRANSFORMATION_REACTION;
-        reactionGlyph.setRenderableClass(rc);
-    }
 }
