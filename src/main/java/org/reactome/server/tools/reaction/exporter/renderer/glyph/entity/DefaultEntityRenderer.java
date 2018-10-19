@@ -14,6 +14,8 @@ import org.reactome.server.tools.reaction.exporter.renderer.utils.StrokeStyle;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
+import static org.reactome.server.tools.reaction.exporter.layout.model.Shape.Type.DOUBLE_CIRCLE;
+
 public abstract class DefaultEntityRenderer implements Renderer<EntityGlyph> {
 
     @Override
@@ -71,8 +73,26 @@ public abstract class DefaultEntityRenderer implements Renderer<EntityGlyph> {
         final org.reactome.server.tools.reaction.exporter.layout.model.Shape rShape = entity.getConnector().getShape();
         if (rShape != null) {
             final Shape shape = ShapeFactory.from(rShape);
-            canvas.getNodeFill().add(shape, rShape.getEmpty() == null ? Color.BLACK : Color.WHITE);
-            canvas.getNodeBorder().add(shape, Color.BLACK, StrokeStyle.BORDER.getNormal());
+            canvas.getNodeFill().add(shape, rShape.getEmpty() == null ? color : Color.WHITE);
+            canvas.getNodeBorder().add(shape, color, StrokeStyle.BORDER.getNormal());
+            if (rShape.getType() == DOUBLE_CIRCLE) {
+                final Shape circle = ShapeFactory.innerCircle(rShape);
+                canvas.getNodeBorder().add(circle, color, StrokeStyle.BORDER.getNormal());
+            }
+        }
+
+        final org.reactome.server.tools.reaction.exporter.layout.model.Shape sShape = entity.getConnector().getStoichiometry();
+        if (sShape != null) {
+            final Shape shape = ShapeFactory.from(sShape);
+            canvas.getNodeFill().add(shape, sShape.getEmpty() == null ? color : Color.WHITE);
+            canvas.getNodeBorder().add(shape, color, StrokeStyle.BORDER.getNormal());
+            final Position limits = new Position();
+            final Rectangle bounds = shape.getBounds();
+            limits.setX(bounds.getX());
+            limits.setY(bounds.getY());
+            limits.setWidth(bounds.getWidth());
+            limits.setHeight(bounds.getHeight());
+            canvas.getNodeText().add(sShape.getS(), limits, color, 0);
         }
 
     }

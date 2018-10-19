@@ -7,15 +7,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @author Kostas Sidiropoulos <ksidiro@ebi.ac.uk>
+ * @author Antonio Fabregat <fabregat@ebi.ac.uk>
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Shape {
 
 
-    public enum Type {ARROW, BOX, CIRCLE, DOUBLE_CIRCLE, STOP;}
+    public enum Type {ARROW, BOX, CIRCLE, DOUBLE_CIRCLE, STOP}
 
     private Coordinate a;
 
     private Coordinate b;
+
     private Coordinate c;
     private Integer r;
     private Integer r1;
@@ -64,10 +69,10 @@ public class Shape {
     }
 
     private transient Double minX;
-
     private transient Double maxX;
     private transient Double minY;
     private transient Double maxY;
+
     private void setBoundaries() {
         List<Double> xx = new ArrayList<>();
         List<Double> yy = new ArrayList<>();
@@ -142,5 +147,9 @@ public class Shape {
 
     public String getS() {
         return s;
+    }
+
+    public void setS(String s) {
+        this.s = s;
     }
 }

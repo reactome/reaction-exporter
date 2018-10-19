@@ -273,10 +273,17 @@ public class LayoutFactory {
         final double vRule = port - REACTION_MIN_DISTANCE;
         for (EntityGlyph entity : inputs) {
             final Position position = entity.getPosition();
+            // Input
+            entity.getConnector().getSegments().add(new Segment(position.getMaxX(), position.getCenterY(), vRule, position.getCenterY()));
+            entity.getConnector().getSegments().add(new Segment(vRule, position.getCenterY(), port, reactionPosition.getCenterY()));
+            // Catalyst
+            if (entity.getRoles().size() > 1) {
+                entity.getConnector().getSegments().add(new Segment(position.getMaxX(), position.getCenterY(), vRule + 50, position.getCenterY()));
+                entity.getConnector().getSegments().add(new Segment(vRule + 50, position.getCenterY(), reactionPosition.getCenterX(), reactionPosition.getY()));
+                entity.getConnector().setPointer(EntityRole.CATALYST);
+            }
             for (Role role : entity.getRoles()) {
-                entity.getConnector().getSegments().add(new Segment(position.getMaxX(), position.getCenterY(), vRule, position.getCenterY()));
-                entity.getConnector().getSegments().add(new Segment(vRule, position.getCenterY(), port, reactionPosition.getCenterY()));
-                entity.getConnector().setPointer(role.getType());
+                // This will take last s > 1
                 entity.getConnector().setStoichiometry(role.getStoichiometry());
             }
         }
@@ -336,7 +343,7 @@ public class LayoutFactory {
         layoutHorizontalEntities(layout.getCompartmentRoot(), catalysts, xOffset, widthPerGlyph, (glyph, coord) ->
                 placeEntity(glyph, new Coordinate(coord.getY(), coord.getX())));
         final Position reactionPosition = layout.getReaction().getPosition();
-        final double port = reactionPosition.getY() - 8;
+        final double port = reactionPosition.getY();
         final double hRule = port - REACTION_MIN_DISTANCE;
         for (EntityGlyph entity : catalysts) {
             final Position position = entity.getPosition();
@@ -375,7 +382,7 @@ public class LayoutFactory {
         layoutHorizontalEntities(layout.getCompartmentRoot(), regulators, xOffset, widthPerGlyph, (glyph, coord) ->
                 placeEntity(glyph, new Coordinate(coord.getY(), -coord.getX())));
         final Position reactionPosition = layout.getReaction().getPosition();
-        final double port = reactionPosition.getMaxY() + 8;
+        final double port = reactionPosition.getMaxY();
         final double hRule = port + REACTION_MIN_DISTANCE;
         for (EntityGlyph entity : regulators) {
             final Position position = entity.getPosition();

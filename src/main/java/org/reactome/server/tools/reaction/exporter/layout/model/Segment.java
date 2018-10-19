@@ -1,7 +1,11 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.Coordinate;
-
+/**
+ * @author Kostas Sidiropoulos (ksidiro@ebi.ac.uk)
+ * @author Antonio Fabregat (fabregat@ebi.ac.uk)
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 public class Segment {
 
     private Coordinate from;

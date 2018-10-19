@@ -23,8 +23,8 @@ import java.util.List;
  * Connector also includes the shape (arrow, circle, etc.). The points of the shapes are
  * calculated server-side to avoid the cost of processing at the client
  *
- * @author Antonio Fabregat <fabregat@ebi.ac.uk>
- * @author Kostas Sidiropoulos <ksidiro@ebi.ac.uk>
+ * @author Antonio Fabregat (fabregat@ebi.ac.uk)
+ * @author Kostas Sidiropoulos (ksidiro@ebi.ac.uk)
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -82,7 +82,8 @@ public class Connector {
                     segment = segments.get(segments.size() - 1);
                     // Adjust the position of the segment to have a distance from the reaction position
                     segments.remove(segment);
-                    segments.add(new Segment(segment.getFrom(), calculateEndpoint(segment, getDistanceForEndpoint(type))));
+                    segment = new Segment(segment.getFrom(), calculateEndpoint(segment, getDistanceForEndpoint(type)));
+                    segments.add(segment);
                     points = ShapeFactory.createStop(
                             segment.getTo().getX(),
                             segment.getTo().getY(),
@@ -95,7 +96,8 @@ public class Connector {
                     // Use the last segment of the Connector - closer to the edge (reaction)
                     segment = segments.get(segments.size() - 1);
                     segments.remove(segment);
-                    segments.add(new Segment(segment.getFrom(), calculateEndpoint(segment, getDistanceForEndpoint(type))));
+                    segment = new Segment(segment.getFrom(), calculateEndpoint(segment, getDistanceForEndpoint(type)));
+                    segments.add(segment);
                     points = ShapeFactory.createArrow(
                             segment.getTo().getX(),
                             segment.getTo().getY(),
@@ -150,14 +152,13 @@ public class Connector {
      */
     public void setStoichiometry(int stoichiometry) {
         if (stoichiometry > 1) {
-            Segment segment;
-
-            segment = this.segments.get(0);
+            final Segment segment = this.segments.get(0);
 
             this.stoichiometry = ShapeFactory.createStoichiometryBox(
                     setStoichiometryPosition(segment.getFrom(), segment.getTo()),
                     String.valueOf(stoichiometry)
             );
+            this.stoichiometry.setS(String.valueOf(stoichiometry));
         }
     }
 
