@@ -52,7 +52,7 @@ public class LayoutFactory {
     /**
      * Minimum distance bewteen any glyph and the reaction glyph
      */
-    private static final double REACTION_MIN_DISTANCE = 120;
+    private static final double REACTION_MIN_DISTANCE = 200;
     /**
      * Order in which nodes should be placed depending on their {@link RenderableClass}
      */
@@ -140,30 +140,18 @@ public class LayoutFactory {
     }
 
     private void addDuplicates(Layout layout) {
-        // Entities are duplicated only when they have roles that are no consecutive around the reaction
-        // This happens only in 2 cases:
-        //   (i)  an input is also an output, but neither catalyst nor regulator
-        //   (ii) a catalyst is also a regulator, but neither an input nor output
+        // We duplicate every entity that has more than one role, except when the input is a catalyst
+
         final List<EntityGlyph> added = new ArrayList<>();
         for (EntityGlyph entity : layout.getEntities()) {
             final Collection<Role> roles = entity.getRoles();
             if (roles.size() > 1) {
                 // Extract the role types
                 final Set<EntityRole> roleSet = roles.stream().map(Role::getType).collect(Collectors.toSet());
-                if (roleSet.equals(EnumSet.of(EntityRole.INPUT, EntityRole.OUTPUT))
-                        || roleSet.equals(EnumSet.of(EntityRole.CATALYST, EntityRole.POSITIVE_REGULATOR))
-                        || roleSet.equals(EnumSet.of(EntityRole.CATALYST, EntityRole.NEGATIVE_REGULATOR))) {
-                    // When we have 2 opposite roles, one remains in entity and the other is set to copy
-                    final Role role = roles.iterator().next();
-                    final EntityGlyph copy = new EntityGlyph(entity);
-                    copy.setRole(role);
-                    entity.getRoles().remove(role);
-                    added.add(copy);
-                    addCopyToCompartment(layout, entity, copy);
-                } else if (roleSet.equals(EnumSet.of(EntityRole.CATALYST, EntityRole.NEGATIVE_REGULATOR, EntityRole.POSITIVE_REGULATOR))) {
-                    // Special case: catalyst/positive/negative. Should it happen?
-                    // In this case we split it in 2 entities: catalyst and positive/negative
-                    final Role role = roles.stream().filter(r -> r.getType() == EntityRole.CATALYST).findFirst().orElse(null);
+                if (roleSet.equals(EnumSet.of(EntityRole.INPUT, EntityRole.CATALYST))) continue;
+                final ArrayList<Role> roleList = new ArrayList<>(roles);
+                for (int i = 1; i < roleList.size(); i++) {
+                    final Role role = roleList.get(i);
                     final EntityGlyph copy = new EntityGlyph(entity);
                     copy.setRole(role);
                     entity.getRoles().remove(role);
@@ -262,8 +250,11 @@ public class LayoutFactory {
     private void inputs(Layout layout, Collection<EntityGlyph> entities) {
         final ArrayList<EntityGlyph> inputs = new ArrayList<>(entities);
         inputs.sort(Comparator
-                .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
+                // input/catalysts first
+                .comparing((EntityGlyph e) -> e.getRoles().size()).reversed()
+                // non trivial then
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
+                // and by RenderableClass
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass())));
 
         double heightPerGlyph = MIN_GLYPH_HEIGHT;
@@ -282,8 +273,12 @@ public class LayoutFactory {
         final double vRule = port - REACTION_MIN_DISTANCE;
         for (EntityGlyph entity : inputs) {
             final Position position = entity.getPosition();
-            entity.getConnector().getSegments().add(new Segment(position.getMaxX(), position.getCenterY(), vRule, position.getCenterY()));
-            entity.getConnector().getSegments().add(new Segment(vRule, position.getCenterY(), port, reactionPosition.getCenterY()));
+            for (Role role : entity.getRoles()) {
+                entity.getConnector().getSegments().add(new Segment(position.getMaxX(), position.getCenterY(), vRule, position.getCenterY()));
+                entity.getConnector().getSegments().add(new Segment(vRule, position.getCenterY(), port, reactionPosition.getCenterY()));
+                entity.getConnector().setPointer(role.getType());
+                entity.getConnector().setStoichiometry(role.getStoichiometry());
+            }
         }
     }
 
@@ -310,14 +305,20 @@ public class LayoutFactory {
         final double vRule = port + REACTION_MIN_DISTANCE;
         for (EntityGlyph entity : outputs) {
             final Position position = entity.getPosition();
-            entity.getConnector().getSegments().add(new Segment(position.getX(), position.getCenterY(), vRule, position.getCenterY()));
-            entity.getConnector().getSegments().add(new Segment(vRule, position.getCenterY(), port, reactionPosition.getCenterY()));
+            for (Role role : entity.getRoles()) {
+                entity.getConnector().getSegments().add(new Segment(position.getX(), position.getCenterY(), vRule, position.getCenterY()));
+                entity.getConnector().getSegments().add(new Segment(vRule, position.getCenterY(), port, reactionPosition.getCenterY()));
+                entity.getConnector().setPointer(role.getType());
+                entity.getConnector().setStoichiometry(role.getStoichiometry());
+            }
         }
     }
 
     private void catalysts(Layout layout, Collection<EntityGlyph> entities) {
         if (entities == null || entities.isEmpty()) return;
         final ArrayList<EntityGlyph> catalysts = new ArrayList<>(entities);
+        // Remove catalysts that are inputs
+        catalysts.removeIf(entityGlyph -> entityGlyph.getRoles().stream().anyMatch(role -> role.getType() == EntityRole.INPUT));
         catalysts.sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
@@ -334,6 +335,24 @@ public class LayoutFactory {
         final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
         layoutHorizontalEntities(layout.getCompartmentRoot(), catalysts, xOffset, widthPerGlyph, (glyph, coord) ->
                 placeEntity(glyph, new Coordinate(coord.getY(), coord.getX())));
+        final Position reactionPosition = layout.getReaction().getPosition();
+        final double port = reactionPosition.getY() - 8;
+        final double hRule = port - REACTION_MIN_DISTANCE;
+        for (EntityGlyph entity : catalysts) {
+            final Position position = entity.getPosition();
+            for (Role role : entity.getRoles()) {
+                entity.getConnector().getSegments().add(new Segment(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
+                entity.getConnector().getSegments().add(new Segment(position.getCenterX(), hRule, reactionPosition.getCenterX(), port));
+                entity.getConnector().setStoichiometry(role.getStoichiometry());
+                entity.getConnector().setPointer(role.getType());
+            }
+        }
+        final ArrayList<EntityGlyph> biRole = new ArrayList<>(entities);
+        biRole.stream().filter(entityGlyph -> entityGlyph.getRoles().stream().anyMatch(role -> role.getType() == EntityRole.INPUT))
+                .forEach(entityGlyph -> {
+
+                });
+
     }
 
     private void regulators(Layout layout, Collection<EntityGlyph> entities) {
@@ -355,6 +374,18 @@ public class LayoutFactory {
         final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
         layoutHorizontalEntities(layout.getCompartmentRoot(), regulators, xOffset, widthPerGlyph, (glyph, coord) ->
                 placeEntity(glyph, new Coordinate(coord.getY(), -coord.getX())));
+        final Position reactionPosition = layout.getReaction().getPosition();
+        final double port = reactionPosition.getMaxY() + 8;
+        final double hRule = port + REACTION_MIN_DISTANCE;
+        for (EntityGlyph entity : regulators) {
+            final Position position = entity.getPosition();
+            for (Role role : entity.getRoles()) {
+                entity.getConnector().getSegments().add(new Segment(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
+                entity.getConnector().getSegments().add(new Segment(position.getCenterX(), hRule, reactionPosition.getCenterX(), port));
+                entity.getConnector().setStoichiometry(role.getStoichiometry());
+                entity.getConnector().setPointer(role.getType());
+            }
+        }
     }
 
     private double layoutVerticalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double yOffset, double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {

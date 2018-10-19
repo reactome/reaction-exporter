@@ -56,7 +56,7 @@ public abstract class ReactionRenderer implements Renderer<ReactionGlyph> {
 
     protected Color getTextColor(ReactionGlyph entity, DiagramProfile profile) {
         if (entity.isDisease() != null && entity.isDisease()) return profile.getProperties().getDisease();
-        return profile.getReaction().getText();
+        return profile.getReaction().getStroke();
     }
 
     private void segments(ReactionGlyph entity, ImageCanvas canvas, DiagramProfile profile) {

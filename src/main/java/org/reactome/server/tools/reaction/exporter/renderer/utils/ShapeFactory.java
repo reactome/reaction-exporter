@@ -1,11 +1,15 @@
 package org.reactome.server.tools.reaction.exporter.renderer.utils;
 
+import org.reactome.server.tools.reaction.exporter.layout.common.Coordinate;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.Segment;
 
 import java.awt.*;
+import java.awt.font.FontRenderContext;
 import java.awt.geom.*;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -23,6 +27,10 @@ public class ShapeFactory {
     private static final double ARROW_LENGTH = 8;
     private static final double ENCAPSULATED_TANH = Math.tanh(Math.PI / 9);
 
+    public static final double ARROW_ANGLE = Math.PI / 6;
+    public static final int EDGE_TYPE_WIDGET_WIDTH = 12;
+    public static final int CIRCLE_WIDGET_CORRECTION = 1;
+    public static final int EDGE_MODULATION_WIDGET_WIDTH = 8;
     /**
      * Creates a rectangle with edged corners (an octagon)
      *
@@ -323,4 +331,89 @@ public class ShapeFactory {
     public static Shape getLine(Segment segment) {
         return new Line2D.Double(segment.getFrom().getX(), segment.getFrom().getY(), segment.getTo().getX(), segment.getTo().getY());
     }
+
+
+    public static List<Coordinate> createArrow(
+            double arrowPositionX,
+            double arrowPositionY,
+            double controlX,
+            double controlY){
+        // IMPORTANT!!! Segments start from the node and point to the backbone
+        // Point used to calculate the angle of the arrow
+        // Point used to place the  arrow
+
+        double arrowLength = ARROW_LENGTH;
+        double arrowAngle = ARROW_ANGLE;
+
+        List<Coordinate> rtn = new LinkedList<>();
+
+        // Get the angle of the line segment
+        double alpha = Math.atan((arrowPositionY - controlY) / (arrowPositionX - controlX) );
+        if (controlX > arrowPositionX)
+            alpha += Math.PI;
+        double angle = arrowAngle - alpha;
+        float x1 = (float)(arrowPositionX - arrowLength * Math.cos(angle));
+        float y1 = (float)(arrowPositionY + arrowLength * Math.sin(angle));
+        rtn.add( new Coordinate(Math.round(x1), Math.round(y1)));
+        // The tip of the arrow is the end of the segment
+        rtn.add( new Coordinate(Math.round((float)arrowPositionX), Math.round((float)arrowPositionY)));
+
+        angle = arrowAngle + alpha;
+        float x2 = (float)(arrowPositionX - arrowLength * Math.cos(angle));
+        float y2 = (float)(arrowPositionY - arrowLength * Math.sin(angle));
+        rtn.add( new Coordinate(Math.round( x2), Math.round( y2)));
+        return rtn;
+    }
+
+    public static List<Coordinate> createStop(
+            double anchorX,
+            double anchorY,
+            double controlX,
+            double controlY){
+
+        List<Coordinate> rtn = new LinkedList<>();
+
+        double deltaY = anchorY - controlY;
+        double deltaX = controlX - anchorX;
+
+        double angle = deltaY == 0 ? Math.PI / 2 : Math.atan(-deltaX/deltaY);
+        double x1 = anchorX - (Math.cos(angle) * EDGE_MODULATION_WIDGET_WIDTH / 2.0d);
+        double x2 = anchorX + (Math.cos(angle) * EDGE_MODULATION_WIDGET_WIDTH / 2.0d);
+        double y1 = anchorY + (Math.sin(angle) * EDGE_MODULATION_WIDGET_WIDTH / 2.0d);
+        double y2 = anchorY - (Math.sin(angle) * EDGE_MODULATION_WIDGET_WIDTH / 2.0d);
+
+        rtn.add( new Coordinate(Math.round((float)x1), Math.round( (float)y1)));
+        rtn.add( new Coordinate(Math.round((float)x2), Math.round( (float)y2)));
+        rtn.add( new Coordinate(Math.round((float)anchorX), Math.round( (float)anchorY)));
+
+        return rtn;
+    }
+    public static org.reactome.server.tools.reaction.exporter.layout.model.Shape createStoichiometryBox(Coordinate boxCentre, String symbol){
+        double width = -1;
+        if(symbol!=null) { width = measureText(symbol).getWidth(); }
+        if(width<EDGE_TYPE_WIDGET_WIDTH){ width = EDGE_TYPE_WIDGET_WIDTH; }
+        Coordinate topLeft = new Coordinate(
+                Math.round( (float) (boxCentre.getX() - width / 2.0)),
+                Math.round( (float) (boxCentre.getY() - width / 2.0))
+        );
+        Coordinate bottomRight = new Coordinate(
+                Math.round( (float) (topLeft.getX() + width)),
+                Math.round( (float) (topLeft.getY() + width))
+        );
+        return new org.reactome.server.tools.reaction.exporter.layout.model.Shape(topLeft, bottomRight, Boolean.TRUE, org.reactome.server.tools.reaction.exporter.layout.model.Shape.Type.BOX);
+    }
+
+    private static Rectangle2D measureText(String text){
+        //Create a dummy BufferedImage to get the Graphincs object
+        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = image.createGraphics();
+        //Set the used font
+        g2.setFont(new Font("Arial", Font.PLAIN, 8));
+        Font font = g2.getFont();
+        // get context from the graphics
+        FontRenderContext context = g2.getFontRenderContext();
+        return font.getStringBounds(text, context);
+    }
+
+
 }
