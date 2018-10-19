@@ -152,7 +152,7 @@ public class Connector {
      */
     public void setStoichiometry(int stoichiometry) {
         if (stoichiometry > 1) {
-            final Segment segment = this.segments.get(0);
+            final Segment segment = segments.get(segments.size() - 1);
 
             this.stoichiometry = ShapeFactory.createStoichiometryBox(
                     setStoichiometryPosition(segment.getFrom(), segment.getTo()),

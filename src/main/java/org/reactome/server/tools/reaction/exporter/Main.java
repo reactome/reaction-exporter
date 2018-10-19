@@ -61,6 +61,7 @@ public class Main {
         // reaction misplaced: R-HSA-5205661
         // wrong: R-HSA-5205663
         // attachments: R-HSA-140664
+        // uncertain
 
         // Extract elements with more than one role
         // MATCH (rle:ReactionLikeEvent{speciesName:"Homo sapiens"})

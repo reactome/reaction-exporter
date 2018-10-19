@@ -25,7 +25,7 @@ public class RendererFactory {
         RENDERER_MAP.put(RenderableClass.PROTEIN_DRUG, new ProteinDrugRenderer());
         RENDERER_MAP.put(RenderableClass.RNA, new RnaRenderer());
         RENDERER_MAP.put(RenderableClass.RNA_DRUG, new RnaDrugRenderer());
-        RENDERER_MAP.put(RenderableClass.TRANSFORMATION_REACTION, new TransformationReactionRenderer());
+        RENDERER_MAP.put(RenderableClass.TRANSITION_REACTION, new TransformationReactionRenderer());
         RENDERER_MAP.put(RenderableClass.BINDING_REACTION, new BindingReactionRenderer());
         RENDERER_MAP.put(RenderableClass.UNCERTAIN_REACTION, new UncertainReactionRenderer());
         RENDERER_MAP.put(RenderableClass.OMITTED_REACTION, new OmittedReactionRenderer());

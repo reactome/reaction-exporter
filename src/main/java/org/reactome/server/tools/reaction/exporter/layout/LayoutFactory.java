@@ -74,6 +74,7 @@ public class LayoutFactory {
     private static final int ATTACHMENT_SIZE = REACTION_SIZE;
     private static final int ATTACHMENT_PADDING = 2;
     private static final double BACKBONE_LENGTH = 20;
+    private static final EnumSet<EntityRole> INPUT_CATALYST = EnumSet.of(EntityRole.INPUT, EntityRole.CATALYST);
 
     private AdvancedDatabaseObjectService ads;// Lets add 2 pixels of padding
     private static final double BOX_SIZE = ATTACHMENT_SIZE + 2 * ATTACHMENT_PADDING;
@@ -147,11 +148,10 @@ public class LayoutFactory {
             final Collection<Role> roles = entity.getRoles();
             if (roles.size() > 1) {
                 // Extract the role types
-                final Set<EntityRole> roleSet = roles.stream().map(Role::getType).collect(Collectors.toSet());
-                if (roleSet.equals(EnumSet.of(EntityRole.INPUT, EntityRole.CATALYST))) continue;
                 final ArrayList<Role> roleList = new ArrayList<>(roles);
                 for (int i = 1; i < roleList.size(); i++) {
                     final Role role = roleList.get(i);
+                    if (INPUT_CATALYST.contains(role.getType())) continue;
                     final EntityGlyph copy = new EntityGlyph(entity);
                     copy.setRole(role);
                     entity.getRoles().remove(role);
@@ -273,13 +273,18 @@ public class LayoutFactory {
         final double vRule = port - REACTION_MIN_DISTANCE;
         for (EntityGlyph entity : inputs) {
             final Position position = entity.getPosition();
+            // is catalyst and input
+            final boolean biRole = entity.getRoles().size() > 1;
             // Input
-            entity.getConnector().getSegments().add(new Segment(position.getMaxX(), position.getCenterY(), vRule, position.getCenterY()));
-            entity.getConnector().getSegments().add(new Segment(vRule, position.getCenterY(), port, reactionPosition.getCenterY()));
+            double y = biRole ? position.getCenterY() : position.getCenterY();
+            entity.getConnector().getSegments().add(new Segment(position.getMaxX(), y, vRule, y));
+            entity.getConnector().getSegments().add(new Segment(vRule, y, port, reactionPosition.getCenterY()));
             // Catalyst
-            if (entity.getRoles().size() > 1) {
-                entity.getConnector().getSegments().add(new Segment(position.getMaxX(), position.getCenterY(), vRule + 50, position.getCenterY()));
-                entity.getConnector().getSegments().add(new Segment(vRule + 50, position.getCenterY(), reactionPosition.getCenterX(), reactionPosition.getY()));
+            if (biRole) {
+
+                y = position.getY() + 10;
+                entity.getConnector().getSegments().add(new Segment(position.getMaxX(), y, vRule + 50, y));
+                entity.getConnector().getSegments().add(new Segment(vRule + 50, y, reactionPosition.getCenterX(), reactionPosition.getY()));
                 entity.getConnector().setPointer(EntityRole.CATALYST);
             }
             for (Role role : entity.getRoles()) {

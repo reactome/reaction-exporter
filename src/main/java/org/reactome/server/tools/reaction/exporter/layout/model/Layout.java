@@ -83,6 +83,16 @@ public class Layout implements HasPosition {
             }
         }
 
+        for (EntityGlyph participant : entities.values()) {
+            //noinspection LoopStatementThatDoesntLoop
+            for (Compartment compartment : participant.getCompartments()) {
+                String acc = compartment.getAccession();
+                CompartmentGlyph cg = compartments.computeIfAbsent(acc, i -> new CompartmentGlyph(compartment));
+                cg.addGlyph(participant);
+                break; //We only want to assign the participant to the first compartment in the list
+            }
+        }
+
         List<String> compartments = new ArrayList<>();
         for (CompartmentGlyph compartment : this.compartments.values()) {
             compartments.add("GO:" + compartment.getAccession());
