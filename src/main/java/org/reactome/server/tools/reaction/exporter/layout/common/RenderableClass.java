@@ -86,8 +86,7 @@ public enum RenderableClass {
         if (databaseObject instanceof Polymer) return ENTITY;
 
         if (databaseObject instanceof ReactionLikeEvent) {
-            ReactionLikeEvent rle = ((ReactionLikeEvent) databaseObject);
-            return get(rle.getCategory());
+            return getFromCategory((ReactionLikeEvent) databaseObject);
         }
         if (databaseObject instanceof Pathway) return PROCESS_NODE;
         if (databaseObject instanceof Compartment) return COMPARTMENT;
@@ -95,12 +94,12 @@ public enum RenderableClass {
         throw new RuntimeException("No Schema class defined for [" + databaseObject.getDbId() + ":" + databaseObject.getDisplayName() + "]");
     }
 
-    private static RenderableClass get(String renderableClass){
-        if (renderableClass==null) return null;
+    private static RenderableClass getFromCategory(ReactionLikeEvent rle){
+        if (rle.getCategory() == null || rle.getCategory().trim().isEmpty()) return TRANSITION_REACTION;
         for (RenderableClass value : values()) {
-            if (value.getName().toLowerCase().equals(renderableClass.toLowerCase())) return value;
+            if (value.getName().toLowerCase().equals(rle.getCategory().toLowerCase())) return value;
         }
-        return null;
+        return TRANSITION_REACTION;
     }
 
     @JsonValue
