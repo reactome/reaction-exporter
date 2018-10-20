@@ -68,8 +68,8 @@ public enum RenderableClass {
      * @return The associated {@link RenderableClass} with the previous parameters
      */
     public static RenderableClass getRenderableClass(DatabaseObject databaseObject, Boolean drug) {
-        if (databaseObject instanceof EntitySet) return drug ? ENTITY_SET_DRUG : ENTITY_SET;
-        if (databaseObject instanceof Complex) return drug ? COMPLEX_DRUG : COMPLEX;
+        if (databaseObject instanceof EntitySet) return drug != null && drug ? ENTITY_SET_DRUG : ENTITY_SET;
+        if (databaseObject instanceof Complex) return drug != null && drug ? COMPLEX_DRUG : COMPLEX;
         if (databaseObject instanceof SimpleEntity) return CHEMICAL;
         if (databaseObject instanceof ChemicalDrug) return CHEMICAL_DRUG;
         if (databaseObject instanceof ProteinDrug) return PROTEIN_DRUG;

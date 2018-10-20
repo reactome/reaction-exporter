@@ -10,10 +10,10 @@ Supported output formats include raster (png, jpg, jpeg, gif) and vector (svg, p
 ## Usage:
 This project can be used as a standalone compiled tool through the provided _reaction-exporter.jar_ file.
 ```
-java -jar reaction-exporter.jar [--help] [(-h|--host) <host>] [(-p|--port) <port>] [(-u|--user) <user>] (-d|--password) <password> (-s|--stId) <stId> (-o|--output) <output>
+java -jar reaction-exporter.jar [--help] [(-h|--host) <host>] [(-p|--port) <port>] [(-u|--user) <user>] (-d|--password) <password> (-s|--stId) <stId> (-o|--path) <path> [(-f|--format) <format>]
   [--help]
         Prints this help message.
-        
+
   [(-h|--host) <host>]
         The neo4j host (default: localhost)
   [(-p|--port) <port>]
@@ -25,8 +25,12 @@ java -jar reaction-exporter.jar [--help] [(-h|--host) <host>] [(-p|--port) <port
 
   (-s|--stId) <stId>
         Reaction stable identifier
-  (-o|--output) <output>
-        Output file. Format will be detected automatically
+
+  (-o|--path) <path>
+        Output path. File will be named 'path'/'stId'.'format'
+
+  [(-f|--format) <format>]
+        Output format (default: png)
 ```
 
 Or as a maven dependency:
