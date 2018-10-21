@@ -19,7 +19,7 @@ public abstract class AbstractGlyph implements Glyph{
     private Position position = new Position();
 
     AbstractGlyph() {
-        id = NEXT_ID.getAndIncrement();
+        id = NEXT_ID.incrementAndGet();
     }
 
     public Long getId() {

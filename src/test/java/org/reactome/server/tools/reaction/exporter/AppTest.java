@@ -48,7 +48,7 @@ public class AppTest extends BaseTest {
         final Diagram diagram = ReactionDiagramFactory.get(layout);
 
         final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);
-        final Graph graph = graphFactory.getGraph(rle);
+        final Graph graph = graphFactory.getGraph(rle, layout);
 
         //TODO:
 //        try {

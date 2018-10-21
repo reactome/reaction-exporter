@@ -10,6 +10,9 @@ import org.reactome.server.tools.diagram.data.graph.Graph;
 import org.reactome.server.tools.diagram.data.graph.impl.EntityNodeImpl;
 import org.reactome.server.tools.diagram.data.graph.impl.EventNodeImpl;
 import org.reactome.server.tools.diagram.data.graph.impl.GraphImpl;
+import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
+import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
+import org.reactome.server.tools.reaction.exporter.layout.model.ReactionGlyph;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,19 +34,20 @@ public class ReactionGraphFactory {
         this.ads = ads;
     }
 
-    public Graph getGraph(ReactionLikeEvent rle) { //}, Layout layout) {
+    public Graph getGraph(ReactionLikeEvent rle, Layout layout) {
+        Map<Long, List<Long>> map = getMap(layout);
         return new GraphImpl(
                 rle.getDbId(),
                 rle.getStId(),
                 rle.getDisplayName(),
                 rle.getSpeciesName(),
-                getGraphNodes(rle),
-                getGraphEdges(rle),
+                getGraphNodes(rle, map),
+                getGraphEdges(rle, map),
                 new ArrayList<>() //A RLE does not have subpathways
         );
     }
 
-    private List<EntityNode> getGraphNodes(ReactionLikeEvent rle) {
+    private List<EntityNode> getGraphNodes(ReactionLikeEvent rle, Map<Long, List<Long>> map) {
         String query = "" +
                 "MATCH (rle:ReactionLikeEvent{dbId:{dbId}})-[:input|output|catalystActivity|entityFunctionalStatus|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate|repeatedUnit*]->(pe:PhysicalEntity) " +
                 "WITH COLLECT(DISTINCT pe) AS pes " +
@@ -63,6 +67,7 @@ public class ReactionGraphFactory {
         parametersMap.put("dbId", rle.getDbId());
         try {
             Collection<EntityNodeImpl> rtn = ads.getCustomQueryResults(EntityNodeImpl.class, query, parametersMap);
+            rtn.forEach(node -> node.setDiagramIds(map.get(node.getDbId())));
             return new ArrayList<>(rtn);
         } catch (CustomQueryException e) {
             e.printStackTrace();
@@ -70,7 +75,7 @@ public class ReactionGraphFactory {
         return null;
     }
 
-    private List<EventNode> getGraphEdges(ReactionLikeEvent rle) {
+    private List<EventNode> getGraphEdges(ReactionLikeEvent rle, Map<Long, List<Long>> map) {
         String query = "" +
                 "MATCH (rle:ReactionLikeEvent{dbId:{dbId}}) " +
                 "OPTIONAL MATCH (rle)-[:input]->(i:PhysicalEntity) " +
@@ -94,10 +99,23 @@ public class ReactionGraphFactory {
         parametersMap.put("dbId", rle.getDbId());
         try {
             Collection<EventNodeImpl> rtn = ads.getCustomQueryResults(EventNodeImpl.class, query, parametersMap);
+            rtn.forEach(rxn -> rxn.setDiagramIds(map.get(rxn.getDbId())));
             return new ArrayList<>(rtn);
         } catch (CustomQueryException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private Map<Long, List<Long>> getMap(Layout layout){
+        Map<Long, List<Long>> map = new HashMap<>();
+        ReactionGlyph rg = layout.getReaction();
+        map.computeIfAbsent(rg.getDbId(), k -> new ArrayList<>()).add(rg.getId());
+
+        for (EntityGlyph entity : layout.getEntities()) {
+            map.computeIfAbsent(entity.getDbId(), k -> new ArrayList<>()).add(entity.getId());
+        }
+
+        return map;
     }
 }

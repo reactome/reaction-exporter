@@ -81,7 +81,7 @@ public class Main {
         final Layout layout = layoutFactory.getReactionLikeEventLayout(rle);
         printJson(layout);
         final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);
-        final Graph graph = graphFactory.getGraph(rle);
+        final Graph graph = graphFactory.getGraph(rle, layout);
         printJson(graph);
         return layout;
     }
