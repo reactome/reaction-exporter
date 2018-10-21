@@ -2,9 +2,9 @@ package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.Compartment;
-import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
-import org.reactome.server.tools.reaction.exporter.layout.common.Coordinate;
+import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
+import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,7 +25,7 @@ public class CompartmentGlyph extends AbstractGlyph {
 
     private Collection<Glyph> containedGlyphs = new HashSet<>();
 
-    private Coordinate labelPosition = new Coordinate(0,0);
+    private Coordinate labelPosition;
 
     CompartmentGlyph(Compartment compartment) {
         super();
@@ -90,6 +90,10 @@ public class CompartmentGlyph extends AbstractGlyph {
 
     public Coordinate getLabelPosition() {
         return labelPosition;
+    }
+
+    public void setLabelPosition(Coordinate labelPosition) {
+        this.labelPosition = labelPosition;
     }
 
     @Override

@@ -3,7 +3,7 @@ package org.reactome.server.tools.reaction.exporter.layout;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
-import org.reactome.server.tools.reaction.exporter.layout.algorithm.Breathe;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.BreatheAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.LayoutAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,7 @@ public class LayoutFactory {
      */
     public Layout getReactionLikeEventLayout(ReactionLikeEvent rle) {
         if (rle == null) throw new NullPointerException("rle cannot be null");
-        final LayoutAlgorithm algorithm = new Breathe();
+        final LayoutAlgorithm algorithm = new BreatheAlgorithm();
         Map<String, Object> params = new HashMap<>();
         params.put("stId", rle.getStId());
         try {

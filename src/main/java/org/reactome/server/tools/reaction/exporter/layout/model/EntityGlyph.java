@@ -2,6 +2,7 @@ package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.tools.diagram.data.layout.Connector;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class EntityGlyph extends AbstractGlyph {
     private RenderableClass renderableClass;
     private Boolean trivial = null; //Only true for trivial molecules. Null in any other case
 
-    private Connector connector = new Connector();
+    private Connector connector;
 
 	public EntityGlyph() {
 	    super();

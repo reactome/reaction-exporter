@@ -1,10 +1,11 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
+import org.reactome.server.tools.diagram.data.layout.Segment;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
@@ -18,7 +19,7 @@ public class ReactionGlyph extends AbstractGlyph {
     private RenderableClass renderableClass;
     private Boolean disease;
 
-    private Collection<Segment> segments = new ArrayList<>();
+    private List<Segment> segments = new ArrayList<>();
 
     ReactionGlyph(ReactionLikeEvent rle) {
         super();
@@ -52,7 +53,7 @@ public class ReactionGlyph extends AbstractGlyph {
         return disease;
     }
 
-    public Collection<Segment> getSegments() {
+    public List<Segment> getSegments() {
         return segments;
     }
 

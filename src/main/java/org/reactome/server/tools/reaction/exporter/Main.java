@@ -9,17 +9,14 @@ import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.diagram.data.graph.Graph;
+import org.reactome.server.tools.diagram.data.layout.Diagram;
 import org.reactome.server.tools.reaction.exporter.config.ReactomeNeo4jConfig;
+import org.reactome.server.tools.reaction.exporter.diagram.ReactionDiagramFactory;
 import org.reactome.server.tools.reaction.exporter.graph.ReactionGraphFactory;
 import org.reactome.server.tools.reaction.exporter.layout.LayoutFactory;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
-import org.reactome.server.tools.reaction.exporter.renderer.LayoutRenderer;
-import org.reactome.server.tools.reaction.exporter.renderer.RenderArgs;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -27,8 +24,6 @@ import java.util.Arrays;
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class Main {
-
-    private final static LayoutRenderer RENDERER = new LayoutRenderer();
 
     public static void main(String[] args) throws JSAPException {
 
@@ -70,7 +65,8 @@ public class Main {
                 return;
             }
         }
-        saveImage(stId, rxn, format, path);
+        Diagram diagram = ReactionDiagramFactory.get(rxn);
+        printJson(diagram);
         System.out.println("Done");
     }
 
@@ -91,16 +87,6 @@ public class Main {
         try {
             System.out.println(mapper.writeValueAsString(object));
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void saveImage(String stId, Layout rxn, String format, File path) {
-        final BufferedImage image = RENDERER.render(new RenderArgs().setQuality(10), rxn);
-        final File file = new File(path, stId + "." + format);
-        try {
-            ImageIO.write(image, format, file);
-        } catch (IOException e) {
             e.printStackTrace();
         }
     }
