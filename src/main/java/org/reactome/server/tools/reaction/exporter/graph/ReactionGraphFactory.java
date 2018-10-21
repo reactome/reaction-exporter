@@ -35,19 +35,18 @@ public class ReactionGraphFactory {
     }
 
     public Graph getGraph(ReactionLikeEvent rle, Layout layout) {
-        Map<Long, List<Long>> map = getMap(layout);
         return new GraphImpl(
                 rle.getDbId(),
                 rle.getStId(),
                 rle.getDisplayName(),
                 rle.getSpeciesName(),
-                getGraphNodes(rle, map),
-                getGraphEdges(rle, map),
+                getGraphNodes(rle, layout.getEntities()),
+                getGraphEdges(rle, layout.getReaction()),
                 new ArrayList<>() //A RLE does not have subpathways
         );
     }
 
-    private List<EntityNode> getGraphNodes(ReactionLikeEvent rle, Map<Long, List<Long>> map) {
+    private List<EntityNode> getGraphNodes(ReactionLikeEvent rle, Collection<EntityGlyph> entityGlyphs) {
         String query = "" +
                 "MATCH (rle:ReactionLikeEvent{dbId:{dbId}})-[:input|output|catalystActivity|entityFunctionalStatus|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate|repeatedUnit*]->(pe:PhysicalEntity) " +
                 "WITH COLLECT(DISTINCT pe) AS pes " +
@@ -67,6 +66,7 @@ public class ReactionGraphFactory {
         parametersMap.put("dbId", rle.getDbId());
         try {
             Collection<EntityNodeImpl> rtn = ads.getCustomQueryResults(EntityNodeImpl.class, query, parametersMap);
+            Map<Long, List<Long>> map = getMap(entityGlyphs);
             rtn.forEach(node -> node.setDiagramIds(map.get(node.getDbId())));
             return new ArrayList<>(rtn);
         } catch (CustomQueryException e) {
@@ -75,7 +75,7 @@ public class ReactionGraphFactory {
         return null;
     }
 
-    private List<EventNode> getGraphEdges(ReactionLikeEvent rle, Map<Long, List<Long>> map) {
+    private List<EventNode> getGraphEdges(ReactionLikeEvent rle, ReactionGlyph rxnGlyph) {
         String query = "" +
                 "MATCH (rle:ReactionLikeEvent{dbId:{dbId}}) " +
                 "OPTIONAL MATCH (rle)-[:input]->(i:PhysicalEntity) " +
@@ -87,35 +87,36 @@ public class ReactionGraphFactory {
                 "WHERE SINGLE(x IN NODES(prep) WHERE (x:Pathway) AND x.hasDiagram) " +
                 "OPTIONAL MATCH folp=(p)-[:hasEvent*]->(fol:ReactionLikeEvent)-[:precedingEvent]->(rle) " +
                 "WHERE SINGLE(x IN NODES(folp) WHERE (x:Pathway) AND x.hasDiagram) " +
-                "RETURN  rle.dbId AS dbId, rle.stId as stId, rle.displayName AS displayName, rle.schemaClass AS schemaClass, " +
-                "        COLLECT(DISTINCT i.dbId) AS inputs, " +
-                "        COLLECT(DISTINCT o.dbId) AS outputs, " +
-                "        COLLECT(DISTINCT c.dbId) AS catalysts, " +
-                //"        COLLECT(DISTINCT e.dbId) AS efs, " +
-                //"        CASE WHEN reg IS NULL THEN [] ELSE COLLECT(DISTINCT {type: reg.schemaClass, dbId: r.dbId}) END AS regulation, " +
-                "        COLLECT(DISTINCT pre.dbId) AS preceding, " +
-                "        COLLECT(DISTINCT fol.dbId) AS following";
+                "RETURN rle.dbId AS dbId, rle.stId as stId, rle.displayName AS displayName, rle.schemaClass AS schemaClass, " +
+                "       COLLECT(DISTINCT i.dbId) AS inputs, " +
+                "       COLLECT(DISTINCT o.dbId) AS outputs, " +
+                "       COLLECT(DISTINCT c.dbId) AS catalysts, " +
+                //"       COLLECT(DISTINCT e.dbId) AS efs, " +
+                //"       CASE WHEN reg IS NULL THEN [] ELSE COLLECT(DISTINCT {type: reg.schemaClass, dbId: r.dbId}) END AS regulation, " +
+                "       COLLECT(DISTINCT pre.dbId) AS preceding, " +
+                "       COLLECT(DISTINCT fol.dbId) AS following";
         Map<String, Object> parametersMap = new HashMap<>();
         parametersMap.put("dbId", rle.getDbId());
         try {
-            Collection<EventNodeImpl> rtn = ads.getCustomQueryResults(EventNodeImpl.class, query, parametersMap);
-            rtn.forEach(rxn -> rxn.setDiagramIds(map.get(rxn.getDbId())));
-            return new ArrayList<>(rtn);
+            EventNodeImpl rxn = ads.getCustomQueryResult(EventNodeImpl.class, query, parametersMap);
+            List<Long> diagramIds = Collections.singletonList(rxnGlyph.getDbId());
+            rxn.setDiagramIds(diagramIds);
+            return Collections.singletonList(rxn);
         } catch (CustomQueryException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private Map<Long, List<Long>> getMap(Layout layout){
+    /**
+     * @param entityGlyphs a list of entity glyphs present in the layout
+     * @return a map from the entity glyph dbId (reactomeId) to the glyph(s) identifier(s) representing it in the layout
+     */
+    private Map<Long, List<Long>> getMap(Collection<EntityGlyph> entityGlyphs){
         Map<Long, List<Long>> map = new HashMap<>();
-        ReactionGlyph rg = layout.getReaction();
-        map.computeIfAbsent(rg.getDbId(), k -> new ArrayList<>()).add(rg.getId());
-
-        for (EntityGlyph entity : layout.getEntities()) {
+        for (EntityGlyph entity : entityGlyphs) {
             map.computeIfAbsent(entity.getDbId(), k -> new ArrayList<>()).add(entity.getId());
         }
-
         return map;
     }
 }
