@@ -2,6 +2,7 @@ package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.Compartment;
+import org.reactome.server.graph.domain.model.Pathway;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTreeFactory;
@@ -16,6 +17,8 @@ import java.util.*;
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class Layout implements HasPosition {
+
+    private Pathway pathway;
 
     private Position position = new Position();
 
@@ -44,6 +47,10 @@ public class Layout implements HasPosition {
         return entities;
     }
 
+    public Pathway getPathway() {
+        return pathway;
+    }
+
     public ReactionGlyph getReaction() {
         return reactionGlyph;
     }
@@ -56,6 +63,7 @@ public class Layout implements HasPosition {
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
     public void setReactionLikeEvent(ReactionLikeEvent rle) {
+        pathway = rle.getEventOf().isEmpty() ? null : rle.getEventOf().get(0);
         reactionGlyph = new ReactionGlyph(rle);
 
         //noinspection LoopStatementThatDoesntLoop
