@@ -8,7 +8,9 @@ import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
+import org.reactome.server.tools.diagram.data.graph.Graph;
 import org.reactome.server.tools.reaction.exporter.config.ReactomeNeo4jConfig;
+import org.reactome.server.tools.reaction.exporter.graph.ReactionGraphFactory;
 import org.reactome.server.tools.reaction.exporter.layout.LayoutFactory;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.reactome.server.tools.reaction.exporter.renderer.LayoutRenderer;
@@ -76,15 +78,18 @@ public class Main {
         final ReactionLikeEvent rle = dos.findById(stId);
         final AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         final LayoutFactory layoutFactory = new LayoutFactory(ads);
-        final Layout rxn = layoutFactory.getReactionLikeEventLayout(rle);
-        printJson(rxn);
-        return rxn;
+        final Layout layout = layoutFactory.getReactionLikeEventLayout(rle);
+        printJson(layout);
+        final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);
+        final Graph graph = graphFactory.getGraph(rle);
+        printJson(graph);
+        return layout;
     }
 
-    private static void printJson(Layout rxn) {
+    private static void printJson(Object object) {
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            System.out.println(mapper.writeValueAsString(rxn));
+            System.out.println(mapper.writeValueAsString(object));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
