@@ -18,6 +18,8 @@ public interface Glyph extends HasPosition {
 
     String getName();
 
+    String getSchemaClass();
+
     RenderableClass getRenderableClass();
 
 }

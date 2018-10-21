@@ -28,7 +28,7 @@ public class EntityGlyph extends AbstractGlyph {
 
     private Connector connector;
 
-	public EntityGlyph() {
+    public EntityGlyph() {
 	    super();
 	}
 
@@ -56,6 +56,11 @@ public class EntityGlyph extends AbstractGlyph {
     @Override
     public String getName() {
         return pe.getName().get(0);
+    }
+
+    @Override
+    public String getSchemaClass() {
+        return pe.getSchemaClass();
     }
 
     @Override
