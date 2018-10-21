@@ -20,6 +20,8 @@ import java.util.List;
  */
 public class ReactionDiagramFactory {
 
+    private static final Coordinate GWU_CORRECTION = CoordinateFactory.get(14, 18);
+
     private ReactionDiagramFactory() {
     }
 
@@ -37,7 +39,9 @@ public class ReactionDiagramFactory {
         diagram.setMinX((int) rxnLayout.getPosition().getX());
         diagram.setMinY((int) rxnLayout.getPosition().getY());
         diagram.setNodes(getNodes(rxnLayout));
-
+        diagram.setNotes(Collections.emptyList());
+        diagram.setShadows(Collections.emptyList());
+        diagram.setLinks(Collections.emptyList());
         return diagram;
     }
 
@@ -50,16 +54,32 @@ public class ReactionDiagramFactory {
             }
             final CompartmentImpl compartment = new CompartmentImpl(ids);
             compartments.add(compartment);
+            copyGlypToDatabaseObject(comp, compartment);
             final Position position = comp.getPosition();
-            compartment.setProp(NodePropertiesFactory.get(position.getX(), position.getY(), position.getWidth(), position.getHeight()));
-            compartment.setTextPosition(comp.getLabelPosition());
+            compartment.setProp(getProp(position));
+            compartment.setTextPosition(comp.getLabelPosition().minus(GWU_CORRECTION));
         }
         return compartments;
+    }
+
+    private static void copyGlypToDatabaseObject(Glyph glyph, DiagramObjectImpl object) {
+        final Position position = glyph.getPosition();
+        object.setId(glyph.getId());
+        object.setMinX(position.getX());
+        object.setMinY(position.getY());
+        object.setMaxX(position.getMaxX());
+        object.setMaxY(position.getMaxY());
+        object.setDisplayName(glyph.getName());
+        object.setRenderableClass(glyph.getRenderableClass().toString());
+        object.setSchemaClass(glyph.getSchemaClass());
+        object.setReactomeId(glyph.getDbId());
+        object.setPosition(new CoordinateImpl(position.getCenterX(), position.getCenterY()));
     }
 
     private static List<Edge> getEdges(Layout rxnLayout) {
         final ReactionGlyph reaction = rxnLayout.getReaction();
         final EdgeImpl edge = new EdgeImpl();
+        copyGlypToDatabaseObject(reaction, edge);
         edge.setReactionShape(getReactionShape(reaction));
         edge.setSegments(reaction.getSegments());
         final List<ReactionPart> activators = new ArrayList<>();
@@ -97,6 +117,7 @@ public class ReactionDiagramFactory {
         edge.setInhibitors(inhibitors);
         edge.setInputs(inputs);
         edge.setOutputs(outputs);
+        edge.setRenderableClass("Reaction");
         return Collections.singletonList(edge);
     }
 
@@ -129,14 +150,36 @@ public class ReactionDiagramFactory {
     }
 
     private static List<Node> getNodes(Layout rxnLayout) {
+        List<Node> nodes = new ArrayList<>();
         for (EntityGlyph entity : rxnLayout.getEntities()) {
             final NodeImpl node = new NodeImpl();
-            node.setId(entity.getId());
+            copyGlypToDatabaseObject(entity, node);
             node.setTrivial(entity.isTrivial());
             node.setDisease(entity.isDisease());
-            node.setDisplayName(entity.getName());
-
+            final Position position = entity.getPosition();
+            node.setProp(getProp(position));
+            node.setConnectors(Collections.singletonList(entity.getConnector()));
+            List<NodeAttachment> attachments = new ArrayList<>();
+            for (AttachmentGlyph attachment : entity.getAttachments()) {
+                final NodeAttachmentImpl nodeAttachment = new NodeAttachmentImpl();
+                nodeAttachment.setLabel(attachment.getName());
+                nodeAttachment.setReactomeId(attachment.getDbId());
+                nodeAttachment.setShape(getAttachmentShape(attachment));
+            }
+            node.setNodeAttachments(attachments);
+            nodes.add(node);
         }
-        return null;
+        return nodes;
+    }
+
+    private static Shape getAttachmentShape(AttachmentGlyph attachment) {
+        final Position position = attachment.getPosition();
+        final Coordinate a = new CoordinateImpl(position.getX(), position.getY());
+        final Coordinate b = new CoordinateImpl(position.getMaxX(), position.getMaxY());
+        return new BoxImpl(a, b, true, attachment.getName());
+    }
+
+    private static NodeProperties getProp(Position position) {
+        return NodePropertiesFactory.get(position.getX(), position.getY(), position.getWidth(), position.getHeight());
     }
 }

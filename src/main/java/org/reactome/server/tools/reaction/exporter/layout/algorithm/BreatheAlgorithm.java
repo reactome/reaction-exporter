@@ -242,7 +242,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
             connector.setSegments(segments);
+            connector.setEdgeId(layout.getReaction().getId());
             if (biRole) {
+                // Add catalyst segments
                 y = position.getY() - 5;
                 segments.add(new SegmentImpl(
                         new CoordinateImpl(position.getMaxX(), y),
@@ -250,7 +252,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 segments.add(new SegmentImpl(
                         new CoordinateImpl(vRule + 50, y),
                         new CoordinateImpl(reactionPosition.getCenterX(), reactionPosition.getY())));
-//                connector.setPointer(EntityRole.CATALYST);
+                connector.setPointer(ConnectorType.CATALYST);
+            } else {
+                connector.setPointer(ConnectorType.INPUT);
             }
             y = biRole ? position.getCenterY() + 5 : position.getCenterY();
             // Input
@@ -261,7 +265,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                     new CoordinateImpl(vRule, y),
                     new CoordinateImpl(port, reactionPosition.getCenterY())));
             for (Role role : entity.getRoles()) {
-                if (role.getStoichiometry() > 1) {
+                if (role.getType() == INPUT) {
                     final Stoichiometry s = getStoichiometry(segments, role);
                     connector.setStoichiometry(s);
                 }
@@ -271,6 +275,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     }
 
     private Stoichiometry getStoichiometry(List<Segment> segments, Role role) {
+        if (role.getStoichiometry() == 1)
+            return new StoichiometryImpl(1, null);
         final Segment segment = segments.get(segments.size() - 1);
         final Coordinate center = center(segment);
         final Coordinate a = new CoordinateImpl(center.getX() - 6, center.getY() - 6);
@@ -310,6 +316,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
             connector.setSegments(segments);
+            connector.setEdgeId(layout.getReaction().getId());
             entity.setConnector(connector);
             final Position position = entity.getPosition();
             for (Role role : entity.getRoles()) {
@@ -370,6 +377,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final List<Segment> segments = new ArrayList<>();
             entity.setConnector(connector);
             connector.setSegments(segments);
+            connector.setEdgeId(layout.getReaction().getId());
             final Position position = entity.getPosition();
             for (Role role : entity.getRoles()) {
                 segments.add(new SegmentImpl(
@@ -411,7 +419,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final List<Segment> segments = new ArrayList<>();
             entity.setConnector(connector);
             connector.setSegments(segments);
-
+            connector.setEdgeId(layout.getReaction().getId());
             final Position position = entity.getPosition();
             for (Role role : entity.getRoles()) {
                 segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
@@ -560,8 +568,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         if (s != null) {
             final ShapeImpl shape = (ShapeImpl) s;
             if (shape.getA() != null) shape.setA(shape.getA().add(delta));
-            if (shape.getB() != null) shape.setA(shape.getB().add(delta));
-            if (shape.getC() != null) shape.setA(shape.getC().add(delta));
+            if (shape.getB() != null) shape.setB(shape.getB().add(delta));
+            if (shape.getC() != null) shape.setC(shape.getC().add(delta));
         }
     }
 
