@@ -14,6 +14,7 @@ public class ReactionGlyph extends AbstractGlyph {
 
     private Long dbId;
     private String stId;
+    private String schemaClass;
     private String name;
     private RenderableClass renderableClass;
     private Boolean disease;
@@ -24,6 +25,7 @@ public class ReactionGlyph extends AbstractGlyph {
         super();
         dbId = rle.getDbId();
         stId = rle.getStId();
+        schemaClass = rle.getSchemaClass();
         name = rle.getDisplayName();
         disease = rle.getIsInDisease() ? true : null;
         renderableClass = RenderableClass.getRenderableClass(rle);
@@ -36,6 +38,11 @@ public class ReactionGlyph extends AbstractGlyph {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getSchemaClass() {
+        return schemaClass;
     }
 
     @Override

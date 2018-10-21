@@ -17,6 +17,7 @@ import java.util.Set;
 public class CompartmentGlyph extends AbstractGlyph {
 
     private Long dbId;
+    private String schemaClass;
     private String name;
     private String accession;
 
@@ -30,6 +31,7 @@ public class CompartmentGlyph extends AbstractGlyph {
     CompartmentGlyph(Compartment compartment) {
         super();
         dbId = compartment.getDbId();
+        schemaClass = compartment.getSchemaClass();
         name = compartment.getDisplayName();
         accession = compartment.getAccession();
     }
@@ -95,6 +97,11 @@ public class CompartmentGlyph extends AbstractGlyph {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getSchemaClass() {
+        return schemaClass;
     }
 
     @Override
