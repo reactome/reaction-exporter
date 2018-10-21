@@ -91,8 +91,8 @@ public class ReactionGraphFactory {
                 "       COLLECT(DISTINCT i.dbId) AS inputs, " +
                 "       COLLECT(DISTINCT o.dbId) AS outputs, " +
                 "       COLLECT(DISTINCT c.dbId) AS catalysts, " +
-                //"       COLLECT(DISTINCT e.dbId) AS efs, " +
-                //"       CASE WHEN reg IS NULL THEN [] ELSE COLLECT(DISTINCT {type: reg.schemaClass, dbId: r.dbId}) END AS regulation, " +
+                "       COLLECT(DISTINCT e.dbId) AS efs, " +
+                "       CASE WHEN reg IS NULL THEN [] ELSE COLLECT(DISTINCT {type: reg.schemaClass, dbId: r.dbId}) END AS regulations, " +
                 "       COLLECT(DISTINCT pre.dbId) AS preceding, " +
                 "       COLLECT(DISTINCT fol.dbId) AS following";
         Map<String, Object> parametersMap = new HashMap<>();
