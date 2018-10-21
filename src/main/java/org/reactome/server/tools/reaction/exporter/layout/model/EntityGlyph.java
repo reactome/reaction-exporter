@@ -103,14 +103,14 @@ public class EntityGlyph extends AbstractGlyph {
     public void setPhysicalEntity(PhysicalEntity pe) {
         this.pe = pe;
 
-        ReferenceEntity re = pe.getSingleValue("getReferenceEntity");
+        ReferenceEntity re = pe.fetchSingleValue("getReferenceEntity");
         if (re instanceof ReferenceMolecule){
             ReferenceMolecule rm = (ReferenceMolecule) re;
             //trivial ONLY true for trivial molecules. NULL in any other case (never false)
             if(rm.getTrivial() != null && rm.getTrivial()) trivial = true;
         }
 
-        Collection<AbstractModifiedResidue> modifiedResidues = pe.getMultiValue("getHasModifiedResidue");
+        Collection<AbstractModifiedResidue> modifiedResidues = pe.fetchMultiValue("getHasModifiedResidue");
         for (AbstractModifiedResidue modifiedResidue : modifiedResidues) {
             attachments.add(new AttachmentGlyph(modifiedResidue));
         }
