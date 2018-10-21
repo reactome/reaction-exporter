@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.goontology;
+package org.reactome.server.tools.reaction.exporter.ontology;
 
 import org.apache.commons.io.IOUtils;
 

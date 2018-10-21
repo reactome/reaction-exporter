@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.goontology;
+package org.reactome.server.tools.reaction.exporter.ontology;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static org.reactome.server.tools.reaction.exporter.goontology.GoTerm.Directionality.OUTGOING;
-import static org.reactome.server.tools.reaction.exporter.goontology.RelationshipType.*;
+import static org.reactome.server.tools.reaction.exporter.ontology.GoTerm.Directionality.OUTGOING;
+import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipType.*;
 
 
 /**

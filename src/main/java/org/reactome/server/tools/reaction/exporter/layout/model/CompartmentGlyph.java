@@ -2,7 +2,7 @@ package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.Compartment;
-import org.reactome.server.tools.reaction.exporter.goontology.GoTerm;
+import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
 import org.reactome.server.tools.reaction.exporter.layout.common.Coordinate;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 

@@ -3,8 +3,8 @@ package org.reactome.server.tools.reaction.exporter.layout.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.Compartment;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
-import org.reactome.server.tools.reaction.exporter.goontology.GoTerm;
-import org.reactome.server.tools.reaction.exporter.goontology.GoTreeFactory;
+import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
+import org.reactome.server.tools.reaction.exporter.ontology.GoTreeFactory;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 
 import java.util.*;
