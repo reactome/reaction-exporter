@@ -1,5 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.diagram;
 
+import org.reactome.server.graph.domain.model.Pathway;
 import org.reactome.server.tools.diagram.data.layout.*;
 import org.reactome.server.tools.diagram.data.layout.impl.*;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
@@ -28,7 +29,8 @@ public class ReactionDiagramFactory {
     public static Diagram get(Layout rxnLayout) {
         final DiagramImpl diagram = new DiagramImpl();
         final ReactionGlyph reaction = rxnLayout.getReaction();
-        diagram.setStableId(reaction.getStId());
+        Pathway pwy = rxnLayout.getPathway();
+        diagram.setStableId(pwy == null ? null : pwy.getStId());
         diagram.setDisease(reaction.isDisease());
         diagram.setDisplayName(reaction.getName());
         diagram.setDbId(reaction.getDbId());
@@ -82,6 +84,7 @@ public class ReactionDiagramFactory {
         copyGlypToDatabaseObject(reaction, edge);
         edge.setReactionShape(getReactionShape(reaction));
         edge.setSegments(reaction.getSegments());
+        edge.setDisease(reaction.isDisease());
         final List<ReactionPart> activators = new ArrayList<>();
         final List<ReactionPart> catalyst = new ArrayList<>();
         final List<ReactionPart> inhibitors = new ArrayList<>();
