@@ -11,8 +11,11 @@ import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 import org.reactome.server.tools.reaction.exporter.layout.text.TextUtils;
 
+import java.awt.*;
 import java.awt.geom.Dimension2D;
+import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -28,24 +31,24 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * Minimum allocated height for any glyph. Even if glyphs have a lower height, they are placed in the middle of this
      * minimum distance.
      */
-    private static final double MIN_GLYPH_HEIGHT = 40;
+    private static final double MIN_GLYPH_HEIGHT = 25;
     /**
      * Minimum allocated width for any glyph. Even if glyphs have a lower width, they are placed in the middle of this
      * minimum distance.
      */
-    private static final double MIN_GLYPH_WIDTH = 80;
+    private static final double MIN_GLYPH_WIDTH = 60;
     /**
      * Vertical (y-axis) distance between two glyphs.
      */
-    private static final double VERTICAL_PADDING = 15;
+    private static final double VERTICAL_PADDING = 5;
     /**
      * Horizontal (x-axis) distance between two glyphs.
      */
-    private static final double HORIZONTAL_PADDING = 15;
+    private static final double HORIZONTAL_PADDING = 5;
     /**
      * Minimum vertical distance between any glyph and the reaction glyph
      */
-    private static final double REACTION_MIN_V_DISTANCE = 120;
+    private static final double REACTION_MIN_V_DISTANCE = 80;
     /**
      * Minimum horizontal distance between any glyph and the reaction glyph
      */
@@ -70,7 +73,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * Length of the backbone of the reaction
      */
     private static final double BACKBONE_LENGTH = 20;
-
     /**
      * Order in which nodes should be placed depending on their {@link RenderableClass}
      */
@@ -88,6 +90,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * Comparator that puts false elements before true elements.
      */
     private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
+    private final FontMetrics FONT_METRICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
+            .createGraphics()
+            .getFontMetrics(new Font("arial", Font.BOLD, 8));
 
     @Override
     public void compute(Layout layout) {
@@ -95,10 +100,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         layoutReaction(layout);
         layoutParticipants(layout);
         layoutCompartments(layout);
+        removeExtracellular(layout);
         computeDimension(layout);
         moveToOrigin(layout);
-        removeExtracellular(layout);
-
     }
 
     private void addDuplicates(Layout layout) {
@@ -111,7 +115,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 // Extract the role types
                 final ArrayList<Role> roleList = new ArrayList<>(roles);
                 for (final Role role : roleList) {
-                    if (role.getType() == INPUT || role.getType() == CATALYST) continue;
+                    if (role.getType() == INPUT
+                            || role.getType() == CATALYST
+                            || entity.getRoles().size() == 1) continue;
                     final EntityGlyph copy = new EntityGlyph(entity);
                     copy.setRole(role);
                     entity.getRoles().remove(role);
@@ -241,17 +247,18 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             double y;
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
+            entity.setConnector(connector);
             connector.setSegments(segments);
             connector.setEdgeId(layout.getReaction().getId());
             if (biRole) {
                 // Add catalyst segments
-                y = position.getY() - 5;
+                y = position.getCenterY() - 5;
                 segments.add(new SegmentImpl(
                         new CoordinateImpl(position.getMaxX(), y),
                         new CoordinateImpl(vRule + 50, y)));
                 segments.add(new SegmentImpl(
                         new CoordinateImpl(vRule + 50, y),
-                        new CoordinateImpl(reactionPosition.getCenterX(), reactionPosition.getY())));
+                        new CoordinateImpl(reactionPosition.getCenterX(), reactionPosition.getCenterY())));
                 connector.setPointer(ConnectorType.CATALYST);
             } else {
                 connector.setPointer(ConnectorType.INPUT);
@@ -270,7 +277,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                     connector.setStoichiometry(s);
                 }
             }
-            entity.setConnector(connector);
         }
     }
 
@@ -311,7 +317,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         layoutVerticalEntities(layout.getCompartmentRoot(), outputs, yOffset, heightPerGlyph, this::placeEntity);
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getMaxX() + BACKBONE_LENGTH;
-        final double vRule = port + REACTION_MIN_V_DISTANCE;
+        final double vRule = port + REACTION_MIN_H_DISTANCE;
         for (EntityGlyph entity : outputs) {
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
@@ -412,7 +418,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         layoutHorizontalEntities(layout.getCompartmentRoot(), regulators, xOffset, widthPerGlyph, (glyph, coord) ->
                 placeEntity(glyph, new CoordinateImpl(coord.getY(), -coord.getX())));
         final Position reactionPosition = layout.getReaction().getPosition();
-        final double port = reactionPosition.getY();
+        final double port = reactionPosition.getMaxY();
         final double hRule = port + REACTION_MIN_V_DISTANCE;
         for (EntityGlyph entity : regulators) {
             final ConnectorImpl connector = new ConnectorImpl();
@@ -463,7 +469,13 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 .filter(entityGlyph -> compartment.getContainedGlyphs().contains(entityGlyph))
                 .collect(Collectors.toList());
         if (glyphs.isEmpty()) return COMPARTMENT_PADDING;
-        final double height = entities.stream().map(Glyph::getPosition).mapToDouble(Position::getHeight).max().orElse(MIN_GLYPH_HEIGHT) + VERTICAL_PADDING;
+        double height = MIN_GLYPH_HEIGHT;
+        for (EntityGlyph entity : entities) {
+            if (entity.getPosition().getHeight() > height) {
+                height = entity.getPosition().getHeight();
+            }
+        }
+        height += HORIZONTAL_PADDING;
         final double x = REACTION_MIN_V_DISTANCE + startY + 0.5 * height;
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
@@ -502,7 +514,11 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         position.setWidth(position.getWidth() + 2 * COMPARTMENT_PADDING);
         position.setHeight(position.getHeight() + 2 * COMPARTMENT_PADDING);
 
-        compartment.setLabelPosition(new CoordinateImpl(position.getCenterX(), (position.getY() + COMPARTMENT_PADDING / 2)));
+        final int textWidth = FONT_METRICS.stringWidth(compartment.getName());
+        final int height = FONT_METRICS.getHeight();
+        final Coordinate coordinate = new CoordinateImpl(position.getCenterX() - 0.5 * textWidth,
+                position.getY() + 0.5 * (COMPARTMENT_PADDING - height));
+        compartment.setLabelPosition(coordinate);
     }
 
     /**
@@ -526,6 +542,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     private void computeDimension(Layout layout) {
         for (CompartmentGlyph compartment : layout.getCompartments()) {
             union(layout.getPosition(), compartment.getPosition());
+        }
+        for (EntityGlyph entity : layout.getEntities()) {
+            union(layout.getPosition(), entity.getPosition());
         }
     }
 
