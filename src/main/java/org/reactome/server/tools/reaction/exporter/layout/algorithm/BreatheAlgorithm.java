@@ -370,7 +370,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         layoutHorizontalEntities(layout.getCompartmentRoot(), catalysts, xOffset, widthPerGlyph, (glyph, coord) ->
                 placeEntity(glyph, new CoordinateImpl(coord.getY(), coord.getX())));
         final Position reactionPosition = layout.getReaction().getPosition();
-        final double port = reactionPosition.getY();
+        final double port = reactionPosition.getCenterY();
         final double hRule = port - REACTION_MIN_V_DISTANCE;
         for (EntityGlyph entity : catalysts) {
             final ConnectorImpl connector = new ConnectorImpl();
@@ -412,7 +412,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         layoutHorizontalEntities(layout.getCompartmentRoot(), regulators, xOffset, widthPerGlyph, (glyph, coord) ->
                 placeEntity(glyph, new CoordinateImpl(coord.getY(), -coord.getX())));
         final Position reactionPosition = layout.getReaction().getPosition();
-        final double port = reactionPosition.getMaxY();
+        final double port = reactionPosition.getY();
         final double hRule = port + REACTION_MIN_V_DISTANCE;
         for (EntityGlyph entity : regulators) {
             final ConnectorImpl connector = new ConnectorImpl();
