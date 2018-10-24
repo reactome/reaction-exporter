@@ -171,6 +171,7 @@ public class ReactionDiagramFactory {
                 nodeAttachment.setLabel(attachment.getName());
                 nodeAttachment.setReactomeId(attachment.getDbId());
                 nodeAttachment.setShape(getAttachmentShape(attachment));
+                attachments.add(nodeAttachment);
             }
             node.setNodeAttachments(attachments);
             nodes.add(node);

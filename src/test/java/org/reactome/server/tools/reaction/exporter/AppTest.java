@@ -64,11 +64,12 @@ public class AppTest extends BaseTest {
     public void findByDbIdTest() throws CustomQueryException {
 
         final List<String> identifiers = Arrays.asList(
-                "R-HSA-9015379", "R-HSA-1218824", "R-HSA-1362408",
-                "R-HSA-211734", "R-HSA-5205661", "R-HSA-5205681", "R-HSA-8948146", "R-HSA-6787403", "R-HSA-68947",
-                "R-HSA-6791223", "R-HSA-72107", "R-HSA-5617820", "R-HSA-6785722", "R-HSA-69144", "R-HSA-6791221",
-                "R-HSA-6814559", "R-HSA-112381", "R-HSA-1362408",
-                "R-HSA-5205663","R-HSA-140664", "R-HSA-425483", "R-HSA-420586"
+//                "R-HSA-9015379", "R-HSA-1218824", "R-HSA-1362408",
+//                "R-HSA-211734", "R-HSA-5205661", "R-HSA-5205681", "R-HSA-8948146", "R-HSA-6787403", "R-HSA-68947",
+//                "R-HSA-6791223", "R-HSA-72107", "R-HSA-5617820", "R-HSA-6785722", "R-HSA-69144", "R-HSA-6791221",
+//                "R-HSA-6814559", "R-HSA-112381", "R-HSA-1362408",
+//                "R-HSA-5205663","R-HSA-140664", "R-HSA-425483", "R-HSA-420586",
+                "R-HSA-8948832"
         );
 //        final AnalysisStoredResult result = new TokenUtils("/home/plorente/resources/reactome/v66/analysis").getFromToken("MjAxODEwMDQxMDA3MDhfMw%253D%253D");
         final long start = System.nanoTime();
