@@ -14,6 +14,7 @@ import org.reactome.server.tools.reaction.exporter.layout.text.TextUtils;
 import java.awt.*;
 import java.awt.geom.Dimension2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -56,11 +57,11 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     /**
      * Size of reaction glyph
      */
-    private static final int REACTION_SIZE = 12;
+    private static final double REACTION_SIZE = 12;
     /**
      * Size of attachment glyph
      */
-    private static final int ATTACHMENT_SIZE = REACTION_SIZE;
+    private static final double ATTACHMENT_SIZE = REACTION_SIZE;
     /**
      * Padding of attachmente glyphs
      */
@@ -90,9 +91,19 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * Comparator that puts false elements before true elements.
      */
     private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
-    private final FontMetrics FONT_METRICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
-            .createGraphics()
-            .getFontMetrics(new Font("arial", Font.BOLD, 8));
+    private static final FontMetrics FONT_METRICS;
+
+    static {
+        try {
+            final Font font = Font.createFont(Font.TRUETYPE_FONT, BreatheAlgorithm.class.getResourceAsStream("/fonts/arialbd.ttf"));
+            FONT_METRICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
+                    .createGraphics()
+                    .getFontMetrics(font.deriveFont(8f));
+        } catch (FontFormatException | IOException e) {
+            // resources shouldn't throw exceptions
+            throw new IllegalArgumentException("/fonts/arialbd.ttf not found", e);
+        }
+    }
 
     @Override
     public void compute(Layout layout) {
@@ -144,7 +155,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final ReactionGlyph reaction = layout.getReaction();
         setSize(reaction);
         final Position position = reaction.getPosition();
-        position.setCenter(0, 0);
+        position.setCenter(0., 0.);
         // Add backbones
         reaction.getSegments().add(new SegmentImpl(
                 new CoordinateImpl(position.getX(), position.getCenterY()),
@@ -193,12 +204,13 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             case PROTEIN_DRUG:
             case RNA:
             case RNA_DRUG:
-                glyph.getPosition().setWidth(6 + textDimension.getWidth());
-                glyph.getPosition().setHeight(6 + textDimension.getHeight());
+                // exporter padding is 5
+                glyph.getPosition().setWidth(10 + textDimension.getWidth());
+                glyph.getPosition().setHeight(10 + textDimension.getHeight());
                 break;
             case PROTEIN:
-                glyph.getPosition().setWidth(6 + textDimension.getWidth());
-                glyph.getPosition().setHeight(6 + textDimension.getHeight());
+                glyph.getPosition().setWidth(10 + textDimension.getWidth());
+                glyph.getPosition().setHeight(10 + textDimension.getHeight());
                 layoutAttachments(glyph);
                 break;
             case ENCAPSULATED_NODE:
@@ -238,7 +250,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 placeEntity(glyph, new CoordinateImpl(-coord.getX(), coord.getY())));
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getX() - BACKBONE_LENGTH;
-        final double vRule = port - REACTION_MIN_H_DISTANCE;
+        final double vRule = port - REACTION_MIN_H_DISTANCE + BACKBONE_LENGTH;
         for (EntityGlyph entity : inputs) {
             final Position position = entity.getPosition();
             // is catalyst and input
@@ -317,7 +329,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         layoutVerticalEntities(layout.getCompartmentRoot(), outputs, yOffset, heightPerGlyph, this::placeEntity);
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getMaxX() + BACKBONE_LENGTH;
-        final double vRule = port + REACTION_MIN_H_DISTANCE;
+        final double vRule = port + REACTION_MIN_H_DISTANCE - BACKBONE_LENGTH - reactionPosition.getWidth();
         for (EntityGlyph entity : outputs) {
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
@@ -327,7 +339,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final Position position = entity.getPosition();
             for (Role role : entity.getRoles()) {
                 segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getX(), position.getCenterY()),
+                        new CoordinateImpl(position.getX() - 4, position.getCenterY()),
                         new CoordinateImpl(vRule, position.getCenterY())));
                 segments.add(new SegmentImpl(
                         new CoordinateImpl(vRule, position.getCenterY()),
@@ -444,20 +456,20 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final List<EntityGlyph> glyphs = entities.stream()
                 .filter(entityGlyph -> compartment.getContainedGlyphs().contains(entityGlyph))
                 .collect(Collectors.toList());
-        if (glyphs.isEmpty()) return COMPARTMENT_PADDING;
+        if (glyphs.isEmpty()) return COMPARTMENT_PADDING + startX;
         double width = MIN_GLYPH_WIDTH;
         for (EntityGlyph input : entities) {
             if (input.getPosition().getWidth() > width)
                 width = input.getPosition().getWidth();
         }
         width += HORIZONTAL_PADDING;
-        final double x = REACTION_MIN_H_DISTANCE + startX + width;
+        final double x = REACTION_MIN_H_DISTANCE + startX + 0.5 * width;
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
             final double y = -yOffset + i * heightPerGlyph;
             apply.accept(glyph, new CoordinateImpl(x, y));
         }
-        return COMPARTMENT_PADDING + width;
+        return COMPARTMENT_PADDING + startX + width;
     }
 
     private double layoutHorizontalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double xOffset, double widthPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
@@ -475,7 +487,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 height = entity.getPosition().getHeight();
             }
         }
-        height += HORIZONTAL_PADDING;
+        height += VERTICAL_PADDING;
         final double x = REACTION_MIN_V_DISTANCE + startY + 0.5 * height;
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
@@ -502,12 +514,14 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         for (CompartmentGlyph child : compartment.getChildren()) {
             layoutCompartment(child);
         }
-        final Position position = compartment.getPosition();
+        Position position = null;
         for (CompartmentGlyph child : compartment.getChildren()) {
-            union(position, child.getPosition());
+            if (position == null) position = new Position(child.getPosition());
+            else union(position, child.getPosition());
         }
         for (Glyph glyph : compartment.getContainedGlyphs()) {
-            union(position, glyph.getPosition());
+            if (position == null) position = new Position(glyph.getPosition());
+            else union(position, glyph.getPosition());
         }
         position.setX(position.getX() - COMPARTMENT_PADDING);
         position.setY(position.getY() - COMPARTMENT_PADDING);
@@ -515,10 +529,18 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         position.setHeight(position.getHeight() + 2 * COMPARTMENT_PADDING);
 
         final int textWidth = FONT_METRICS.stringWidth(compartment.getName());
-        final int height = FONT_METRICS.getHeight();
-        final Coordinate coordinate = new CoordinateImpl(position.getCenterX() - 0.5 * textWidth,
-                position.getY() + 0.5 * (COMPARTMENT_PADDING - height));
+        final int textHeight = FONT_METRICS.getHeight() - FONT_METRICS.getDescent();
+        final int textPadding = textWidth + 30;
+        if (position.getWidth() < textPadding) {
+            double diff = textPadding - position.getWidth();
+            position.setWidth(textPadding);
+            position.setX(position.getX() - 0.5 * diff);
+        }
+        final Coordinate coordinate = new CoordinateImpl(
+                position.getMaxX() - textWidth - 15,
+                position.getMaxY() + 0.5 * textHeight - COMPARTMENT_PADDING);
         compartment.setLabelPosition(coordinate);
+        compartment.setPosition(position);
     }
 
     /**
@@ -580,7 +602,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 moveShape(delta, entity.getConnector().getStoichiometry().getShape());
             }
         }
-
     }
 
     private void moveShape(CoordinateImpl delta, Shape s) {
@@ -595,6 +616,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     private void layoutAttachments(EntityGlyph entity) {
         if (entity.getAttachments() != null) {
             final Position position = entity.getPosition();
+            position.setX(0.);
+            position.setY(0.);
             double width = position.getWidth() - 2 * 8; // rounded rectangles
             double height = position.getHeight() - 2 * 8; // rounded rectangles
             int boxesInWidth = (int) (width / BOX_SIZE);

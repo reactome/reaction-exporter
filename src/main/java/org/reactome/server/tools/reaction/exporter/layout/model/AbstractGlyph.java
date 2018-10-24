@@ -31,6 +31,10 @@ public abstract class AbstractGlyph implements Glyph{
         return position;
     }
 
+    public void setPosition(Position position) {
+        this.position = position;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

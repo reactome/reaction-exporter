@@ -88,8 +88,7 @@ public class TextUtils {
 	private static List<String> fit(String text, Font font, double maxWidth, double maxHeight) {
 		if (font.getSize() < 1) return Collections.emptyList();
 		// Test if text fits in 1 line
-		if (computeWidth(text, font) < maxWidth
-				&& computeHeight(1, font) < maxHeight)
+		if (computeWidth(text, font) < maxWidth && computeHeight(1, font) < maxHeight)
 			return Collections.singletonList(text);
 
 		final List<String> lines = new LinkedList<>();
@@ -136,7 +135,7 @@ public class TextUtils {
 	}
 
 	private static int computeWidth(String text, Font font) {
-		return GRAPHICS.getFontMetrics(font).charsWidth(text.toCharArray(), 0, text.length());
+		return GRAPHICS.getFontMetrics(font).stringWidth(text);
 	}
 
 }

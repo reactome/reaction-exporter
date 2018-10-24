@@ -21,6 +21,9 @@ import java.util.List;
  */
 public class ReactionDiagramFactory {
 
+    /**
+     * We need to cause the same error than the standard diagrams
+     */
     private static final Coordinate GWU_CORRECTION = CoordinateFactory.get(14, 18);
 
     private ReactionDiagramFactory() {

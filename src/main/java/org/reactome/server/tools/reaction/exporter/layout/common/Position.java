@@ -14,6 +14,19 @@ public class Position {
     private double cx, cy;
     private double mx, my;
 
+    public Position(){}
+
+    public Position(Position position) {
+        this.x = position.x;
+        this.y = position.y;
+        this.width = position.width;
+        this.height = position.height;
+        this.cx = position.cx;
+        this.cy = position.cy;
+        this.mx = position.mx;
+        this.my = position.my;
+    }
+
     public double getX() {
         return x;
     }
