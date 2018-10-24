@@ -30,9 +30,9 @@ public class AttachmentGlyph extends AbstractGlyph {
         name = psiMod == null ? null : psiMod.getAbbreviation();
     }
 
-    AttachmentGlyph(AttachmentGlyph attachement) {
+    AttachmentGlyph(AttachmentGlyph attachment) {
         super();
-        name = attachement.name;
+        name = attachment.name;
     }
 
 	@Override
