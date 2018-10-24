@@ -92,6 +92,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      */
     private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
     private static final FontMetrics FONT_METRICS;
+    public static final int MIN_SEGMENT = 20;
 
     static {
         try {
@@ -250,7 +251,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 placeEntity(glyph, new CoordinateImpl(-coord.getX(), coord.getY())));
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getX() - BACKBONE_LENGTH;
-        final double vRule = port - REACTION_MIN_H_DISTANCE + BACKBONE_LENGTH;
+        final double vRule = port - REACTION_MIN_H_DISTANCE + BACKBONE_LENGTH + reactionPosition.getWidth() + MIN_SEGMENT;
         for (EntityGlyph entity : inputs) {
             final Position position = entity.getPosition();
             // is catalyst and input
@@ -329,7 +330,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         layoutVerticalEntities(layout.getCompartmentRoot(), outputs, yOffset, heightPerGlyph, this::placeEntity);
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getMaxX() + BACKBONE_LENGTH;
-        final double vRule = port + REACTION_MIN_H_DISTANCE - BACKBONE_LENGTH - reactionPosition.getWidth();
+        final double vRule = port + REACTION_MIN_H_DISTANCE - BACKBONE_LENGTH - reactionPosition.getWidth() - MIN_SEGMENT;
         for (EntityGlyph entity : outputs) {
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
