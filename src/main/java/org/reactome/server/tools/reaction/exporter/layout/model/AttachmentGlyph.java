@@ -4,12 +4,6 @@ import org.reactome.server.graph.domain.model.AbstractModifiedResidue;
 import org.reactome.server.graph.domain.model.PsiMod;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Small boxes that appear in the proteins with any kind of modification
  *
@@ -32,6 +26,8 @@ public class AttachmentGlyph extends AbstractGlyph {
 
     AttachmentGlyph(AttachmentGlyph attachment) {
         super();
+        dbId = attachment.dbId;
+        schemaClass = attachment.schemaClass;
         name = attachment.name;
     }
 
