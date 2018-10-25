@@ -191,9 +191,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         // We have to check whether the reaction is in the inner compartment or not to avoid rendering it over a wrong
         // compartment
         final Position position = reaction.getPosition();
-        if (reaction.getCompartment().getChildren().isEmpty()) {
-            position.setCenter(0., 0.);
-        } else {
+        position.setCenter(0., 0.);
+        if (!reaction.getCompartment().getChildren().isEmpty()) {
             // We need to move reaction from center
             // We'll put it at the bottom if the number of regulators is equals or less than catalysts
             if (regulators.size() <= catalysts.size()) {
@@ -202,15 +201,21 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                     if (intersect(child.getPosition().getX(), child.getPosition().getMaxX(), position.getX(), position.getMaxX()) && child.getPosition().getMaxY() > y)
                         y = child.getPosition().getMaxY();
                 }
-                reaction.getPosition().setCenter(0, y + 15);
-                for (EntityGlyph regulator : regulators) regulator.getPosition().move(0, y + 15);
+                if (y != 0) {
+                    reaction.getPosition().setCenter(0, y + 15);
+                    for (EntityGlyph regulator : regulators) regulator.getPosition().move(0, y + 15);
+                    for (EntityGlyph catalyst : catalysts) catalyst.getPosition().move(0, y + 15);
+                }
             } else {
                 double y = 0;
                 for (CompartmentGlyph child : reaction.getCompartment().getChildren())
-                    if (child.getPosition().getY() < y)
+                    if (intersect(child.getPosition().getX(), child.getPosition().getMaxX(), position.getX(), position.getMaxX()) && child.getPosition().getY() < y)
                         y = child.getPosition().getY();
-                reaction.getPosition().setCenter(0, y - 15);
-                for (EntityGlyph catalyst : catalysts) catalyst.getPosition().move(0, y - 15);
+                if (y != 0) {
+                    reaction.getPosition().setCenter(0, y - 15);
+                    for (EntityGlyph catalyst : catalysts) catalyst.getPosition().move(0, y - 15);
+                    for (EntityGlyph regulator : regulators) regulator.getPosition().move(0, y - 15);
+                }
             }
         }
         // Add backbones
@@ -291,7 +296,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 // non trivial then
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 // and by RenderableClass
-                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass())));
+                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
+                .thenComparing(EntityGlyph::getName));
 
         double heightPerGlyph = MIN_GLYPH_HEIGHT;
         for (EntityGlyph input : inputs) {
@@ -328,7 +334,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         outputs.sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
-                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass())));
+                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
+                .thenComparing(EntityGlyph::getName));
 
         double heightPerGlyph = MIN_GLYPH_HEIGHT;
         for (EntityGlyph input : outputs) {
@@ -349,7 +356,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         catalysts.sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
-                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass())));
+                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
+                .thenComparing(EntityGlyph::getName));
 
         double widthPerGlyph = MIN_GLYPH_WIDTH;
         for (EntityGlyph input : catalysts) {
@@ -369,7 +377,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         regulators.sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
-                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass())));
+                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
+                .thenComparing(EntityGlyph::getName));
 
         double widthPerGlyph = MIN_GLYPH_WIDTH;
         for (EntityGlyph input : regulators) {
