@@ -81,6 +81,9 @@ public class ReactionDiagramFactory {
         object.setPosition(new CoordinateImpl(position.getCenterX(), position.getCenterY()));
     }
 
+    /**
+     * Actually, get 'edge' :P
+     */
     private static List<Edge> getEdges(Layout rxnLayout) {
         final ReactionGlyph reaction = rxnLayout.getReaction();
         final EdgeImpl edge = new EdgeImpl();

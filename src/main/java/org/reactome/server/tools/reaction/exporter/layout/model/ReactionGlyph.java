@@ -21,6 +21,7 @@ public class ReactionGlyph extends AbstractGlyph {
     private Boolean disease;
 
     private List<Segment> segments = new ArrayList<>();
+    private CompartmentGlyph compartment;
 
     ReactionGlyph(ReactionLikeEvent rle) {
         super();
@@ -62,6 +63,14 @@ public class ReactionGlyph extends AbstractGlyph {
 
     public List<Segment> getSegments() {
         return segments;
+    }
+
+    public void setCompartment(CompartmentGlyph compartment) {
+        this.compartment = compartment;
+    }
+
+    public CompartmentGlyph getCompartment() {
+        return compartment;
     }
 
     @Override

@@ -27,6 +27,7 @@ public class EntityGlyph extends AbstractGlyph {
     private Boolean trivial = null; //Only true for trivial molecules. Null in any other case
 
     private Connector connector;
+    private CompartmentGlyph compartment;
 
     public EntityGlyph() {
 	    super();
@@ -127,6 +128,14 @@ public class EntityGlyph extends AbstractGlyph {
 
     public void setConnector(Connector connector) {
         this.connector = connector;
+    }
+
+    public void setCompartment(CompartmentGlyph compartment) {
+        this.compartment = compartment;
+    }
+
+    public CompartmentGlyph getCompartment() {
+        return compartment;
     }
 
     @Override

@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.Compartment;
 import org.reactome.server.graph.domain.model.Pathway;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
+import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTreeFactory;
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 
 import java.util.*;
 
@@ -71,6 +71,7 @@ public class Layout implements HasPosition {
             String acc = compartment.getAccession();
             CompartmentGlyph cg = compartments.computeIfAbsent(acc, i -> new CompartmentGlyph(compartment));
             cg.addGlyph(reactionGlyph);
+            reactionGlyph.setCompartment(cg);
             break; //We only want to assign the reaction to the first compartment in the list
         }
 
@@ -97,6 +98,7 @@ public class Layout implements HasPosition {
                 String acc = compartment.getAccession();
                 CompartmentGlyph cg = compartments.computeIfAbsent(acc, i -> new CompartmentGlyph(compartment));
                 cg.addGlyph(participant);
+                participant.setCompartment(cg);
                 break; //We only want to assign the participant to the first compartment in the list
             }
         }

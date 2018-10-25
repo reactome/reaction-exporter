@@ -100,6 +100,22 @@ public class Position {
         setX(x + dx);
         setY(y + dy);
     }
+    /**
+     * Creates the union between <em>this</em> and <em>that</em> and sets the result into this. The union of two
+     * rectangles is defined as the smallest rectangle that contains both rectangles.
+     *
+     * @param that the second position for the union
+     */
+    public void union(Position that) {
+        final double minX = Math.min(this.x, that.x);
+        final double minY = Math.min(this.y, that.y);
+        final double maxX = Math.max(this.mx, that.mx);
+        final double maxY = Math.max(this.my, that.my);
+        setX(minX);
+        setY(minY);
+        setWidth(maxX - minX);
+        setHeight(maxY - minY);
+    }
 
     @Override
     public String toString() {
