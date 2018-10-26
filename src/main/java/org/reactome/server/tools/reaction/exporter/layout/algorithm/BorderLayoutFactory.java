@@ -102,6 +102,7 @@ public class BorderLayoutFactory {
                 s = child.get(SOUTH) != null;
                 e = child.get(EAST) != null;
                 w = child.get(WEST) != null;
+                c = child.get(CENTER) != null;
                 if (child.get(NORTH_EAST) != null) n = e = true;
                 if (child.get(NORTH_WEST) != null) n = w = true;
                 if (child.get(SOUTH_EAST) != null) s = e = true;
