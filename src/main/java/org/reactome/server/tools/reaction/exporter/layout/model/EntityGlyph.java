@@ -17,6 +17,7 @@ import java.util.List;
 public class EntityGlyph extends AbstractGlyph {
 
     //From the query
+    @JsonIgnore
     private PhysicalEntity pe;
     private Collection<Role> roles = new HashSet<>();
     private Boolean drug;
@@ -134,6 +135,7 @@ public class EntityGlyph extends AbstractGlyph {
         this.compartment = compartment;
     }
 
+    @JsonIgnore
     public CompartmentGlyph getCompartment() {
         return compartment;
     }

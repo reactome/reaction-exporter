@@ -47,7 +47,7 @@ public class AppTest extends BaseTest {
     @BeforeClass
     public static void setUpClass() {
         logger.info(" --- !!! Running " + AppTest.class.getName() + "!!! --- \n");
-        if (!TEST_IMAGES.mkdirs())
+        if (!TEST_IMAGES.exists() && !TEST_IMAGES.mkdirs())
              logger.error("Couldn't create test folder " + TEST_IMAGES);
     }
 
@@ -64,33 +64,32 @@ public class AppTest extends BaseTest {
     public void findByDbIdTest() throws CustomQueryException {
 
         final List<String> identifiers = Arrays.asList(
-//                "R-HSA-9015379", "R-HSA-1218824", "R-HSA-1362408",
-//                "R-HSA-211734", "R-HSA-5205661", "R-HSA-5205681", "R-HSA-8948146", "R-HSA-6787403", "R-HSA-68947",
-//                "R-HSA-6791223", "R-HSA-72107", "R-HSA-5617820", "R-HSA-6785722", "R-HSA-69144", "R-HSA-6791221",
-//                "R-HSA-6814559", "R-HSA-112381", "R-HSA-1362408",
-//                "R-HSA-5205663","R-HSA-140664", "R-HSA-425483", "R-HSA-420586",
-                "R-HSA-8948832"
+                "R-HSA-9015379", "R-HSA-1218824", "R-HSA-1362408",
+                "R-HSA-211734", "R-HSA-5205661", "R-HSA-5205681",
+                "R-HSA-8948146", "R-HSA-6787403", "R-HSA-68947",
+                "R-HSA-6791223", "R-HSA-72107", "R-HSA-5617820",
+                "R-HSA-6785722", "R-HSA-69144", "R-HSA-6791221",
+                "R-HSA-6814559", "R-HSA-112381", "R-HSA-1362408",
+                "R-HSA-5205663","R-HSA-140664", "R-HSA-425483",
+                "R-HSA-420586", "R-HSA-8948832"
         );
 //        final AnalysisStoredResult result = new TokenUtils("/home/plorente/resources/reactome/v66/analysis").getFromToken("MjAxODEwMDQxMDA3MDhfMw%253D%253D");
         final long start = System.nanoTime();
         for (String stId : identifiers) {
 
             ReactionLikeEvent rle = databaseObjectService.findById(stId);
-//            Map<String, Object> map = new LinkedHashMap<>();
-//            map.put("stId", rle.getStId());
-//            String query = "" +
-//                    "MATCH (rle:ReactionLikeEvent{stId:{stId}})<-[:hasEvent]-(p:Pathway) " +
-//                    "RETURN p.stId LIMIT 1";
-//            final String pStId= ads.getCustomQueryResult(String.class, query, map);
-
             final String pStId = rle.getEventOf().get(0).getStId();
             final String format = "png";
 
-//            final String pStId = pathways.isEmpty() ? rle.getStId() : pathways.iterator().next();
             RasterArgs args = new RasterArgs(pStId, format).setQuality(8).setMargin(1);
 
             final LayoutFactory layoutFactory = new LayoutFactory(ads);
             final Layout layout = layoutFactory.getReactionLikeEventLayout(rle);
+//            try {
+//                System.out.println(new ObjectMapper().writeValueAsString(layout));
+//            } catch (JsonProcessingException e) {
+//                e.printStackTrace();
+//            }
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
             final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);

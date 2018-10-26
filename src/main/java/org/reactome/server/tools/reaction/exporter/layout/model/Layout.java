@@ -47,6 +47,7 @@ public class Layout implements HasPosition {
         return entities;
     }
 
+    @JsonIgnore
     public Pathway getPathway() {
         return pathway;
     }

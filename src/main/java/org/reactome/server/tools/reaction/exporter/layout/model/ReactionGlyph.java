@@ -1,5 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.tools.diagram.data.layout.Segment;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
@@ -69,6 +70,7 @@ public class ReactionGlyph extends AbstractGlyph {
         this.compartment = compartment;
     }
 
+    @JsonIgnore
     public CompartmentGlyph getCompartment() {
         return compartment;
     }
