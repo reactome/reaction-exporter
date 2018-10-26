@@ -20,8 +20,7 @@ public class AttachmentGlyph extends AbstractGlyph {
         super();
         dbId = amr.getDbId();
         schemaClass = amr.getSchemaClass();
-        PsiMod psiMod = amr.fetchSingleValue("getPsiMod");
-        name = psiMod == null ? null : psiMod.getAbbreviation();
+        name = amr.fetchSingleValue("getLabel");
     }
 
     AttachmentGlyph(AttachmentGlyph attachment) {
