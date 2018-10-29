@@ -1,7 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
 import org.reactome.server.graph.domain.model.AbstractModifiedResidue;
-import org.reactome.server.graph.domain.model.PsiMod;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
 /**
