@@ -77,7 +77,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     /**
      * Length of the backbone of the reaction
      */
-    private static final double BACKBONE_LENGTH = 20;
+    static final double BACKBONE_LENGTH = 20;
     /**
      * Order in which nodes should be placed depending on their {@link RenderableClass}
      */
@@ -195,57 +195,51 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         // compartment
         final Position position = reaction.getPosition();
         position.setCenter(0., 0.);
-        if (!reaction.getCompartment().getChildren().isEmpty()) {
+        final Collection<CompartmentGlyph> clashingCompartments = clashingCompartments(layout, reaction);
+        if (clashingCompartments.size() > 0) {
             // We need to move reaction from center
             //first we have to decide where to move the reaction
+            final double reactionSep = COMPARTMENT_PADDING + getBounds(reaction).getWidth();
             if (canMoveToInputs(reaction)) {
                 double x = 0;
-                for (CompartmentGlyph compartment : layout.getCompartments()) {
-                    if (compartment != reaction.getCompartment()
-                            && !isChild(compartment, reaction.getCompartment())
-                            && compartment.getPosition().intersects(reaction.getPosition())
-                            && compartment.getPosition().getX() < x)
-                        x = compartment.getPosition().getX();
-                }
+                for (CompartmentGlyph compartment : clashingCompartments)
+                    if (compartment.getPosition().getX() < x) x = compartment.getPosition().getX();
                 if (x != 0) {
-                    reaction.getPosition().setCenter(x - 15, 0);
-                    for (EntityGlyph input : inputs) move(input, x - 15, 0);
+                    reaction.getPosition().setCenter(x - reactionSep, 0);
+                    for (EntityGlyph input : inputs) move(input, x - reactionSep, 0);
 //                    for (EntityGlyph regulator : regulators)
 //                        if (canMove(regulator, x - 15, 0))
 //                            move(regulator, x - 15, 0);
                 }
             } else if (canMoveToOutputs(reaction)) {
                 double x = 0;
-                for (CompartmentGlyph child : reaction.getCompartment().getChildren()) {
-                    if (intersect(child.getPosition().getY(), child.getPosition().getMaxY(), position.getY(), position.getMaxY()) && child.getPosition().getMaxX() > x)
-                        x = child.getPosition().getMaxX();
+                for (CompartmentGlyph child : clashingCompartments) {
+                    if (child.getPosition().getMaxX() > x) x = child.getPosition().getMaxX();
                 }
                 if (x != 0) {
-                    reaction.getPosition().setCenter(x + 15, 0);
+                    reaction.getPosition().setCenter(x + reactionSep, 0);
 //                    for (EntityGlyph input : inputs) input.getPosition().move(x+15, 0);
-                    for (EntityGlyph output : outputs) move(output, x + 15, 0);
+                    for (EntityGlyph output : outputs) move(output, x + reactionSep, 0);
                 }
 
             } else if (canMoveToRegulators(reaction)) {
                 double y = 0;
-                for (CompartmentGlyph child : reaction.getCompartment().getChildren()) {
-                    if (reaction.getPosition().intersects(child.getPosition()) && child.getPosition().getMaxY() > y)
-                        y = child.getPosition().getMaxY();
+                for (CompartmentGlyph child : clashingCompartments) {
+                    if (child.getPosition().getMaxY() > y) y = child.getPosition().getMaxY();
                 }
                 if (y != 0) {
-                    reaction.getPosition().setCenter(0, y + 15);
-                    for (EntityGlyph regulator : regulators) move(regulator, 0, y + 15);
-                    for (EntityGlyph catalyst : catalysts) move(catalyst, 0, y + 15);
+                    reaction.getPosition().setCenter(0, y + reactionSep);
+                    for (EntityGlyph regulator : regulators) move(regulator, 0, y + reactionSep);
+                    for (EntityGlyph catalyst : catalysts) move(catalyst, 0, y + reactionSep);
                 }
             } else if (canMoveToCatalysts(reaction)) {
                 double y = 0;
-                for (CompartmentGlyph child : reaction.getCompartment().getChildren())
-                    if (intersect(child.getPosition().getX(), child.getPosition().getMaxX(), position.getX(), position.getMaxX()) && child.getPosition().getY() < y)
-                        y = child.getPosition().getY();
+                for (CompartmentGlyph child : clashingCompartments)
+                    if (child.getPosition().getY() < y) y = child.getPosition().getY();
                 if (y != 0) {
-                    reaction.getPosition().setCenter(0, y - 15);
-                    for (EntityGlyph catalyst : catalysts) move(catalyst, 0, y - 15);
-                    for (EntityGlyph regulator : regulators) move(regulator, 0, y - 15);
+                    reaction.getPosition().setCenter(0, y - reactionSep);
+                    for (EntityGlyph catalyst : catalysts) move(catalyst, 0, y - reactionSep);
+                    for (EntityGlyph regulator : regulators) move(regulator, 0, y - reactionSep);
                 }
 
             }
@@ -264,27 +258,38 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 new CoordinateImpl(position.getMaxX() + BACKBONE_LENGTH, position.getCenterY())));
     }
 
+    private Collection<CompartmentGlyph> clashingCompartments(Layout layout, ReactionGlyph reaction) {
+        return layout.getCompartments().stream()
+                .filter(compartment -> clashes(reaction, compartment))
+                .collect(Collectors.toList());
+    }
+
+    private boolean clashes(ReactionGlyph reaction, CompartmentGlyph compartment) {
+        return compartment != reaction.getCompartment()
+                && !isChild(compartment, reaction.getCompartment())
+                && compartment.getPosition().intersects(reaction.getPosition());
+    }
+
     private boolean canMove(EntityGlyph entityGlyph, double x, int y) {
         return false;
     }
 
     private boolean canMoveToInputs(ReactionGlyph reaction) {
-        return inputs.stream().noneMatch(glyph -> isChild(reaction.getCompartment(), glyph.getCompartment()));
+        return inputs.stream().noneMatch(glyph -> clashes(reaction, glyph.getCompartment()));
     }
 
     private boolean canMoveToOutputs(ReactionGlyph reaction) {
-        return outputs.stream().noneMatch(glyph -> isChild(reaction.getCompartment(), glyph.getCompartment()));
+        return outputs.stream().noneMatch(glyph -> clashes(reaction, glyph.getCompartment()));
 
     }
 
     private boolean canMoveToRegulators(ReactionGlyph reaction) {
-        return regulators.stream().noneMatch(glyph -> isChild(reaction.getCompartment(), glyph.getCompartment()));
+        return regulators.stream().noneMatch(glyph -> clashes(reaction, glyph.getCompartment()));
     }
 
     private boolean canMoveToCatalysts(ReactionGlyph reaction) {
-        return catalysts.stream().noneMatch(glyph -> isChild(reaction.getCompartment(), glyph.getCompartment()));
+        return catalysts.stream().noneMatch(glyph -> clashes(reaction, glyph.getCompartment()));
     }
-
 
     private boolean isChild(CompartmentGlyph compartment, CompartmentGlyph child) {
         CompartmentGlyph parent = child.getParent();

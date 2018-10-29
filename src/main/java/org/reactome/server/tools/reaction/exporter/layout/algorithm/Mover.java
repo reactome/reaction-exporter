@@ -10,6 +10,7 @@ import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.BreatheAlgorithm.ATTACHMENT_SIZE;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.BreatheAlgorithm.BACKBONE_LENGTH;
 
 /**
  * Helps moving glyphs and their content.
@@ -94,6 +95,17 @@ class Mover {
         position.setWidth(position.getWidth() + ATTACHMENT_SIZE);
         position.setHeight(position.getHeight() + ATTACHMENT_SIZE);
         position.move(-0.5 * ATTACHMENT_SIZE, -0.5 * ATTACHMENT_SIZE);
+        return position;
+    }
+
+    static Position getBounds(ReactionGlyph reaction) {
+        final Position position = new Position(reaction.getPosition());
+        if (reaction.getSegments() != null) {
+            // just the backbone
+            // actually, we should perform a for statement with segments, but this is faster
+            position.setWidth(position.getWidth() + 2 * BreatheAlgorithm.BACKBONE_LENGTH);
+            position.move(- BACKBONE_LENGTH, 0);
+        }
         return position;
     }
 
