@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.Mover.getBounds;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.Mover.move;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
@@ -63,7 +65,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     /**
      * Size of attachment glyph
      */
-    private static final double ATTACHMENT_SIZE = REACTION_SIZE;
+    static final double ATTACHMENT_SIZE = REACTION_SIZE;
     /**
      * Padding of attachmente glyphs
      */
@@ -123,12 +125,12 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         layoutConnectors(layout);
         removeExtracellular(layout);
         computeDimension(layout);
+        failedReactions(layout);
         moveToOrigin(layout);
     }
 
     private void addDuplicates(Layout layout) {
         // We duplicate every entity that has more than one role, except when the input is a catalyst
-
         final List<EntityGlyph> added = new ArrayList<>();
         for (EntityGlyph entity : layout.getEntities()) {
             final Collection<Role> roles = entity.getRoles();
@@ -143,6 +145,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                     copy.setRole(role);
                     entity.getRoles().remove(role);
                     added.add(copy);
+                    copy.setCompartment(entity.getCompartment());
                     entity.getCompartment().addGlyph(copy);
                 }
             }
@@ -194,29 +197,63 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         position.setCenter(0., 0.);
         if (!reaction.getCompartment().getChildren().isEmpty()) {
             // We need to move reaction from center
-            // We'll put it at the bottom if the number of regulators is equals or less than catalysts
-            if (regulators.size() <= catalysts.size()) {
+            //first we have to decide where to move the reaction
+            if (canMoveToInputs(reaction)) {
+                double x = 0;
+                for (CompartmentGlyph compartment : layout.getCompartments()) {
+                    if (compartment != reaction.getCompartment()
+                            && !isChild(compartment, reaction.getCompartment())
+                            && compartment.getPosition().intersects(reaction.getPosition())
+                            && compartment.getPosition().getX() < x)
+                        x = compartment.getPosition().getX();
+                }
+                if (x != 0) {
+                    reaction.getPosition().setCenter(x - 15, 0);
+                    for (EntityGlyph input : inputs) move(input, x - 15, 0);
+//                    for (EntityGlyph regulator : regulators)
+//                        if (canMove(regulator, x - 15, 0))
+//                            move(regulator, x - 15, 0);
+                }
+            } else if (canMoveToOutputs(reaction)) {
+                double x = 0;
+                for (CompartmentGlyph child : reaction.getCompartment().getChildren()) {
+                    if (intersect(child.getPosition().getY(), child.getPosition().getMaxY(), position.getY(), position.getMaxY()) && child.getPosition().getMaxX() > x)
+                        x = child.getPosition().getMaxX();
+                }
+                if (x != 0) {
+                    reaction.getPosition().setCenter(x + 15, 0);
+//                    for (EntityGlyph input : inputs) input.getPosition().move(x+15, 0);
+                    for (EntityGlyph output : outputs) move(output, x + 15, 0);
+                }
+
+            } else if (canMoveToRegulators(reaction)) {
                 double y = 0;
                 for (CompartmentGlyph child : reaction.getCompartment().getChildren()) {
-                    if (intersect(child.getPosition().getX(), child.getPosition().getMaxX(), position.getX(), position.getMaxX()) && child.getPosition().getMaxY() > y)
+                    if (reaction.getPosition().intersects(child.getPosition()) && child.getPosition().getMaxY() > y)
                         y = child.getPosition().getMaxY();
                 }
                 if (y != 0) {
                     reaction.getPosition().setCenter(0, y + 15);
-                    for (EntityGlyph regulator : regulators) regulator.getPosition().move(0, y + 15);
-                    for (EntityGlyph catalyst : catalysts) catalyst.getPosition().move(0, y + 15);
+                    for (EntityGlyph regulator : regulators) move(regulator, 0, y + 15);
+                    for (EntityGlyph catalyst : catalysts) move(catalyst, 0, y + 15);
                 }
-            } else {
+            } else if (canMoveToCatalysts(reaction)) {
                 double y = 0;
                 for (CompartmentGlyph child : reaction.getCompartment().getChildren())
                     if (intersect(child.getPosition().getX(), child.getPosition().getMaxX(), position.getX(), position.getMaxX()) && child.getPosition().getY() < y)
                         y = child.getPosition().getY();
                 if (y != 0) {
                     reaction.getPosition().setCenter(0, y - 15);
-                    for (EntityGlyph catalyst : catalysts) catalyst.getPosition().move(0, y - 15);
-                    for (EntityGlyph regulator : regulators) regulator.getPosition().move(0, y - 15);
+                    for (EntityGlyph catalyst : catalysts) move(catalyst, 0, y - 15);
+                    for (EntityGlyph regulator : regulators) move(regulator, 0, y - 15);
                 }
+
             }
+//            // We'll put it at the bottom if the number of regulators is equals or less than catalysts
+//            if (regulators.size() <= catalysts.size()) {
+//
+//            } else {
+//            }
         }
         // Add backbones
         reaction.getSegments().add(new SegmentImpl(
@@ -225,6 +262,37 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         reaction.getSegments().add(new SegmentImpl(
                 new CoordinateImpl(position.getMaxX(), position.getCenterY()),
                 new CoordinateImpl(position.getMaxX() + BACKBONE_LENGTH, position.getCenterY())));
+    }
+
+    private boolean canMove(EntityGlyph entityGlyph, double x, int y) {
+        return false;
+    }
+
+    private boolean canMoveToInputs(ReactionGlyph reaction) {
+        return inputs.stream().noneMatch(glyph -> isChild(reaction.getCompartment(), glyph.getCompartment()));
+    }
+
+    private boolean canMoveToOutputs(ReactionGlyph reaction) {
+        return outputs.stream().noneMatch(glyph -> isChild(reaction.getCompartment(), glyph.getCompartment()));
+
+    }
+
+    private boolean canMoveToRegulators(ReactionGlyph reaction) {
+        return regulators.stream().noneMatch(glyph -> isChild(reaction.getCompartment(), glyph.getCompartment()));
+    }
+
+    private boolean canMoveToCatalysts(ReactionGlyph reaction) {
+        return catalysts.stream().noneMatch(glyph -> isChild(reaction.getCompartment(), glyph.getCompartment()));
+    }
+
+
+    private boolean isChild(CompartmentGlyph compartment, CompartmentGlyph child) {
+        CompartmentGlyph parent = child.getParent();
+        while (parent != null) {
+            if (parent == compartment) return true;
+            parent = parent.getParent();
+        }
+        return false;
     }
 
     /**
@@ -430,12 +498,23 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             }
             y = biRole ? position.getCenterY() + 5 : position.getCenterY();
             // Input
-            segments.add(new SegmentImpl(
-                    new CoordinateImpl(position.getMaxX(), y),
-                    new CoordinateImpl(vRule, y)));
-            segments.add(new SegmentImpl(
-                    new CoordinateImpl(vRule, y),
-                    new CoordinateImpl(port, reactionPosition.getCenterY())));
+            if (entity.getRenderableClass() == RenderableClass.GENE) {
+                segments.add(new SegmentImpl(position.getMaxX() + 8, position.getY(),
+                        position.getMaxX() + 30, y));
+                segments.add(new SegmentImpl(
+                        new CoordinateImpl(position.getMaxX() + 30, y),
+                        new CoordinateImpl(vRule, y)));
+                segments.add(new SegmentImpl(
+                        new CoordinateImpl(vRule, y),
+                        new CoordinateImpl(port, reactionPosition.getCenterY())));
+            } else {
+                segments.add(new SegmentImpl(
+                        new CoordinateImpl(position.getMaxX(), y),
+                        new CoordinateImpl(vRule, y)));
+                segments.add(new SegmentImpl(
+                        new CoordinateImpl(vRule, y),
+                        new CoordinateImpl(port, reactionPosition.getCenterY())));
+            }
             for (Role role : entity.getRoles()) {
                 if (role.getType() == INPUT) {
                     final Stoichiometry s = getStoichiometry(segments, role);
@@ -539,9 +618,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 .collect(Collectors.toList());
         if (glyphs.isEmpty()) return COMPARTMENT_PADDING + startX;
         double width = MIN_GLYPH_WIDTH;
-        for (EntityGlyph input : entities) {
-            if (input.getPosition().getWidth() > width)
-                width = input.getPosition().getWidth();
+        for (EntityGlyph entity : entities) {
+            final Position bounds = getBounds(entity);
+            if (bounds.getWidth() > width) width = bounds.getWidth();
         }
         width += HORIZONTAL_PADDING;
         final double x = REACTION_MIN_H_DISTANCE + startX + 0.5 * width;
@@ -564,9 +643,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         if (glyphs.isEmpty()) return COMPARTMENT_PADDING;
         double height = MIN_GLYPH_HEIGHT;
         for (EntityGlyph entity : entities) {
-            if (entity.getPosition().getHeight() > height) {
-                height = entity.getPosition().getHeight();
-            }
+            final Position bounds = getBounds(entity);
+            if (bounds.getHeight() > height) height = bounds.getHeight();
         }
         height += VERTICAL_PADDING;
         final double x = REACTION_MIN_V_DISTANCE + startY + 0.5 * height;
@@ -636,44 +714,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     private void moveToOrigin(Layout layout) {
         final double dx = -layout.getPosition().getX();
         final double dy = -layout.getPosition().getY();
-        final CoordinateImpl delta = new CoordinateImpl(dx, dy);
-
+        final Coordinate delta = new CoordinateImpl(dx, dy);
         layout.getPosition().move(dx, dy);
-        layout.getReaction().getPosition().move(dx, dy);
-
-        for (Segment segment : layout.getReaction().getSegments()) {
-            ((SegmentImpl) segment).setFrom(segment.getFrom().add(delta));
-            ((SegmentImpl) segment).setTo(segment.getTo().add(delta));
-        }
-
-        for (CompartmentGlyph compartment : layout.getCompartments()) {
-            compartment.getPosition().move(dx, dy);
-            compartment.setLabelPosition(compartment.getLabelPosition().add(delta));
-        }
-
-        for (EntityGlyph entity : layout.getEntities()) {
-            entity.getPosition().move(dx, dy);
-            for (AttachmentGlyph attachment : entity.getAttachments()) {
-                attachment.getPosition().move(dx, dy);
-            }
-            for (Segment segment : entity.getConnector().getSegments()) {
-                ((SegmentImpl) segment).setFrom(segment.getFrom().add(delta));
-                ((SegmentImpl) segment).setTo(segment.getTo().add(delta));
-            }
-            moveShape(delta, entity.getConnector().getEndShape());
-            if (entity.getConnector().getStoichiometry() != null) {
-                moveShape(delta, entity.getConnector().getStoichiometry().getShape());
-            }
-        }
-    }
-
-    private void moveShape(CoordinateImpl delta, Shape s) {
-        if (s != null) {
-            final ShapeImpl shape = (ShapeImpl) s;
-            if (shape.getA() != null) shape.setA(shape.getA().add(delta));
-            if (shape.getB() != null) shape.setB(shape.getB().add(delta));
-            if (shape.getC() != null) shape.setC(shape.getC().add(delta));
-        }
+        move(layout.getCompartmentRoot(), delta, true);
     }
 
     private void layoutAttachments(EntityGlyph entity) {
@@ -727,5 +770,14 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     private void removeExtracellular(Layout layout) {
         layout.getCompartments().remove(layout.getCompartmentRoot());
     }
+
+
+    private void failedReactions(Layout layout) {
+        if (outputs.isEmpty()) layout.getPosition().setWidth(layout.getPosition().getWidth() + 150);
+        if (inputs.isEmpty()) {
+            layout.getPosition().setWidth(layout.getPosition().getWidth() + 150);
+        }
+    }
+
 
 }
