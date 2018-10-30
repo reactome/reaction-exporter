@@ -20,13 +20,19 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.Mover.getBounds;
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.Mover.move;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.Trasnlator.getBounds;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.Trasnlator.move;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
 public class BreatheAlgorithm implements LayoutAlgorithm {
 
+    public static final int CATALYST_RADIUS = 4;
+    public static final int REGULATOR_SIZE = 4;
+    /**
+     * Length of the backbone of the reaction
+     */
+    static final double BACKBONE_LENGTH = 20;
     private static final int MIN_SEGMENT = 20;
     /**
      * Minimum distance between the compartment border and any of ints contained glyphs.
@@ -74,10 +80,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * Precomputed space to allow for attachments
      */
     private static final double BOX_SIZE = ATTACHMENT_SIZE + 2 * ATTACHMENT_PADDING;
-    /**
-     * Length of the backbone of the reaction
-     */
-    static final double BACKBONE_LENGTH = 20;
     /**
      * Order in which nodes should be placed depending on their {@link RenderableClass}
      */
@@ -588,6 +590,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                         new CoordinateImpl(position.getCenterX(), hRule),
                         new CoordinateImpl(reactionPosition.getCenterX(), port)));
                 connector.setStoichiometry(getStoichiometry(segments, role));
+                connector.setType(role.getType().name());
                 connector.setPointer(getConnectorType(role.getType()));
             }
         }
@@ -595,8 +598,14 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private void regulatorConnectors(Layout layout) {
         final Position reactionPosition = layout.getReaction().getPosition();
-        final double port = reactionPosition.getMaxY();
-        final double hRule = port + REACTION_MIN_V_DISTANCE;
+//        final double port = reactionPosition.getMaxY();
+        // an horizontal rule for the first segment of all the regulators
+        final double hRule = reactionPosition.getMaxY() + REACTION_MIN_V_DISTANCE;
+        // we want to fit all catalysts in a semi-circumference, not using the corners
+        final int sectors = regulators.size() + 1;
+        // p is the distance between the center of the reaction and the
+        final double p = reactionPosition.getHeight() / 2 + REGULATOR_SIZE * sectors / Math.PI;
+        int i = 1;
         for (EntityGlyph entity : regulators) {
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
@@ -604,13 +613,51 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             connector.setSegments(segments);
             connector.setEdgeId(layout.getReaction().getId());
             final Position position = entity.getPosition();
+//            segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), reactionPosition.getCenterX(), reactionPosition.getMaxY()));
+            segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
+            final double x = reactionPosition.getCenterX() - p * Math.cos(Math.PI * i / sectors);
+            final double y = reactionPosition.getCenterY() + p * Math.sin(Math.PI * i / sectors);
+            segments.add(new SegmentImpl(position.getCenterX(), hRule, x, y));
+            // Only one role expected (negative or positive)
             for (Role role : entity.getRoles()) {
-                segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
-                segments.add(new SegmentImpl(position.getCenterX(), hRule, reactionPosition.getCenterX(), port));
                 connector.setStoichiometry(getStoichiometry(segments, role));
                 connector.setPointer(getConnectorType(role.getType()));
             }
+            i++;
         }
+
+        // This piece of code points to the center of the reaction, but they are oddly distributed
+        //   final Position reactionPosition = layout.getReaction().getPosition();
+        //        // an horizontal rule for the first segment of all the regulators
+        //        final double hRule = reactionPosition.getMaxY() + REACTION_MIN_V_DISTANCE;
+        //        // we want to fit all catalysts in a semi-circumference, not using the corners
+        //        final int sectors = regulators.size() + 1;
+        //        // p is the distance between the center of the reaction and the closer pixel of the shape of the regulator
+        //        final double p = REGULATOR_SIZE * sectors / Math.PI;
+        //        int i = 1;
+        //        for (EntityGlyph entity : regulators) {
+        //            final ConnectorImpl connector = new ConnectorImpl();
+        //            final List<Segment> segments = new ArrayList<>();
+        //            entity.setConnector(connector);
+        //            connector.setSegments(segments);
+        //            connector.setEdgeId(layout.getReaction().getId());
+        //            final Position position = entity.getPosition();
+        //            segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
+        ////            final double x = reactionPosition.getCenterX() - p *  Math.cos(Math.PI  * i / sectors);
+        ////            final double y = reactionPosition.getCenterY() + p * Math.sin(Math.PI * i / sectors);
+        //            final double dx = entity.getPosition().getCenterX() - reactionPosition.getCenterX();
+        //            final double dy = entity.getPosition().getCenterY() - reactionPosition.getCenterY();
+        //            final double mod = Math.sqrt(dx * dx + dy * dy);
+        //            final double x = dx / mod * p + reactionPosition.getCenterX();
+        //            final double y = dy / mod * p + reactionPosition.getCenterY();
+        //            segments.add(new SegmentImpl(position.getCenterX(), hRule, x, y));
+        //            // Only one role expected (negative or positive)
+        //            for (Role role : entity.getRoles()) {
+        //                connector.setStoichiometry(getStoichiometry(segments, role));
+        //                connector.setPointer(getConnectorType(role.getType()));
+        //            }
+        //            i++;
+        //        }
     }
 
     private double layoutVerticalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double yOffset, double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
@@ -638,7 +685,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     }
 
     private double layoutHorizontalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double xOffset, double widthPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
-        double startY = 0;
+        double startY = COMPARTMENT_PADDING;
         for (CompartmentGlyph child : compartment.getChildren()) {
             startY = Math.max(startY, layoutHorizontalEntities(child, entities, xOffset, widthPerGlyph, apply));
         }
@@ -658,7 +705,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final double y = -xOffset + i * widthPerGlyph;
             apply.accept(glyph, new CoordinateImpl(-x, y));
         }
-        return COMPARTMENT_PADDING + height;
+        return 2 * COMPARTMENT_PADDING + height;
     }
 
     private void placeEntity(EntityGlyph entity, Coordinate coordinate) {

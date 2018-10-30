@@ -15,9 +15,9 @@ import static org.reactome.server.tools.reaction.exporter.layout.algorithm.Breat
 /**
  * Helps moving glyphs and their content.
  */
-class Mover {
+class Trasnlator {
 
-    private Mover() {
+    private Trasnlator() {
     }
 
     private static void moveShape(Shape s, Coordinate delta) {
