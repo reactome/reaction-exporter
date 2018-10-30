@@ -8,16 +8,36 @@ import org.reactome.server.tools.diagram.data.layout.impl.SegmentImpl;
 import org.reactome.server.tools.diagram.data.layout.impl.ShapeImpl;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
+import org.reactome.server.tools.reaction.exporter.layout.text.TextUtils;
 
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BreatheAlgorithm.ATTACHMENT_SIZE;
+import java.awt.geom.Dimension2D;
+import java.util.ArrayList;
+
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BreatheAlgorithm.BACKBONE_LENGTH;
 
 /**
- * Helps moving glyphs and their content.
+ * Helper class to perform transformations on glyphs: translating, scaling and sizing.
  */
-class Translator {
+class Transformer {
+    /**
+     * Size of reaction glyph
+     */
+    private static final double REACTION_SIZE = 12;
+    /**
+     * Size of attachment glyph
+     */
+    private static final double ATTACHMENT_SIZE = REACTION_SIZE;
+    /**
+     * Padding of attachmente glyphs
+     */
+    private static final int ATTACHMENT_PADDING = 2;
+    /**
+     * Precomputed space to allow for attachments
+     */
+    private static final double BOX_SIZE = ATTACHMENT_SIZE + 2 * ATTACHMENT_PADDING;
 
-    private Translator() {
+
+    private Transformer() {
     }
 
     private static void moveShape(Shape s, Coordinate delta) {
@@ -58,9 +78,7 @@ class Translator {
         else if (glyph instanceof CompartmentGlyph)
             move((CompartmentGlyph) glyph, delta);
         else throw new UnsupportedOperationException();
-
     }
-
 
     private static void move(ReactionGlyph reactionGlyph, Coordinate delta) {
         reactionGlyph.getPosition().move(delta.getX(), delta.getY());
@@ -104,12 +122,12 @@ class Translator {
             // just the backbone
             // actually, we should perform a for statement with segments, but this is faster
             position.setWidth(position.getWidth() + 2 * BreatheAlgorithm.BACKBONE_LENGTH);
-            position.move(- BACKBONE_LENGTH, 0);
+            position.move(-BACKBONE_LENGTH, 0);
         }
         return position;
     }
 
-    static void center(ReactionGlyph reactionGlyph, Coordinate coordinate) {
+    private static void center(ReactionGlyph reactionGlyph, Coordinate coordinate) {
         final Coordinate diff = coordinate.minus(new CoordinateImpl(reactionGlyph.getPosition().getCenterX(), reactionGlyph.getPosition().getCenterY()));
         move(reactionGlyph, diff);
     }
@@ -119,7 +137,7 @@ class Translator {
         move(entityGlyph, diff);
     }
 
-    static void center(CompartmentGlyph compartmentGlyph, Coordinate coordinate) {
+    private static void center(CompartmentGlyph compartmentGlyph, Coordinate coordinate) {
         final Coordinate diff = coordinate.minus(new CoordinateImpl(compartmentGlyph.getPosition().getCenterX(), compartmentGlyph.getPosition().getCenterY()));
         move(compartmentGlyph, diff);
     }
@@ -134,4 +152,90 @@ class Translator {
         else throw new UnsupportedOperationException();
     }
 
+    static void setSize(ReactionGlyph reaction) {
+        reaction.getPosition().setHeight(REACTION_SIZE);
+        reaction.getPosition().setWidth(REACTION_SIZE);
+    }
+
+    static void setSize(EntityGlyph glyph) {
+        final Dimension2D textDimension = TextUtils.textDimension(glyph.getName());
+        switch (glyph.getRenderableClass()) {
+            case CHEMICAL:
+            case CHEMICAL_DRUG:
+            case COMPLEX:
+            case COMPLEX_DRUG:
+            case ENTITY:
+            case PROTEIN_DRUG:
+            case RNA:
+            case RNA_DRUG:
+                // exporter padding is 5
+                glyph.getPosition().setWidth(10 + textDimension.getWidth());
+                glyph.getPosition().setHeight(10 + textDimension.getHeight());
+                break;
+            case PROTEIN:
+                glyph.getPosition().setWidth(10 + textDimension.getWidth());
+                glyph.getPosition().setHeight(10 + textDimension.getHeight());
+                layoutAttachments(glyph);
+                break;
+            case ENCAPSULATED_NODE:
+            case PROCESS_NODE:
+            case ENTITY_SET:
+            case ENTITY_SET_DRUG:
+                glyph.getPosition().setWidth(15 + textDimension.getWidth());
+                glyph.getPosition().setHeight(15 + textDimension.getHeight());
+                break;
+            case GENE:
+                glyph.getPosition().setWidth(6 + textDimension.getWidth());
+                glyph.getPosition().setHeight(30 + textDimension.getHeight());
+                break;
+        }
+    }
+
+    private static void layoutAttachments(EntityGlyph entity) {
+        if (entity.getAttachments() != null) {
+            final Position position = entity.getPosition();
+            position.setX(0.);
+            position.setY(0.);
+            double width = position.getWidth() - 2 * 8; // rounded rectangles
+            double height = position.getHeight() - 2 * 8; // rounded rectangles
+            int boxesInWidth = (int) (width / BOX_SIZE);
+            int boxesInHeight = (int) (height / BOX_SIZE);
+            int maxBoxes = 2 * (boxesInHeight + boxesInWidth);
+            while (entity.getAttachments().size() > maxBoxes) {
+                position.setWidth(position.getWidth() + BOX_SIZE);
+                position.setHeight(position.getWidth() / TextUtils.RATIO);
+                width = position.getWidth() - 2 * 8; // rounded rectangles
+                height = position.getHeight() - 2 * 8; // rounded rectangles
+                boxesInWidth = (int) (width / BOX_SIZE);
+                boxesInHeight = (int) (height / BOX_SIZE);
+                maxBoxes = 2 * (boxesInHeight + boxesInWidth);
+            }
+
+            final ArrayList<AttachmentGlyph> glyphs = new ArrayList<>(entity.getAttachments());
+            final double maxWidth = boxesInWidth * BOX_SIZE;
+            final double maxHeight = boxesInHeight * BOX_SIZE;
+            final double xOffset = 8 + 0.5 * (BOX_SIZE + width - maxWidth);
+            final double yOffset = 8 + 0.5 * (BOX_SIZE + height - maxHeight);
+            for (int i = 0; i < glyphs.size(); i++) {
+                glyphs.get(i).getPosition().setWidth(ATTACHMENT_SIZE);
+                glyphs.get(i).getPosition().setHeight(ATTACHMENT_SIZE);
+                if (i < boxesInWidth) {
+                    // Top line
+                    glyphs.get(i).getPosition().setCenter(position.getX() + xOffset + i * BOX_SIZE, position.getY());
+                } else if (i < boxesInWidth + boxesInHeight) {
+                    // Right line
+                    final int pos = i - boxesInWidth;
+                    glyphs.get(i).getPosition().setCenter(position.getMaxX(), position.getY() + yOffset + pos * BOX_SIZE);
+                } else if (i < 2 * boxesInWidth + boxesInHeight) {
+                    // Bottom line
+                    final int pos = i - boxesInWidth - boxesInHeight;
+                    glyphs.get(i).getPosition().setCenter(position.getMaxX() - xOffset - pos * BOX_SIZE, position.getMaxY());
+                } else {
+                    // Left line
+                    final int pos = i - boxesInHeight - 2 * boxesInWidth;
+                    glyphs.get(i).getPosition().setCenter(position.getX(), position.getMaxY() - yOffset - pos * BOX_SIZE);
+                }
+            }
+        }
+    }
 }

@@ -7,14 +7,14 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Role;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LayoutIndex {
+class LayoutIndex {
 
     private List<EntityGlyph> inputs = new ArrayList<>();
     private List<EntityGlyph> outputs = new ArrayList<>();
     private List<EntityGlyph> catalysts = new ArrayList<>();
     private List<EntityGlyph> regulators = new ArrayList<>();
 
-    public LayoutIndex(Layout layout) {
+    LayoutIndex(Layout layout) {
         final List<EntityGlyph> activators = new ArrayList<>();
         final List<EntityGlyph> inhibitors = new ArrayList<>();
         for (EntityGlyph entity : layout.getEntities()) {
@@ -42,19 +42,19 @@ public class LayoutIndex {
         regulators.addAll(activators);
     }
 
-    public List<EntityGlyph> getCatalysts() {
+    List<EntityGlyph> getCatalysts() {
         return catalysts;
     }
 
-    public List<EntityGlyph> getInputs() {
+    List<EntityGlyph> getInputs() {
         return inputs;
     }
 
-    public List<EntityGlyph> getOutputs() {
+    List<EntityGlyph> getOutputs() {
         return outputs;
     }
 
-    public List<EntityGlyph> getRegulators() {
+    List<EntityGlyph> getRegulators() {
         return regulators;
     }
 }
