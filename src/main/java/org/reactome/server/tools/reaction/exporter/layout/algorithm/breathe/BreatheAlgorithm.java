@@ -37,7 +37,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     /**
      * Size of the box surrounding regulator and catalysts shapes
      */
-    private static final int REGULATOR_SIZE = 4;
+    private static final int REGULATOR_SIZE = 6;
     /**
      * Minimum length of segments departing participants.
      */
@@ -249,6 +249,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     }
 
     /**
+     * This step should be run after placing the entities.
      */
     private void layoutReaction(Layout layout) {
         final ReactionGlyph reaction = layout.getReaction();
@@ -314,18 +315,28 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 new CoordinateImpl(position.getMaxX() + BACKBONE_LENGTH, position.getCenterY())));
     }
 
+    /**
+     * Get the list of compartments that clash with the reaction.
+     */
     private Collection<CompartmentGlyph> clashingCompartments(Layout layout, ReactionGlyph reaction) {
         return layout.getCompartments().stream()
                 .filter(compartment -> clashes(reaction, compartment))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * A compartment clashes with the reaction if they intersect and the reaction does not belong to the compartment or
+     * any of its children.
+     */
     private boolean clashes(ReactionGlyph reaction, CompartmentGlyph compartment) {
         return compartment != reaction.getCompartment()
                 && !isChild(compartment, reaction.getCompartment())
                 && compartment.getPosition().intersects(reaction.getPosition());
     }
 
+    /**
+     * Test if child is a descendant of compartment.
+     */
     private boolean isChild(CompartmentGlyph compartment, CompartmentGlyph child) {
         CompartmentGlyph parent = child.getParent();
         while (parent != null) {
@@ -360,6 +371,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     }
 
     private void inputConnectors(Layout layout) {
+        // we have to deal with the case that inputs can be catalysts as well, in that case two connector have to be
+        // created. This method supposes that the inputs are on the top left corner of the diagram.
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getX() - BACKBONE_LENGTH;
         final double vRule = port - REACTION_MIN_H_DISTANCE + BACKBONE_LENGTH + reactionPosition.getWidth() + MIN_SEGMENT;
@@ -426,13 +439,14 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             connector.setEdgeId(layout.getReaction().getId());
             entity.setConnector(connector);
             final Position position = entity.getPosition();
+            segments.add(new SegmentImpl(
+                    new CoordinateImpl(position.getX() - 4, position.getCenterY()),
+                    new CoordinateImpl(vRule, position.getCenterY())));
+            segments.add(new SegmentImpl(
+                    new CoordinateImpl(vRule, position.getCenterY()),
+                    new CoordinateImpl(port, reactionPosition.getCenterY())));
+            // only one role expected: OUTPUT
             for (Role role : entity.getRoles()) {
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getX() - 4, position.getCenterY()),
-                        new CoordinateImpl(vRule, position.getCenterY())));
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(vRule, position.getCenterY()),
-                        new CoordinateImpl(port, reactionPosition.getCenterY())));
                 connector.setPointer(getConnectorType(role.getType()));
                 connector.setStoichiometry(getStoichiometry(segments, role));
             }
@@ -466,13 +480,14 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             connector.setSegments(segments);
             connector.setEdgeId(layout.getReaction().getId());
             final Position position = entity.getPosition();
+            segments.add(new SegmentImpl(
+                    new CoordinateImpl(position.getCenterX(), position.getMaxY()),
+                    new CoordinateImpl(position.getCenterX(), hRule)));
+            segments.add(new SegmentImpl(
+                    new CoordinateImpl(position.getCenterX(), hRule),
+                    new CoordinateImpl(reactionPosition.getCenterX(), port)));
+            // only one role expected: CATALYST
             for (Role role : entity.getRoles()) {
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getCenterX(), position.getMaxY()),
-                        new CoordinateImpl(position.getCenterX(), hRule)));
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getCenterX(), hRule),
-                        new CoordinateImpl(reactionPosition.getCenterX(), port)));
                 connector.setStoichiometry(getStoichiometry(segments, role));
                 connector.setType(role.getType().name());
                 connector.setPointer(getConnectorType(role.getType()));
@@ -482,13 +497,12 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private void regulatorConnectors(Layout layout) {
         final Position reactionPosition = layout.getReaction().getPosition();
-//        final double port = reactionPosition.getMaxY();
-        // an horizontal rule for the first segment of all the regulators
         final double hRule = reactionPosition.getMaxY() + REACTION_MIN_V_DISTANCE;
         // we want to fit all catalysts in a semi-circumference, not using the corners
         final int sectors = index.getRegulators().size() + 1;
-        // p is the distance between the center of the reaction and the
-        final double p = reactionPosition.getHeight() / 2 + REGULATOR_SIZE * sectors / Math.PI;
+        // the semicircle is centered into the reaction, and its length (PI*radius) should be enough to fit all the
+        // shapes without touching
+        final double radius = reactionPosition.getHeight() / 2 + REGULATOR_SIZE * sectors / Math.PI;
         int i = 1;
         for (EntityGlyph entity : index.getRegulators()) {
             final ConnectorImpl connector = new ConnectorImpl();
@@ -497,10 +511,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             connector.setSegments(segments);
             connector.setEdgeId(layout.getReaction().getId());
             final Position position = entity.getPosition();
-//            segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), reactionPosition.getCenterX(), reactionPosition.getMaxY()));
             segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
-            final double x = reactionPosition.getCenterX() - p * Math.cos(Math.PI * i / sectors);
-            final double y = reactionPosition.getCenterY() + p * Math.sin(Math.PI * i / sectors);
+            final double x = reactionPosition.getCenterX() - radius * Math.cos(Math.PI * i / sectors);
+            final double y = reactionPosition.getCenterY() + radius * Math.sin(Math.PI * i / sectors);
             segments.add(new SegmentImpl(position.getCenterX(), hRule, x, y));
             // Only one role expected (negative or positive)
             for (Role role : entity.getRoles()) {
@@ -511,6 +524,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         }
     }
 
+    /**
+     * Creates the stoichiometry box in the last segment.
+     */
     private Stoichiometry getStoichiometry(List<Segment> segments, Role role) {
         if (role.getStoichiometry() == 1)
             return new StoichiometryImpl(1, null);
