@@ -1,38 +1,34 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
 
 import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.diagram.data.layout.Segment;
 import org.reactome.server.tools.diagram.data.layout.Shape;
 import org.reactome.server.tools.diagram.data.layout.Stoichiometry;
 import org.reactome.server.tools.diagram.data.layout.impl.*;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.LayoutAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 import org.reactome.server.tools.reaction.exporter.layout.text.TextUtils;
 
-import java.awt.*;
 import java.awt.geom.Dimension2D;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.*;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.Trasnlator.getBounds;
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.Trasnlator.move;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.Translator.getBounds;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.Translator.move;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
 public class BreatheAlgorithm implements LayoutAlgorithm {
 
-    public static final int CATALYST_RADIUS = 4;
-    public static final int REGULATOR_SIZE = 4;
     /**
      * Length of the backbone of the reaction
      */
     static final double BACKBONE_LENGTH = 20;
+    private static final int REGULATOR_SIZE = 4;
     private static final int MIN_SEGMENT = 20;
     /**
      * Minimum distance between the compartment border and any of ints contained glyphs.
@@ -97,19 +93,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * Comparator that puts false elements before true elements.
      */
     private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
-    private static final FontMetrics FONT_METRICS;
-
-    static {
-        try {
-            final Font font = Font.createFont(Font.TRUETYPE_FONT, BreatheAlgorithm.class.getResourceAsStream("/fonts/arialbd.ttf"));
-            FONT_METRICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
-                    .createGraphics()
-                    .getFontMetrics(font.deriveFont(8f));
-        } catch (FontFormatException | IOException e) {
-            // resources shouldn't throw exceptions
-            throw new IllegalArgumentException("/fonts/arialbd.ttf not found", e);
-        }
-    }
 
     private List<EntityGlyph> inputs;
     private List<EntityGlyph> outputs;
@@ -739,9 +722,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         position.setWidth(position.getWidth() + 2 * COMPARTMENT_PADDING);
         position.setHeight(position.getHeight() + 2 * COMPARTMENT_PADDING);
 
-        final int textWidth = FONT_METRICS.stringWidth(compartment.getName());
-        final int textHeight = FONT_METRICS.getHeight() - FONT_METRICS.getDescent();
-        final int textPadding = textWidth + 30;
+        final double textWidth = FontProperties.getTextWidth(compartment.getName());
+        final double textHeight = FontProperties.getTextHeight();
+        final double textPadding = textWidth + 30;
         if (position.getWidth() < textPadding) {
             double diff = textPadding - position.getWidth();
             position.setWidth(textPadding);

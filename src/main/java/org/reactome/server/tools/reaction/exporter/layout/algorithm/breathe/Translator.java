@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
 
 import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.diagram.data.layout.Segment;
@@ -9,15 +9,15 @@ import org.reactome.server.tools.diagram.data.layout.impl.ShapeImpl;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.BreatheAlgorithm.ATTACHMENT_SIZE;
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.BreatheAlgorithm.BACKBONE_LENGTH;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BreatheAlgorithm.ATTACHMENT_SIZE;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BreatheAlgorithm.BACKBONE_LENGTH;
 
 /**
  * Helps moving glyphs and their content.
  */
-class Trasnlator {
+class Translator {
 
-    private Trasnlator() {
+    private Translator() {
     }
 
     private static void moveShape(Shape s, Coordinate delta) {
