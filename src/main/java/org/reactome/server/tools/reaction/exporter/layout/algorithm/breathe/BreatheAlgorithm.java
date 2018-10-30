@@ -34,7 +34,13 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * Length of the backbone of the reaction
      */
     static final double BACKBONE_LENGTH = 20;
+    /**
+     * Size of the box surrounding regulator and catalysts shapes
+     */
     private static final int REGULATOR_SIZE = 4;
+    /**
+     * Minimum length of segments departing participants.
+     */
     private static final int MIN_SEGMENT = 20;
     /**
      * Minimum distance between the compartment border and any of ints contained glyphs.
@@ -80,7 +86,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             RenderableClass.GENE,
             RenderableClass.ENTITY);
     /**
-     * Comparator that puts false elements before true elements.
+     * Comparator that puts false (and null) elements before true elements.
      */
     private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
 
@@ -102,6 +108,148 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         moveToOrigin(layout);
     }
 
+    private void layoutParticipants(Layout layout) {
+        for (EntityGlyph entity : layout.getEntities()) setSize(entity);
+        layoutInputs(layout);
+        layoutOutputs(layout);
+        layoutCatalysts(layout);
+        layoutRegulators(layout);
+    }
+
+    private void layoutInputs(Layout layout) {
+        index.getInputs().sort(Comparator
+                // input/catalysts first
+                .comparing((EntityGlyph e) -> e.getRoles().size()).reversed()
+                // non trivial then
+                .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
+                // and sorted by RenderableClass
+                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
+                // and finally by name
+                .thenComparing(EntityGlyph::getName));
+        double heightPerGlyph = MIN_GLYPH_HEIGHT;
+        for (EntityGlyph input : index.getInputs()) {
+            final Position bounds = Transformer.getBounds(input);
+            if (bounds.getHeight() > heightPerGlyph) heightPerGlyph = bounds.getHeight();
+        }
+        heightPerGlyph += VERTICAL_PADDING;
+        final double totalHeight = heightPerGlyph * index.getInputs().size();
+        final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
+        layoutVerticalEntities(layout.getCompartmentRoot(), index.getInputs(), yOffset, heightPerGlyph, (glyph, coord) ->
+                Transformer.center(glyph, new CoordinateImpl(-coord.getX(), coord.getY())));
+    }
+
+    private void layoutOutputs(Layout layout) {
+        index.getOutputs().sort(Comparator
+                .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
+                .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
+                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
+                .thenComparing(EntityGlyph::getName));
+
+        double heightPerGlyph = MIN_GLYPH_HEIGHT;
+        for (EntityGlyph output : index.getOutputs()) {
+            final Position bounds = Transformer.getBounds(output);
+            if (bounds.getHeight() > heightPerGlyph) heightPerGlyph = bounds.getHeight();
+        }
+        heightPerGlyph += VERTICAL_PADDING;
+        final double totalHeight = heightPerGlyph * index.getOutputs().size();
+        final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
+        layoutVerticalEntities(layout.getCompartmentRoot(), index.getOutputs(), yOffset, heightPerGlyph, Transformer::center);
+    }
+
+    private void layoutCatalysts(Layout layout) {
+        // Remove catalysts that are inputs
+        index.getCatalysts().removeIf(entityGlyph -> entityGlyph.getRoles().stream().anyMatch(role -> role.getType() == INPUT));
+        if (index.getCatalysts().isEmpty()) return;
+        index.getCatalysts().sort(Comparator
+                .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
+                .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
+                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
+                .thenComparing(EntityGlyph::getName));
+
+        double widthPerGlyph = MIN_GLYPH_WIDTH;
+        for (EntityGlyph catalyst : index.getCatalysts()) {
+            final Position bounds = Transformer.getBounds(catalyst);
+            if (bounds.getWidth() > widthPerGlyph) widthPerGlyph = bounds.getWidth();
+        }
+        widthPerGlyph += HORIZONTAL_PADDING;
+
+        final double totalWidth = widthPerGlyph * index.getCatalysts().size();
+        final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
+        layoutHorizontalEntities(layout.getCompartmentRoot(), index.getCatalysts(), xOffset, widthPerGlyph, (glyph, coord) ->
+                Transformer.center(glyph, new CoordinateImpl(coord.getY(), coord.getX())));
+    }
+
+    private void layoutRegulators(Layout layout) {
+        if (index.getRegulators().isEmpty()) return;
+        index.getRegulators().sort(Comparator
+                .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
+                .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
+                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
+                .thenComparing(EntityGlyph::getName));
+
+        double widthPerGlyph = MIN_GLYPH_WIDTH;
+        for (EntityGlyph regulator : index.getRegulators()) {
+            final Position bounds = Transformer.getBounds(regulator);
+            if (bounds.getWidth() > widthPerGlyph) widthPerGlyph = bounds.getWidth();
+        }
+        widthPerGlyph += HORIZONTAL_PADDING;
+
+        final double totalWidth = widthPerGlyph * index.getRegulators().size();
+        final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
+        layoutHorizontalEntities(layout.getCompartmentRoot(), index.getRegulators(), xOffset, widthPerGlyph, (glyph, coord) ->
+                Transformer.center(glyph, new CoordinateImpl(coord.getY(), -coord.getX())));
+    }
+
+    private double layoutVerticalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double yOffset, double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
+        double startX = 0;
+        for (CompartmentGlyph child : compartment.getChildren()) {
+            startX = Math.max(startX, layoutVerticalEntities(child, entities, yOffset, heightPerGlyph, apply));
+        }
+        final List<EntityGlyph> glyphs = entities.stream()
+                .filter(entityGlyph -> compartment.getContainedGlyphs().contains(entityGlyph))
+                .collect(Collectors.toList());
+        if (glyphs.isEmpty()) return COMPARTMENT_PADDING + startX;
+        double width = MIN_GLYPH_WIDTH;
+        for (EntityGlyph entity : entities) {
+            final Position bounds = getBounds(entity);
+            if (bounds.getWidth() > width) width = bounds.getWidth();
+        }
+        width += HORIZONTAL_PADDING;
+        final double x = REACTION_MIN_H_DISTANCE + startX + 0.5 * width;
+        for (EntityGlyph glyph : glyphs) {
+            final int i = entities.indexOf(glyph);
+            final double y = -yOffset + i * heightPerGlyph;
+            apply.accept(glyph, new CoordinateImpl(x, y));
+        }
+        return COMPARTMENT_PADDING + startX + width;
+    }
+
+    private double layoutHorizontalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double xOffset, double widthPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
+        double startY = COMPARTMENT_PADDING;
+        for (CompartmentGlyph child : compartment.getChildren()) {
+            startY = Math.max(startY, layoutHorizontalEntities(child, entities, xOffset, widthPerGlyph, apply));
+        }
+        final List<EntityGlyph> glyphs = entities.stream()
+                .filter(entityGlyph -> compartment.getContainedGlyphs().contains(entityGlyph))
+                .collect(Collectors.toList());
+        if (glyphs.isEmpty()) return COMPARTMENT_PADDING;
+        double height = MIN_GLYPH_HEIGHT;
+        for (EntityGlyph entity : entities) {
+            final Position bounds = getBounds(entity);
+            if (bounds.getHeight() > height) height = bounds.getHeight();
+        }
+        height += VERTICAL_PADDING;
+        final double x = REACTION_MIN_V_DISTANCE + startY + 0.5 * height;
+        for (EntityGlyph glyph : glyphs) {
+            final int i = entities.indexOf(glyph);
+            final double y = -xOffset + i * widthPerGlyph;
+            apply.accept(glyph, new CoordinateImpl(-x, y));
+        }
+        return 2 * COMPARTMENT_PADDING + height;
+    }
+
+    /**
+     */
     private void layoutReaction(Layout layout) {
         final ReactionGlyph reaction = layout.getReaction();
         setSize(reaction);
@@ -155,7 +303,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                     for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y - reactionSep);
                     for (EntityGlyph regulator : index.getRegulators()) move(regulator, 0, y - reactionSep);
                 }
-
             }
         }
         // Add backbones
@@ -179,6 +326,15 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 && compartment.getPosition().intersects(reaction.getPosition());
     }
 
+    private boolean isChild(CompartmentGlyph compartment, CompartmentGlyph child) {
+        CompartmentGlyph parent = child.getParent();
+        while (parent != null) {
+            if (parent == compartment) return true;
+            parent = parent.getParent();
+        }
+        return false;
+    }
+
     private boolean canMoveToInputs(ReactionGlyph reaction) {
         return index.getInputs().stream().noneMatch(glyph -> clashes(reaction, glyph.getCompartment()));
     }
@@ -194,127 +350,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private boolean canMoveToCatalysts(ReactionGlyph reaction) {
         return index.getCatalysts().stream().noneMatch(glyph -> clashes(reaction, glyph.getCompartment()));
-    }
-
-    private boolean isChild(CompartmentGlyph compartment, CompartmentGlyph child) {
-        CompartmentGlyph parent = child.getParent();
-        while (parent != null) {
-            if (parent == compartment) return true;
-            parent = parent.getParent();
-        }
-        return false;
-    }
-
-    private void layoutParticipants(Layout layout) {
-        for (EntityGlyph entity : layout.getEntities()) setSize(entity);
-        layoutInputs(layout);
-        layoutOutputs(layout);
-        layoutCatalysts(layout);
-        layoutRegulators(layout);
-    }
-
-    private void layoutInputs(Layout layout) {
-        index.getInputs().sort(Comparator
-                // input/catalysts first
-                .comparing((EntityGlyph e) -> e.getRoles().size()).reversed()
-                // non trivial then
-                .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
-                // and by RenderableClass
-                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
-                .thenComparing(EntityGlyph::getName));
-
-        double heightPerGlyph = MIN_GLYPH_HEIGHT;
-        for (EntityGlyph input : index.getInputs()) {
-            if (input.getPosition().getHeight() > heightPerGlyph) {
-                heightPerGlyph = input.getPosition().getHeight();
-            }
-        }
-        heightPerGlyph += VERTICAL_PADDING;
-        final double totalHeight = heightPerGlyph * index.getInputs().size();
-        final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
-        layoutVerticalEntities(layout.getCompartmentRoot(), index.getInputs(), yOffset, heightPerGlyph, (glyph, coord) ->
-                Transformer.center(glyph, new CoordinateImpl(-coord.getX(), coord.getY())));
-    }
-
-    private Stoichiometry getStoichiometry(List<Segment> segments, Role role) {
-        if (role.getStoichiometry() == 1)
-            return new StoichiometryImpl(1, null);
-        final Segment segment = segments.get(segments.size() - 1);
-        final Coordinate center = center(segment);
-        final Coordinate a = new CoordinateImpl(center.getX() - 6, center.getY() - 6);
-        final Coordinate b = new CoordinateImpl(center.getX() + 6, center.getY() + 6);
-        final Shape shape = new BoxImpl(a, b, true, role.getStoichiometry().toString());
-        return new StoichiometryImpl(role.getStoichiometry(), shape);
-    }
-
-    private Coordinate center(Segment segment) {
-        return new CoordinateImpl(
-                0.5 * (segment.getFrom().getX() + segment.getTo().getX()),
-                0.5 * (segment.getFrom().getY() + segment.getTo().getY())
-        );
-    }
-
-    private void layoutOutputs(Layout layout) {
-        index.getOutputs().sort(Comparator
-                .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
-                .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
-                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
-                .thenComparing(EntityGlyph::getName));
-
-        double heightPerGlyph = MIN_GLYPH_HEIGHT;
-        for (EntityGlyph input : index.getOutputs()) {
-            if (input.getPosition().getHeight() > heightPerGlyph) {
-                heightPerGlyph = input.getPosition().getHeight();
-            }
-        }
-        heightPerGlyph += VERTICAL_PADDING;
-        final double totalHeight = heightPerGlyph * index.getOutputs().size();
-        final double yOffset = 0.5 * (totalHeight - heightPerGlyph);
-        layoutVerticalEntities(layout.getCompartmentRoot(), index.getOutputs(), yOffset, heightPerGlyph, Transformer::center);
-    }
-
-    private void layoutCatalysts(Layout layout) {
-        // Remove catalysts that are inputs
-        index.getCatalysts().removeIf(entityGlyph -> entityGlyph.getRoles().stream().anyMatch(role -> role.getType() == INPUT));
-        if (index.getCatalysts().isEmpty()) return;
-        index.getCatalysts().sort(Comparator
-                .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
-                .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
-                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
-                .thenComparing(EntityGlyph::getName));
-
-        double widthPerGlyph = MIN_GLYPH_WIDTH;
-        for (EntityGlyph input : index.getCatalysts()) {
-            if (input.getPosition().getWidth() > widthPerGlyph) {
-                widthPerGlyph = input.getPosition().getWidth();
-            }
-        }
-        widthPerGlyph += HORIZONTAL_PADDING;
-        final double totalWidth = widthPerGlyph * index.getCatalysts().size();
-        final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
-        layoutHorizontalEntities(layout.getCompartmentRoot(), index.getCatalysts(), xOffset, widthPerGlyph, (glyph, coord) ->
-                Transformer.center(glyph, new CoordinateImpl(coord.getY(), coord.getX())));
-    }
-
-    private void layoutRegulators(Layout layout) {
-        if (index.getRegulators().isEmpty()) return;
-        index.getRegulators().sort(Comparator
-                .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
-                .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
-                .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
-                .thenComparing(EntityGlyph::getName));
-
-        double widthPerGlyph = MIN_GLYPH_WIDTH;
-        for (EntityGlyph input : index.getRegulators()) {
-            if (input.getPosition().getWidth() > widthPerGlyph) {
-                widthPerGlyph = input.getPosition().getWidth();
-            }
-        }
-        widthPerGlyph += HORIZONTAL_PADDING;
-        final double totalWidth = widthPerGlyph * index.getRegulators().size();
-        final double xOffset = 0.5 * (totalWidth - widthPerGlyph);
-        layoutHorizontalEntities(layout.getCompartmentRoot(), index.getRegulators(), xOffset, widthPerGlyph, (glyph, coord) ->
-                Transformer.center(glyph, new CoordinateImpl(coord.getY(), -coord.getX())));
     }
 
     private void layoutConnectors(Layout layout) {
@@ -476,52 +511,22 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         }
     }
 
-    private double layoutVerticalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double yOffset, double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
-        double startX = 0;
-        for (CompartmentGlyph child : compartment.getChildren()) {
-            startX = Math.max(startX, layoutVerticalEntities(child, entities, yOffset, heightPerGlyph, apply));
-        }
-        final List<EntityGlyph> glyphs = entities.stream()
-                .filter(entityGlyph -> compartment.getContainedGlyphs().contains(entityGlyph))
-                .collect(Collectors.toList());
-        if (glyphs.isEmpty()) return COMPARTMENT_PADDING + startX;
-        double width = MIN_GLYPH_WIDTH;
-        for (EntityGlyph entity : entities) {
-            final Position bounds = getBounds(entity);
-            if (bounds.getWidth() > width) width = bounds.getWidth();
-        }
-        width += HORIZONTAL_PADDING;
-        final double x = REACTION_MIN_H_DISTANCE + startX + 0.5 * width;
-        for (EntityGlyph glyph : glyphs) {
-            final int i = entities.indexOf(glyph);
-            final double y = -yOffset + i * heightPerGlyph;
-            apply.accept(glyph, new CoordinateImpl(x, y));
-        }
-        return COMPARTMENT_PADDING + startX + width;
+    private Stoichiometry getStoichiometry(List<Segment> segments, Role role) {
+        if (role.getStoichiometry() == 1)
+            return new StoichiometryImpl(1, null);
+        final Segment segment = segments.get(segments.size() - 1);
+        final Coordinate center = center(segment);
+        final Coordinate a = new CoordinateImpl(center.getX() - 6, center.getY() - 6);
+        final Coordinate b = new CoordinateImpl(center.getX() + 6, center.getY() + 6);
+        final Shape shape = new BoxImpl(a, b, true, role.getStoichiometry().toString());
+        return new StoichiometryImpl(role.getStoichiometry(), shape);
     }
 
-    private double layoutHorizontalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double xOffset, double widthPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
-        double startY = COMPARTMENT_PADDING;
-        for (CompartmentGlyph child : compartment.getChildren()) {
-            startY = Math.max(startY, layoutHorizontalEntities(child, entities, xOffset, widthPerGlyph, apply));
-        }
-        final List<EntityGlyph> glyphs = entities.stream()
-                .filter(entityGlyph -> compartment.getContainedGlyphs().contains(entityGlyph))
-                .collect(Collectors.toList());
-        if (glyphs.isEmpty()) return COMPARTMENT_PADDING;
-        double height = MIN_GLYPH_HEIGHT;
-        for (EntityGlyph entity : entities) {
-            final Position bounds = getBounds(entity);
-            if (bounds.getHeight() > height) height = bounds.getHeight();
-        }
-        height += VERTICAL_PADDING;
-        final double x = REACTION_MIN_V_DISTANCE + startY + 0.5 * height;
-        for (EntityGlyph glyph : glyphs) {
-            final int i = entities.indexOf(glyph);
-            final double y = -xOffset + i * widthPerGlyph;
-            apply.accept(glyph, new CoordinateImpl(-x, y));
-        }
-        return 2 * COMPARTMENT_PADDING + height;
+    private Coordinate center(Segment segment) {
+        return new CoordinateImpl(
+                0.5 * (segment.getFrom().getX() + segment.getTo().getX()),
+                0.5 * (segment.getFrom().getY() + segment.getTo().getY())
+        );
     }
 
     private void layoutCompartments(Layout layout) {
@@ -566,7 +571,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             layout.getPosition().union(compartment.getPosition());
         }
         for (EntityGlyph entity : layout.getEntities()) {
-            layout.getPosition().union(entity.getPosition());
+            layout.getPosition().union(Transformer.getBounds(entity));
         }
     }
 
