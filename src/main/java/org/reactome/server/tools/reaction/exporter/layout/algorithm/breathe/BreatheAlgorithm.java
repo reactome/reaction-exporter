@@ -41,7 +41,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     /**
      * Minimum length of segments departing participants.
      */
-    private static final int MIN_SEGMENT = 20;
+    private static final int MIN_SEGMENT = 35;
     /**
      * Minimum distance between the compartment border and any of ints contained glyphs.
      */
@@ -407,26 +407,12 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             // is catalyst and input
             final boolean biRole = entity.getRoles().size() > 1;
             // Catalyst
-            double y;
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
             entity.setConnector(connector);
             connector.setSegments(segments);
             connector.setEdgeId(layout.getReaction().getId());
-            if (biRole) {
-                // Add catalyst segments
-                y = position.getCenterY() - 5;
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getMaxX(), y),
-                        new CoordinateImpl(vRule + 50, y)));
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(vRule + 50, y),
-                        new CoordinateImpl(reactionPosition.getCenterX(), reactionPosition.getCenterY())));
-                connector.setPointer(ConnectorType.CATALYST);
-            } else {
-                connector.setPointer(ConnectorType.INPUT);
-            }
-            y = biRole ? position.getCenterY() + 5 : position.getCenterY();
+            double y = biRole ? position.getCenterY() + 5 : position.getCenterY();
             // Input
             if (entity.getRenderableClass() == RenderableClass.GENE) {
                 segments.add(new SegmentImpl(position.getMaxX() + 8, position.getY(),
@@ -445,6 +431,20 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                         new CoordinateImpl(vRule, y),
                         new CoordinateImpl(port, reactionPosition.getCenterY())));
             }
+            if (biRole) {
+                // Add catalyst segments
+                y = position.getCenterY() - 5;
+                segments.add(new SegmentImpl(
+                        new CoordinateImpl(position.getMaxX(), y),
+                        new CoordinateImpl(vRule + 50, y)));
+                segments.add(new SegmentImpl(
+                        new CoordinateImpl(vRule + 50, y),
+                        new CoordinateImpl(reactionPosition.getCenterX(), reactionPosition.getCenterY())));
+                connector.setPointer(ConnectorType.CATALYST);
+            } else {
+                connector.setPointer(ConnectorType.INPUT);
+            }
+
             for (Role role : entity.getRoles()) {
                 if (role.getType() == INPUT) {
                     final Stoichiometry s = getStoichiometry(segments, role);
@@ -630,6 +630,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     /**
      * This operation should be called in the last steps, to avoid being exported to a Diagram object.
+     *
      * @param layout
      */
     private void removeExtracellular(Layout layout) {
