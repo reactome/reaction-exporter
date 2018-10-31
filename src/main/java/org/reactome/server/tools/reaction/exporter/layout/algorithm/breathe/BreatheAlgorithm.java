@@ -200,6 +200,19 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 Transformer.center(glyph, new CoordinateImpl(coord.getY(), -coord.getX())));
     }
 
+    /**
+     * This is a deep first recursive method, so the entities of the inner compartments are rendered first. Entities are
+     * placed top to bottom in the order of appearance in the list. All glyph share its <em>x</em> coordinate, depending
+     * on the level of the compartment and width of entities. The <em>y</em> coordinated is calculated as
+     * <code>y = -yOffset + i * heightPerGlyph</code>. Glyphs are centered at <em>(x,y)</em>
+     *
+     * @param compartment    current compartment
+     * @param entities       list of sorted entities
+     * @param yOffset        position of the first entity in the list
+     * @param heightPerGlyph height that each glyph occupies, including padding
+     * @param apply          operation to apply to entities once its position has been calculated, use this method to
+     *                       invert axis or rotate the position.
+     */
     private double layoutVerticalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double yOffset, double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
         double startX = 0;
         for (CompartmentGlyph child : compartment.getChildren()) {
@@ -224,6 +237,19 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         return COMPARTMENT_PADDING + startX + width;
     }
 
+    /**
+     * This is a deep first recursive method, so the entities of the inner compartments are rendered first. Entities are
+     * placed left to right in the order of appearance in the list. All glyph share its <em>y</em> coordinate, depending
+     * on the level of the compartment and heights of entities. The <em>x</em> coordinated is calculated as
+     * <code>x = -xOffset + i * widthPerGlyph</code>. Glyphs are centered at <em>(x,y)</em>
+     *
+     * @param compartment   current compartment
+     * @param entities      list of sorted entities
+     * @param xOffset       position of the first entity in the list
+     * @param widthPerGlyph height that each glyph occupies, including padding
+     * @param apply         operation to apply to entities once its position has been calculated, use this method to
+     *                      invert axis or rotate the position.
+     */
     private double layoutHorizontalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double xOffset, double widthPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
         double startY = COMPARTMENT_PADDING;
         for (CompartmentGlyph child : compartment.getChildren()) {
@@ -530,7 +556,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     private Stoichiometry getStoichiometry(List<Segment> segments, Role role) {
         if (role.getStoichiometry() == 1)
             return new StoichiometryImpl(1, null);
-        final Segment segment = segments.get(segments.size() - 1);
+        final Segment segment = segments.get(0);
         final Coordinate center = center(segment);
         final Coordinate a = new CoordinateImpl(center.getX() - 6, center.getY() - 6);
         final Coordinate b = new CoordinateImpl(center.getX() + 6, center.getY() + 6);
@@ -549,6 +575,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         layoutCompartment(layout.getCompartmentRoot());
     }
 
+    /**
+     * Calculates the size of the compartments so each of them surrounds all of its contained glyphs and children.
+     */
     private void layoutCompartment(CompartmentGlyph compartment) {
         for (CompartmentGlyph child : compartment.getChildren()) {
             layoutCompartment(child);
@@ -599,6 +628,10 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         move(layout.getCompartmentRoot(), delta, true);
     }
 
+    /**
+     * This operation should be called in the last steps, to avoid being exported to a Diagram object.
+     * @param layout
+     */
     private void removeExtracellular(Layout layout) {
         layout.getCompartments().remove(layout.getCompartmentRoot());
     }
