@@ -168,13 +168,13 @@ class Transformer {
             case PROTEIN_DRUG:
             case RNA:
             case RNA_DRUG:
-                // exporter padding is 5
-                glyph.getPosition().setWidth(10 + textDimension.getWidth());
-                glyph.getPosition().setHeight(10 + textDimension.getHeight());
+                // exporter padding is 10
+                glyph.getPosition().setWidth(20 + textDimension.getWidth());
+                glyph.getPosition().setHeight(20 + textDimension.getHeight());
                 break;
             case PROTEIN:
-                glyph.getPosition().setWidth(10 + textDimension.getWidth());
-                glyph.getPosition().setHeight(10 + textDimension.getHeight());
+                glyph.getPosition().setWidth(20 + textDimension.getWidth());
+                glyph.getPosition().setHeight(20 + textDimension.getHeight());
                 layoutAttachments(glyph);
                 break;
             case ENCAPSULATED_NODE:
