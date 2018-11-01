@@ -103,6 +103,12 @@ class Transformer {
         }
     }
 
+    static Position getBounds(Glyph glyph) {
+        if (glyph instanceof ReactionGlyph) return getBounds((ReactionGlyph) glyph);
+        else if (glyph instanceof EntityGlyph) return getBounds((EntityGlyph) glyph);
+        return glyph.getPosition();
+    }
+
     /**
      * @return the most outer limits of an entity glyph, taking into account if it contains attachments. In that case
      * the bounds include the position of the attachments on all sides, even if there is only one attachment.

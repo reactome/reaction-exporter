@@ -117,9 +117,13 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     }
 
     private void layoutInputs(Layout layout) {
+        final List<CompartmentGlyph> sortedCompartments = sortCompartmentsForInputs(layout.getCompartmentRoot());
+        Collections.reverse(sortedCompartments);
         index.getInputs().sort(Comparator
                 // input/catalysts first
                 .comparing((EntityGlyph e) -> e.getRoles().size()).reversed()
+                // sorted by compartment
+                .thenComparingInt(entity -> sortedCompartments.indexOf(entity.getCompartment()))
                 // non trivial then
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 // and sorted by RenderableClass
@@ -139,12 +143,14 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     }
 
     private void layoutOutputs(Layout layout) {
+        final List<CompartmentGlyph> sortedCompartments = sortCompartmentsForInputs(layout.getCompartmentRoot());
+        Collections.reverse(sortedCompartments);
         index.getOutputs().sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
+                .thenComparingInt(entity -> sortedCompartments.indexOf(entity.getCompartment()))
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
                 .thenComparing(EntityGlyph::getName));
-
         double heightPerGlyph = MIN_GLYPH_HEIGHT;
         for (EntityGlyph output : index.getOutputs()) {
             final Position bounds = Transformer.getBounds(output);
@@ -160,12 +166,13 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         // Remove catalysts that are inputs
         index.getCatalysts().removeIf(entityGlyph -> entityGlyph.getRoles().stream().anyMatch(role -> role.getType() == INPUT));
         if (index.getCatalysts().isEmpty()) return;
+        final List<CompartmentGlyph> sortedCompartments = sortCompartmentsForInputs(layout.getCompartmentRoot());
         index.getCatalysts().sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
+                .thenComparingInt(entity -> sortedCompartments.indexOf(entity.getCompartment()))
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
                 .thenComparing(EntityGlyph::getName));
-
         double widthPerGlyph = MIN_GLYPH_WIDTH;
         for (EntityGlyph catalyst : index.getCatalysts()) {
             final Position bounds = Transformer.getBounds(catalyst);
@@ -181,8 +188,10 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private void layoutRegulators(Layout layout) {
         if (index.getRegulators().isEmpty()) return;
+        final List<CompartmentGlyph> compartmentGlyphs = sortCompartmentsForInputs(layout.getCompartmentRoot());
         index.getRegulators().sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
+                .thenComparingInt(entity -> compartmentGlyphs.indexOf(entity.getCompartment()))
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
                 .thenComparing(EntityGlyph::getName));
@@ -378,7 +387,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private boolean canMoveToOutputs(ReactionGlyph reaction) {
         return index.getOutputs().stream().noneMatch(glyph -> clashes(reaction, glyph.getCompartment()));
-
     }
 
     private boolean canMoveToRegulators(ReactionGlyph reaction) {
@@ -452,6 +460,15 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 }
             }
         }
+    }
+
+    private List<CompartmentGlyph> sortCompartmentsForInputs(CompartmentGlyph compartment) {
+        final List<CompartmentGlyph> order = new ArrayList<>();
+        order.add(compartment);
+        for (final CompartmentGlyph child : compartment.getChildren()) {
+            order.addAll(sortCompartmentsForInputs(child));
+        }
+        return order;
     }
 
     private void outputConnectors(Layout layout) {
@@ -588,8 +605,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             else position.union(child.getPosition());
         }
         for (Glyph glyph : compartment.getContainedGlyphs()) {
-            if (position == null) position = new Position(glyph.getPosition());
-            else position.union(glyph.getPosition());
+            if (position == null) position = new Position(getBounds(glyph));
+            else position.union(getBounds(glyph));
         }
         position.setX(position.getX() - COMPARTMENT_PADDING);
         position.setY(position.getY() - COMPARTMENT_PADDING);
