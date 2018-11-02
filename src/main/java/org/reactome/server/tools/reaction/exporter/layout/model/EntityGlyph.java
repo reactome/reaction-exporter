@@ -113,7 +113,9 @@ public class EntityGlyph extends AbstractGlyph {
 
         Collection<AbstractModifiedResidue> modifiedResidues = pe.fetchMultiValue("getHasModifiedResidue");
         for (AbstractModifiedResidue modifiedResidue : modifiedResidues) {
-            attachments.add(new AttachmentGlyph(modifiedResidue));
+            if(modifiedResidue instanceof TranslationalModification) {
+                attachments.add(new AttachmentGlyph((TranslationalModification) modifiedResidue));
+            }
         }
     }
     // This setter is called automatically by the graph-core marshaller

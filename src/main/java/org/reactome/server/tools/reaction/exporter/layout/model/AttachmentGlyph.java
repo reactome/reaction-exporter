@@ -1,6 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
-import org.reactome.server.graph.domain.model.AbstractModifiedResidue;
+import org.reactome.server.graph.domain.model.TranslationalModification;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 
 /**
@@ -15,11 +15,11 @@ public class AttachmentGlyph extends AbstractGlyph {
     private String schemaClass;
     private String name;
 
-    AttachmentGlyph(AbstractModifiedResidue amr) {
+    AttachmentGlyph(TranslationalModification amr) {
         super();
         dbId = amr.getDbId();
         schemaClass = amr.getSchemaClass();
-        name = amr.fetchSingleValue("getLabel");
+        name = amr.getLabel();
     }
 
     AttachmentGlyph(AttachmentGlyph attachment) {
