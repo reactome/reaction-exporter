@@ -25,6 +25,7 @@ class Dedup {
                     if (role.getType() == INPUT
                             || role.getType() == CATALYST
                             || entity.getRoles().size() == 1) continue;
+                    // Call the copy constructor and link the new entity with its role and compartment
                     final EntityGlyph copy = new EntityGlyph(entity);
                     copy.setRole(role);
                     entity.getRoles().remove(role);
@@ -34,6 +35,7 @@ class Dedup {
                 }
             }
         }
+        // Cannot add them to layout while iterating
         for (EntityGlyph entity : added) {
             layout.add(entity);
         }

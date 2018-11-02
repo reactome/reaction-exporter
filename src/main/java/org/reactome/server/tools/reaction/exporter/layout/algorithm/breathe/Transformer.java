@@ -35,20 +35,32 @@ class Transformer {
      * Precomputed space to allow for attachments
      */
     private static final double BOX_SIZE = ATTACHMENT_SIZE + 2 * ATTACHMENT_PADDING;
+    private static final int NODE_CORNER_RADIUS = 8;
 
 
     private Transformer() {
     }
 
-    private static void moveShape(Shape s, Coordinate delta) {
-        if (s != null) {
-            final ShapeImpl shape = (ShapeImpl) s;
-            if (shape.getA() != null) shape.setA(shape.getA().add(delta));
-            if (shape.getB() != null) shape.setB(shape.getB().add(delta));
-            if (shape.getC() != null) shape.setC(shape.getC().add(delta));
-        }
+    /**
+     * Moves the given glyph, and content, adding dx and dy to {@link Glyph#getPosition()}
+     */
+    static void move(Glyph glyph, double dx, double dy) {
+        move(glyph, new CoordinateImpl(dx, dy));
     }
 
+    private static void move(Glyph glyph, Coordinate delta) {
+        if (glyph instanceof EntityGlyph)
+            move((EntityGlyph) glyph, delta);
+        else if (glyph instanceof ReactionGlyph)
+            move((ReactionGlyph) glyph, delta);
+        else if (glyph instanceof CompartmentGlyph)
+            move((CompartmentGlyph) glyph, delta);
+        else throw new UnsupportedOperationException();
+    }
+
+    /**
+     * moves the {@link EntityGlyph#getPosition()} and its connector (segments and shapes)
+     */
     private static void move(EntityGlyph entity, Coordinate delta) {
         entity.getPosition().move(delta.getX(), delta.getY());
         for (AttachmentGlyph attachment : entity.getAttachments()) {
@@ -66,20 +78,21 @@ class Transformer {
         }
     }
 
-    static void move(Glyph glyph, double dx, double dy) {
-        move(glyph, new CoordinateImpl(dx, dy));
+    /**
+     * This is for stoichiometries and connectors shapes
+     */
+    private static void moveShape(Shape s, Coordinate delta) {
+        if (s != null) {
+            final ShapeImpl shape = (ShapeImpl) s;
+            if (shape.getA() != null) shape.setA(shape.getA().add(delta));
+            if (shape.getB() != null) shape.setB(shape.getB().add(delta));
+            if (shape.getC() != null) shape.setC(shape.getC().add(delta));
+        }
     }
 
-    private static void move(Glyph glyph, Coordinate delta) {
-        if (glyph instanceof EntityGlyph)
-            move((EntityGlyph) glyph, delta);
-        else if (glyph instanceof ReactionGlyph)
-            move((ReactionGlyph) glyph, delta);
-        else if (glyph instanceof CompartmentGlyph)
-            move((CompartmentGlyph) glyph, delta);
-        else throw new UnsupportedOperationException();
-    }
-
+    /**
+     * moves the reaction and its segments
+     */
     private static void move(ReactionGlyph reactionGlyph, Coordinate delta) {
         reactionGlyph.getPosition().move(delta.getX(), delta.getY());
 
@@ -93,6 +106,9 @@ class Transformer {
         move(compartment, delta, false);
     }
 
+    /**
+     * moves the compartment and everything inside it if moveContent is true
+     */
     static void move(CompartmentGlyph compartment, Coordinate delta, boolean moveContent) {
         compartment.getPosition().move(delta.getX(), delta.getY());
         if (compartment.getLabelPosition() != null)
@@ -103,6 +119,9 @@ class Transformer {
         }
     }
 
+    /**
+     * returns the outer bounds of a given glyph. This methods takes into account backbone and attachments.
+     */
     static Position getBounds(Glyph glyph) {
         if (glyph instanceof ReactionGlyph) return getBounds((ReactionGlyph) glyph);
         else if (glyph instanceof EntityGlyph) return getBounds((EntityGlyph) glyph);
@@ -207,21 +226,22 @@ class Transformer {
             int boxesInWidth = (int) (width / BOX_SIZE);
             int boxesInHeight = (int) (height / BOX_SIZE);
             int maxBoxes = 2 * (boxesInHeight + boxesInWidth);
+            // we need to increase the size of the node until it fits the attachments
             while (entity.getAttachments().size() > maxBoxes) {
+                // the step is another horizontal box
                 position.setWidth(position.getWidth() + BOX_SIZE);
                 position.setHeight(position.getWidth() / TextUtils.RATIO);
-                width = position.getWidth() - 2 * 8; // rounded rectangles
-                height = position.getHeight() - 2 * 8; // rounded rectangles
+                width = position.getWidth() - 2 * NODE_CORNER_RADIUS;
+                height = position.getHeight() - 2 * NODE_CORNER_RADIUS;
                 boxesInWidth = (int) (width / BOX_SIZE);
                 boxesInHeight = (int) (height / BOX_SIZE);
                 maxBoxes = 2 * (boxesInHeight + boxesInWidth);
             }
-
             final ArrayList<AttachmentGlyph> glyphs = new ArrayList<>(entity.getAttachments());
             final double maxWidth = boxesInWidth * BOX_SIZE;
             final double maxHeight = boxesInHeight * BOX_SIZE;
-            final double xOffset = 8 + 0.5 * (BOX_SIZE + width - maxWidth);
-            final double yOffset = 8 + 0.5 * (BOX_SIZE + height - maxHeight);
+            final double xOffset = NODE_CORNER_RADIUS + 0.5 * (BOX_SIZE + width - maxWidth);
+            final double yOffset = NODE_CORNER_RADIUS + 0.5 * (BOX_SIZE + height - maxHeight);
             for (int i = 0; i < glyphs.size(); i++) {
                 glyphs.get(i).getPosition().setWidth(ATTACHMENT_SIZE);
                 glyphs.get(i).getPosition().setHeight(ATTACHMENT_SIZE);

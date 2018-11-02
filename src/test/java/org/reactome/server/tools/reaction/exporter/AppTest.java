@@ -3,6 +3,7 @@ package org.reactome.server.tools.reaction.exporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.batik.transcoder.TranscoderException;
+import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -58,17 +59,17 @@ public class AppTest extends BaseTest {
     @BeforeClass
     public static void setUpClass() {
         logger.info(" --- !!! Running " + AppTest.class.getName() + "!!! --- \n");
-        if (!TEST_IMAGES.mkdirs())
+        if (!TEST_IMAGES.exists() && !TEST_IMAGES.mkdirs())
             logger.error("Couldn't create test folder " + TEST_IMAGES);
     }
 
     @AfterClass
     public static void afterClass() {
-//        try {
-//            FileUtils.cleanDirectory(TEST_IMAGES);
-//        } catch (IOException e) {
-//            logger.error("Could't delete test folder " + TEST_IMAGES);
-//        }
+       try {
+           FileUtils.cleanDirectory(TEST_IMAGES);
+       } catch (IOException e) {
+           logger.error("Could't delete test folder " + TEST_IMAGES);
+       }
     }
 
     @Test

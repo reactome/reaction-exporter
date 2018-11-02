@@ -4,6 +4,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+/**
+ * Helper class for measuring text
+ */
 class FontProperties {
 
     private FontProperties(){}
