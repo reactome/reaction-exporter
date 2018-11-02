@@ -99,7 +99,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         addDuplicates(layout);
         index = new LayoutIndex(layout);
         layoutParticipants(layout);
-        separateParticipants(layout);
         layoutCompartments(layout);
         layoutReaction(layout);
         // we need to recalculate compartment positions if reaction has been moved
@@ -109,13 +108,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         computeDimension(layout);
         failedReactions(layout);
         moveToOrigin(layout);
-    }
-
-    /**
-     * Adds horizontal distance to avoid line crossing
-     */
-    private void separateParticipants(Layout layout) {
-
     }
 
     public void compute(Layout layout, boolean compact) {
@@ -301,7 +293,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final double[] ws = new double[columns];
         for (int i = 0; i < glyphs.size(); i++) {
             final double width = getBounds(glyphs.get(i)).getWidth();
-            final int j = i / 6;
+            final int j = i % columns;
             if (width > ws[j]) ws[j] = width;
         }
         // the x for each column (the center)
@@ -323,8 +315,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         double x = 0, y = 0;
         for (int i = 0; i < glyphs.size(); i++) {
             final EntityGlyph entityGlyph = glyphs.get(i);
-            final int column = i / 6;
-            final int row = i % 6;
+            final int column = i % columns;
+            final int row = i / columns;
             x = xs[column];
             y = ys[column] + row * shift;
             apply.accept(entityGlyph, new CoordinateImpl(x, y));
