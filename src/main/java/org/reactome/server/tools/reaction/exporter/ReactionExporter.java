@@ -26,7 +26,7 @@ public class ReactionExporter {
     //}
 
     public Layout getReactionLayout(ReactionLikeEvent rle){
-        return layoutFactory.getReactionLikeEventLayout(rle);
+        return layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.COMPACT);
     }
 
     public Diagram getReactionDiagram(Layout layout){

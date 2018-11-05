@@ -57,9 +57,12 @@ public class ReactionDiagramFactory {
             for (Glyph glyph : comp.getContainedGlyphs()) {
                 ids.add(glyph.getId());
             }
+            for (final CompartmentGlyph child : comp.getChildren()) {
+                ids.add(child.getId());
+            }
             final CompartmentImpl compartment = new CompartmentImpl(ids);
             compartments.add(compartment);
-            copyGlypToDatabaseObject(comp, compartment);
+            copyGlyphToDatabaseObject(comp, compartment);
             final Position position = comp.getPosition();
             compartment.setProp(getProp(position));
             compartment.setTextPosition(comp.getLabelPosition().minus(GWU_CORRECTION));
@@ -67,7 +70,7 @@ public class ReactionDiagramFactory {
         return compartments;
     }
 
-    private static void copyGlypToDatabaseObject(Glyph glyph, DiagramObjectImpl object) {
+    private static void copyGlyphToDatabaseObject(Glyph glyph, DiagramObjectImpl object) {
         final Position position = glyph.getPosition();
         object.setId(glyph.getId());
         object.setMinX(position.getX());
@@ -87,7 +90,7 @@ public class ReactionDiagramFactory {
     private static List<Edge> getEdges(Layout rxnLayout) {
         final ReactionGlyph reaction = rxnLayout.getReaction();
         final EdgeImpl edge = new EdgeImpl();
-        copyGlypToDatabaseObject(reaction, edge);
+        copyGlyphToDatabaseObject(reaction, edge);
         edge.setReactionShape(getReactionShape(reaction));
         edge.setSegments(reaction.getSegments());
         edge.setDisease(reaction.isDisease());
@@ -162,7 +165,7 @@ public class ReactionDiagramFactory {
         List<Node> nodes = new ArrayList<>();
         for (EntityGlyph entity : rxnLayout.getEntities()) {
             final NodeImpl node = new NodeImpl();
-            copyGlypToDatabaseObject(entity, node);
+            copyGlyphToDatabaseObject(entity, node);
             node.setTrivial(entity.isTrivial());
             node.setDisease(entity.isDisease());
             final Position position = entity.getPosition();

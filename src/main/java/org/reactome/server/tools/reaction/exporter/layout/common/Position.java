@@ -127,4 +127,21 @@ public class Position {
                 ", h=" + height +
                 '}';
     }
+
+    public boolean intersects(Position position) {
+        return intersects(x, mx, position.x, position.mx) && intersects(y, my, position.y, position.my);
+    }
+
+    /**
+     * returns true if segments r and s intersect.
+     *
+     * @param r0 lower bound of r
+     * @param r1 upper boud of r
+     * @param s0 lower bound of s
+     * @param s1 upper bound of s
+     * @return true if both segments intersect
+     */
+    private boolean intersects(double r0, double r1, double s0, double s1) {
+        return r0 < s0 && s0 < r1 || s0 < r0 && r0 < s1;
+    }
 }

@@ -18,7 +18,7 @@ public class TextUtils {
 	private static final Graphics2D GRAPHICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics();
 
 	public static final double RATIO = 7. / 3;  // (4 / 3) ^ 3
-	private static final double MIN_HEIGHT = 30;
+	private static final double MIN_HEIGHT = 15;
 
 
 	private TextUtils() {
@@ -46,13 +46,13 @@ public class TextUtils {
 		// (ii) length of largest text fragment after splitting text by separators, or
 		// (iii) a nice width
 		final int height = GRAPHICS.getFontMetrics(font).getHeight();
-		double h = height;
+		double h = 2 * height;
 		double w = h * ratio;
 		while (fit(text, font, w, h) == null) {
 			h += height;
 			w = h * ratio;
 		}
-		if (h < MIN_HEIGHT) h = MIN_HEIGHT;
+		// if (h < MIN_HEIGHT) h = MIN_HEIGHT;
 		// Add 1 pixel top, 1 pixel bottom for rounding problems
 		w = h * ratio;
 		return new Dimension((int) Math.ceil(w), (int) Math.ceil(h));
