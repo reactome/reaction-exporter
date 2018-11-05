@@ -111,11 +111,21 @@ public class DiagramTest {
 
     public void printResults(Level minLevel) {
         this.minLevel = minLevel;
-        System.out.printf("Diagram %s %n", diagram.getStableId());
         runTests();
         final int totalTests = logs.values().stream().mapToInt(List::size).sum();
-        System.out.printf(" - %d tests run%n", totalTests);
-        logs.forEach((level, messages) -> System.out.printf(" - [%s] %d%n", level, messages.size()));
+        final long toPrint = logs.keySet().stream()
+                .filter(level -> level.ordinal() >= minLevel.ordinal())
+                .map(logs::get)
+                .mapToInt(List::size)
+                .count();
+        if (toPrint > 0) {
+            System.out.printf("Diagram %s %n", diagram.getStableId());
+            System.out.printf(" - %d tests run%n", totalTests);
+        }
+        logs.forEach((level, messages) -> {
+            if (level.ordinal() >= minLevel.ordinal())
+                System.out.printf(" - [%s] %d%n", level, messages.size());
+        });
     }
 
     public enum Level {PASSED, WARNING, ERROR}
