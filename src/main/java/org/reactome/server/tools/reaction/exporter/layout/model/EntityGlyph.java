@@ -20,6 +20,7 @@ public class EntityGlyph extends AbstractGlyph {
     private PhysicalEntity pe;
     private Collection<Role> roles = new HashSet<>();
     private Boolean drug;
+    private Boolean crossed;
 
     //Populated in this class
     private Collection<AttachmentGlyph> attachments = new ArrayList<>();
@@ -84,6 +85,10 @@ public class EntityGlyph extends AbstractGlyph {
         return pe.getStId();
     }
 
+    public Boolean isCrossed() {
+        return crossed;
+    }
+
     /**
      * @return true for trivial molecules. NULL in any other case
      */
@@ -145,6 +150,7 @@ public class EntityGlyph extends AbstractGlyph {
         return "EntityGlyph{" +
                 "pe=" + getName() +
                 ", roles=" + roles +
+                ", crossed=" + crossed +
                 '}';
     }
 }
