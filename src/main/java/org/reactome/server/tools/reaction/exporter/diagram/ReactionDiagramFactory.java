@@ -100,6 +100,7 @@ public class ReactionDiagramFactory {
         final List<ReactionPart> inputs = new ArrayList<>();
         final List<ReactionPart> outputs = new ArrayList<>();
         for (EntityGlyph entity : rxnLayout.getEntities()) {
+            if (entity.isCrossed() != null && entity.isCrossed()) continue;
             for (Role role : entity.getRoles()) {
                 final ReactionPartImpl reactionPart = new ReactionPartImpl();
                 reactionPart.setId(entity.getId());
@@ -168,6 +169,8 @@ public class ReactionDiagramFactory {
             copyGlyphToDatabaseObject(entity, node);
             node.setTrivial(entity.isTrivial());
             node.setDisease(entity.isDisease());
+            node.setFadeOut(entity.isCrossed());
+            node.setCrossed(entity.isCrossed());
             final Position position = entity.getPosition();
             node.setProp(getProp(position));
             node.setConnectors(Collections.singletonList(entity.getConnector()));

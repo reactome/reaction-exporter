@@ -513,6 +513,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             entity.setConnector(connector);
             connector.setSegments(segments);
             connector.setEdgeId(layout.getReaction().getId());
+            connector.setFadeOut(entity.isCrossed());
+            connector.setDisease(layout.getReaction().isDisease());
             double y = biRole ? position.getCenterY() + 5 : position.getCenterY();
             // Input
             if (entity.getRenderableClass() == RenderableClass.GENE) {
@@ -578,6 +580,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final List<Segment> segments = new ArrayList<>();
             connector.setSegments(segments);
             connector.setEdgeId(layout.getReaction().getId());
+            connector.setFadeOut(entity.isCrossed());
+            connector.setDisease(layout.getReaction().isDisease());
             entity.setConnector(connector);
             final Position position = entity.getPosition();
             segments.add(new SegmentImpl(
@@ -620,6 +624,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             entity.setConnector(connector);
             connector.setSegments(segments);
             connector.setEdgeId(layout.getReaction().getId());
+            connector.setFadeOut(entity.isCrossed());
+            connector.setDisease(layout.getReaction().isDisease());
             final Position position = entity.getPosition();
             segments.add(new SegmentImpl(
                     new CoordinateImpl(position.getCenterX(), position.getMaxY()),
@@ -651,6 +657,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             entity.setConnector(connector);
             connector.setSegments(segments);
             connector.setEdgeId(layout.getReaction().getId());
+            connector.setFadeOut(entity.isCrossed());
+            connector.setDisease(layout.getReaction().isDisease());
             final Position position = entity.getPosition();
             segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
             final double x = reactionPosition.getCenterX() - radius * Math.cos(Math.PI * i / sectors);
@@ -735,6 +743,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         for (EntityGlyph entity : layout.getEntities()) {
             layout.getPosition().union(Transformer.getBounds(entity));
         }
+        layout.getPosition().union(Transformer.getBounds(layout.getReaction()));
     }
 
     private void moveToOrigin(Layout layout) {
