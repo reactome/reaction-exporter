@@ -126,7 +126,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     private void layoutInputs(Layout layout) {
         // TODO: 02/11/18 use a global variable
         final List<CompartmentGlyph> sortedCompartments = flattenCompartments(layout.getCompartmentRoot());
-        Collections.reverse(sortedCompartments);
+        // Collections.reverse(sortedCompartments);
         index.getInputs().sort(Comparator
                 // input/catalysts first
                 .comparing((EntityGlyph e) -> e.getRoles().size()).reversed()
@@ -167,7 +167,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private void layoutOutputs(Layout layout) {
         final List<CompartmentGlyph> sortedCompartments = flattenCompartments(layout.getCompartmentRoot());
-        Collections.reverse(sortedCompartments);
+        // Collections.reverse(sortedCompartments);
         index.getOutputs().sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
                 .thenComparingInt(entity -> sortedCompartments.indexOf(entity.getCompartment()))
@@ -315,7 +315,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * @return the max x and y
      */
     private Coordinate compact(double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply, double startX, List<EntityGlyph> glyphs) {
-        final int columns = (glyphs.size() - 1) / 6 + 1;
+        // final int columns = (glyphs.size() - 1) / 6 + 1;
+        final int columns = 2;
         // the width of each column
         final double[] ws = new double[columns];
         for (int i = 0; i < glyphs.size(); i++) {
@@ -333,11 +334,11 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final double[] ys = new double[columns];
         ys[0] = 0;
         for (int i = 1; i < columns; i++) {
-            ys[i] = ys[i - 1] + 0.5 * heightPerGlyph + 2;
+            ys[i] = ys[i - 1] + 0.5 * heightPerGlyph + 1;
         }
         // vertical distance between two nodes in the same column
         final double shift;
-        if (columns == 2) shift = heightPerGlyph;
+        if (columns == 2) shift = heightPerGlyph + 2;
         else shift = ys[columns - 1] + 0.5 * heightPerGlyph;
         // else shift = (columns - 2) * (0.5 * heightPerGlyph + (columns - 1) * 2);
         double x = 0, y = 0;
@@ -429,7 +430,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 if (y != 0) {
                     reaction.getPosition().setCenter(0, y + reactionSep);
                     for (EntityGlyph regulator : index.getRegulators()) move(regulator, 0, y + reactionSep);
-                    for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y + reactionSep);
+                    // for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y + reactionSep);
                 }
             } else if (canMoveTo(index.getCatalysts(), reaction)) {
                 double y = 0;
@@ -438,7 +439,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 if (y != 0) {
                     reaction.getPosition().setCenter(0, y - reactionSep);
                     for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y - reactionSep);
-                    for (EntityGlyph regulator : index.getRegulators()) move(regulator, 0, y - reactionSep);
+                    // for (EntityGlyph regulator : index.getRegulators()) move(regulator, 0, y - reactionSep);
                 }
             }
         }
