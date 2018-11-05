@@ -57,6 +57,9 @@ public class ReactionDiagramFactory {
             for (Glyph glyph : comp.getContainedGlyphs()) {
                 ids.add(glyph.getId());
             }
+            for (final CompartmentGlyph child : comp.getChildren()) {
+                ids.add(child.getId());
+            }
             final CompartmentImpl compartment = new CompartmentImpl(ids);
             compartments.add(compartment);
             copyGlyphToDatabaseObject(comp, compartment);
