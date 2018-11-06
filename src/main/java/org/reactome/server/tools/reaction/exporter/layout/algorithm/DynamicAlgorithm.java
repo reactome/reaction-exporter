@@ -96,7 +96,7 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
 
     static {
         try {
-            final Font font = Font.createFont(Font.TRUETYPE_FONT, BreatheAlgorithm.class.getResourceAsStream("/fonts/arialbd.ttf"));
+            final Font font = Font.createFont(Font.TRUETYPE_FONT, DynamicAlgorithm.class.getResourceAsStream("/fonts/arialbd.ttf"));
             FONT_METRICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
                     .createGraphics()
                     .getFontMetrics(font.deriveFont(8f));

@@ -88,11 +88,13 @@ public class AppTest extends BaseTest {
                 "R-HSA-1592238",
                 "R-HSA-2265534",
                 "R-HSA-2993780",
+                "R-HSA-3274540",
                 "R-HSA-5205661",
                 "R-HSA-5205663",
                 "R-HSA-5205681",
                 "R-HSA-5228811",
                 "R-HSA-5578663",
+                "R-HSA-5602549",
                 "R-HSA-5602606",
                 "R-HSA-5602383",
                 "R-HSA-5617820",
@@ -123,7 +125,7 @@ public class AppTest extends BaseTest {
             final String pStId = rle.getEventOf().get(0).getStId();
 
             final LayoutFactory layoutFactory = new LayoutFactory(ads);
-            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.COMPACT);
+            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.DYNAMIC);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
             final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);

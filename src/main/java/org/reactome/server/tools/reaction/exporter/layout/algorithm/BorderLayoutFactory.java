@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.BorderLayout.Place.*;
 
+/**
+ * Places elements of a Layout into a BorderLayout.
+ */
 public class BorderLayoutFactory {
 
     private BorderLayoutFactory() {
@@ -88,8 +91,6 @@ public class BorderLayoutFactory {
                                     n = true;
                                     break;
                                 case NEGATIVE_REGULATOR:
-                                    s = true;
-                                    break;
                                 case POSITIVE_REGULATOR:
                                     s = true;
                                     break;
@@ -156,8 +157,8 @@ public class BorderLayoutFactory {
             final BorderLayout auxBorderLayout = new BorderLayout();
             switch (place) {
                 case NORTH:
-                    auxBorderLayout.set(NORTH, borderLayout);
-                    auxBorderLayout.set(SOUTH, child);
+                    auxBorderLayout.set(WEST, borderLayout);
+                    auxBorderLayout.set(EAST, child);
                     break;
                 case SOUTH:
                     auxBorderLayout.set(WEST, borderLayout);
