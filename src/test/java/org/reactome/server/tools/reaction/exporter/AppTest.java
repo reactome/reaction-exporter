@@ -94,6 +94,7 @@ public class AppTest extends BaseTest {
                 "R-HSA-5228811",
                 "R-HSA-5578663",
                 "R-HSA-5602606",
+                "R-HSA-5602383",
                 "R-HSA-5617820",
                 "R-HSA-5638137",
                 "R-HSA-6785722",
@@ -111,8 +112,8 @@ public class AppTest extends BaseTest {
         final long start = System.nanoTime();
         for (String stId : identifiers) convert(stId);
         final long elapsed = System.nanoTime() - start;
-        System.out.println(elapsed / 1e9);
-        System.out.println(elapsed / 1e9 / identifiers.size());
+        System.out.println(formatTime(elapsed));
+        System.out.println(formatTime(elapsed / identifiers.size()));
         // TODO: 21/10/18 add resource
     }
 
@@ -204,4 +205,16 @@ public class AppTest extends BaseTest {
     // OPTIONAL MATCH (a)-[:created]->(rle)
     // RETURN rle.stId, rle.displayName, both, a.displayName
 
+    // https://reactomedev.oicr.on.ca/download/current/reactome.graphdb.tgz
+
+    private String formatTime(long nanoSeconds) {
+        final long hours = nanoSeconds / 3_600_000_000_000L;
+        nanoSeconds = nanoSeconds - hours * 3_600_000_000_000L;
+        final long minutes = nanoSeconds / 60_000_000_000L;
+        nanoSeconds = nanoSeconds - minutes * 60_000_000_000L;
+        final long seconds = nanoSeconds / 1_000_000_000L;
+        nanoSeconds = nanoSeconds - minutes * 60_000_000_000L;
+        final long millis = nanoSeconds / 1_000_000L;
+        return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+    }
 }
