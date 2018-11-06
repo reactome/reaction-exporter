@@ -427,6 +427,14 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                     for (EntityGlyph output : index.getOutputs()) move(output, x + reactionSep, 0);
                 }
 
+            } else if (canMoveTo(index.getCatalysts(), reaction)) {
+                double y = 0;
+                for (CompartmentGlyph child : clashingCompartments)
+                    if (child.getPosition().getY() < y) y = child.getPosition().getY();
+                if (y != 0) {
+                    reaction.getPosition().setCenter(0, y - reactionSep);
+                    for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y - reactionSep);
+                }
             } else if (canMoveTo(index.getRegulators(), reaction)) {
                 double y = 0;
                 for (CompartmentGlyph child : clashingCompartments) {
@@ -435,16 +443,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 if (y != 0) {
                     reaction.getPosition().setCenter(0, y + reactionSep);
                     for (EntityGlyph regulator : index.getRegulators()) move(regulator, 0, y + reactionSep);
-                    // for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y + reactionSep);
-                }
-            } else if (canMoveTo(index.getCatalysts(), reaction)) {
-                double y = 0;
-                for (CompartmentGlyph child : clashingCompartments)
-                    if (child.getPosition().getY() < y) y = child.getPosition().getY();
-                if (y != 0) {
-                    reaction.getPosition().setCenter(0, y - reactionSep);
-                    for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y - reactionSep);
-                    // for (EntityGlyph regulator : index.getRegulators()) move(regulator, 0, y - reactionSep);
                 }
             }
         }
