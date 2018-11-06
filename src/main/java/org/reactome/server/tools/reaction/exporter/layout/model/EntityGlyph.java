@@ -103,7 +103,7 @@ public class EntityGlyph extends AbstractGlyph {
 
     public Boolean isDisease() {
         //noinspection ConstantConditions
-        return isDashed()? true : (pe.getInDisease() ? true : null);
+        return isDashed() ? true : (pe.getInDisease() ? true : null);
     }
 
     public Boolean isFadeOut(){
