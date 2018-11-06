@@ -90,8 +90,16 @@ public class EntityGlyph extends AbstractGlyph {
         return crossed;
     }
 
+    public void setCrossed(Boolean crossed) {
+        this.crossed = crossed;
+    }
+
     public Boolean isDashed() {
         return dashed;
+    }
+
+    public void setDashed(Boolean dashed) {
+        this.dashed = dashed;
     }
 
     /**
@@ -128,6 +136,7 @@ public class EntityGlyph extends AbstractGlyph {
             }
         }
     }
+
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
     public void setRole(Role role) {
@@ -142,12 +151,12 @@ public class EntityGlyph extends AbstractGlyph {
         this.connector = connector;
     }
 
-    public void setCompartment(CompartmentGlyph compartment) {
-        this.compartment = compartment;
-    }
-
     public CompartmentGlyph getCompartment() {
         return compartment;
+    }
+
+    public void setCompartment(CompartmentGlyph compartment) {
+        this.compartment = compartment;
     }
 
     @Override
