@@ -167,11 +167,11 @@ public class ReactionDiagramFactory {
         for (EntityGlyph entity : rxnLayout.getEntities()) {
             final NodeImpl node = new NodeImpl();
             copyGlyphToDatabaseObject(entity, node);
-            node.setTrivial(entity.isTrivial());
-            node.setDisease(entity.isDisease());
-            node.setFadeOut(entity.isCrossed());
-            node.setCrossed(entity.isCrossed());
-            node.setNeedDashBorder(entity.isDashed());
+            node.setTrivial(entity.isTrivial() ? true : null);
+            node.setDisease(entity.isDisease() ? true : null);
+            node.setFadeOut(entity.isFadeOut() ? true : null);
+            node.setCrossed(entity.isCrossed() ? true : null);
+            node.setNeedDashBorder(entity.isDashed() ? true : null);
             final Position position = entity.getPosition();
             node.setProp(getProp(position));
             node.setConnectors(Collections.singletonList(entity.getConnector()));
