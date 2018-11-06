@@ -171,6 +171,7 @@ public class ReactionDiagramFactory {
             node.setDisease(entity.isDisease());
             node.setFadeOut(entity.isCrossed());
             node.setCrossed(entity.isCrossed());
+            node.setNeedDashBorder(entity.isDashed());
             final Position position = entity.getPosition();
             node.setProp(getProp(position));
             node.setConnectors(Collections.singletonList(entity.getConnector()));
