@@ -3,14 +3,12 @@ package org.reactome.server.tools.reaction.exporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.batik.transcoder.TranscoderException;
-import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
-import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.tools.diagram.data.graph.Graph;
@@ -65,15 +63,15 @@ public class AppTest extends BaseTest {
 
     @AfterClass
     public static void afterClass() {
-       try {
-           FileUtils.cleanDirectory(TEST_IMAGES);
-       } catch (IOException e) {
-           logger.error("Could't delete test folder " + TEST_IMAGES);
-       }
+        // try {
+        //     FileUtils.cleanDirectory(TEST_IMAGES);
+        // } catch (IOException e) {
+        //     logger.error("Could't delete test folder " + TEST_IMAGES);
+        // }
     }
 
     @Test
-    public void findByDbIdTest() throws CustomQueryException {
+    public void findByDbIdTest() {
 
         final List<String> identifiers = Arrays.asList(
                 "R-HSA-69144",
@@ -88,6 +86,7 @@ public class AppTest extends BaseTest {
                 "R-HSA-1247999",
                 "R-HSA-1362408",
                 "R-HSA-1592238",
+                "R-HSA-2265534",
                 "R-HSA-2993780",
                 "R-HSA-5205661",
                 "R-HSA-5205663",
@@ -95,6 +94,7 @@ public class AppTest extends BaseTest {
                 "R-HSA-5228811",
                 "R-HSA-5578663",
                 "R-HSA-5602606",
+                "R-HSA-5602383",
                 "R-HSA-5617820",
                 "R-HSA-5638137",
                 "R-HSA-6785722",
@@ -104,16 +104,23 @@ public class AppTest extends BaseTest {
                 "R-HSA-6814559",
                 "R-HSA-8948146",
                 "R-HSA-8948832",
-                "R-HSA-9015379"
+                "R-HSA-9013533",
+                "R-HSA-9015379",
+                "R-HSA-9036025"
         );
 //        final AnalysisStoredResult result = new TokenUtils("/home/plorente/resources/reactome/v66/analysis").getFromToken("MjAxODEwMDQxMDA3MDhfMw%253D%253D");
         final long start = System.nanoTime();
-        for (String stId : identifiers) {
+        for (String stId : identifiers) convert(stId);
+        final long elapsed = System.nanoTime() - start;
+        System.out.println(formatTime(elapsed));
+        System.out.println(formatTime(elapsed / identifiers.size()));
+        // TODO: 21/10/18 add resource
+    }
 
+    private void convert(String stId) {
+        try {
             ReactionLikeEvent rle = databaseObjectService.findById(stId);
             final String pStId = rle.getEventOf().get(0).getStId();
-            final String format = "png";
-
 
             final LayoutFactory layoutFactory = new LayoutFactory(ads);
             final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.COMPACT);
@@ -122,18 +129,26 @@ public class AppTest extends BaseTest {
             final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);
             final Graph graph = graphFactory.getGraph(rle, layout);
 
-
             // runTest(diagram);
-            // printJsons(diagram, graph);
-            savePng(stId, pStId, format, diagram, graph);
+            // printJsons(diagram, graph, layout);
+            savePng(stId, pStId, diagram, graph);
             // saveSbgn(stId, diagram);
             // savePptx(diagram);
-
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println(stId);
         }
-        final long elapsed = System.nanoTime() - start;
-        System.out.println(elapsed / 1e9);
-        System.out.println(elapsed / 1e9 / identifiers.size());
-        // TODO: 21/10/18 add resource
+    }
+
+    private void savePng(String stId, String pStId, Diagram diagram, Graph graph) {
+        try {
+            final File file = new File(TEST_IMAGES, String.format("%s.%s", stId, "png"));
+            OutputStream os = new FileOutputStream(file);
+            RasterArgs args = new RasterArgs(pStId, "png").setQuality(8).setMargin(1);
+            rasterExporter.export(diagram, graph, args, null, os);
+        } catch (IOException | AnalysisException | TranscoderException e) {
+            e.printStackTrace();
+        }
     }
 
     private void runTest(Diagram diagram) {
@@ -141,42 +156,22 @@ public class AppTest extends BaseTest {
         System.out.println();
     }
 
-    private void savePptx(Diagram diagram) {
-        try {
-            PowerPointExporter.export(diagram, "modern", TEST_IMAGES.getAbsolutePath(), new Decorator(), null);
-        } catch (DiagramJsonDeserializationException | DiagramProfileException e) {
-            e.printStackTrace();
-        }
+    private void savePptx(Diagram diagram) throws DiagramProfileException, DiagramJsonDeserializationException {
+        PowerPointExporter.export(diagram, "modern", TEST_IMAGES.getAbsolutePath(), new Decorator(), null);
     }
 
-    private void saveSbgn(String stId, Diagram diagram) {
-        try {
-            final File sbgn = new File(TEST_IMAGES, String.format("%s.%s", stId, "sbgn"));
-            final Sbgn result = new SbgnConverter(diagram).getSbgn();
-            SbgnUtil.writeToFile(result, sbgn);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
+    private void saveSbgn(String stId, Diagram diagram) throws JAXBException {
+        final File sbgn = new File(TEST_IMAGES, String.format("%s.%s", stId, "sbgn"));
+        final Sbgn result = new SbgnConverter(diagram).getSbgn();
+        SbgnUtil.writeToFile(result, sbgn);
+
     }
 
-    private void savePng(String stId, String pStId, String format, Diagram diagram, Graph graph) {
-        try {
-            final File file = new File(TEST_IMAGES, String.format("%s.%s", stId, format));
-            OutputStream os = new FileOutputStream(file);
-            RasterArgs args = new RasterArgs(pStId, format).setQuality(8).setMargin(1);
-            rasterExporter.export(diagram, graph, args, null, os);
-        } catch (IOException | AnalysisException | TranscoderException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void printJsons(Diagram diagram, Graph graph) {
-        try {
-            System.out.println(new ObjectMapper().writeValueAsString(diagram));
-            System.out.println(new ObjectMapper().writeValueAsString(graph));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+    private void printJsons(Diagram diagram, Graph graph, Layout layout) throws JsonProcessingException {
+        final ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.writeValueAsString(layout));
+        System.out.println(mapper.writeValueAsString(diagram));
+        System.out.println(mapper.writeValueAsString(graph));
     }
 
     // Testing reactions
@@ -210,4 +205,16 @@ public class AppTest extends BaseTest {
     // OPTIONAL MATCH (a)-[:created]->(rle)
     // RETURN rle.stId, rle.displayName, both, a.displayName
 
+    // https://reactomedev.oicr.on.ca/download/current/reactome.graphdb.tgz
+
+    private String formatTime(long nanoSeconds) {
+        final long hours = nanoSeconds / 3_600_000_000_000L;
+        nanoSeconds = nanoSeconds - hours * 3_600_000_000_000L;
+        final long minutes = nanoSeconds / 60_000_000_000L;
+        nanoSeconds = nanoSeconds - minutes * 60_000_000_000L;
+        final long seconds = nanoSeconds / 1_000_000_000L;
+        nanoSeconds = nanoSeconds - minutes * 60_000_000_000L;
+        final long millis = nanoSeconds / 1_000_000L;
+        return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+    }
 }

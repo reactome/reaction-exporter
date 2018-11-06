@@ -17,10 +17,11 @@ import java.util.List;
 public class EntityGlyph extends AbstractGlyph {
 
     //From the query
-    @JsonIgnore
     private PhysicalEntity pe;
     private Collection<Role> roles = new HashSet<>();
     private Boolean drug;
+    private Boolean crossed = false;
+    private Boolean dashed = false;
 
     //Populated in this class
     private Collection<AttachmentGlyph> attachments = new ArrayList<>();
@@ -38,6 +39,11 @@ public class EntityGlyph extends AbstractGlyph {
 		super();
 		pe = entity.pe;
 		trivial = entity.trivial;
+		drug = entity.drug;
+		crossed = entity.crossed;
+		dashed = entity.dashed;
+		renderableClass = entity.renderableClass;
+		compartment = entity.compartment;
 		if (entity.attachments != null) {
 			attachments = new ArrayList<>();
 			for (AttachmentGlyph attachment : entity.attachments) {
@@ -85,6 +91,14 @@ public class EntityGlyph extends AbstractGlyph {
         return pe.getStId();
     }
 
+    public Boolean isCrossed() {
+        return crossed;
+    }
+
+    public Boolean isDashed() {
+        return dashed;
+    }
+
     /**
      * @return true for trivial molecules. NULL in any other case
      */
@@ -93,7 +107,11 @@ public class EntityGlyph extends AbstractGlyph {
     }
 
     public Boolean isDisease() {
-        return pe.getInDisease() ? true : null;
+        return isDashed() ||  pe.getInDisease();
+    }
+
+    public Boolean isFadeOut(){
+        return isCrossed();
     }
 
     protected void addRole(Role role) {
@@ -119,6 +137,7 @@ public class EntityGlyph extends AbstractGlyph {
             }
         }
     }
+
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
     public void setRole(Role role) {
@@ -133,13 +152,12 @@ public class EntityGlyph extends AbstractGlyph {
         this.connector = connector;
     }
 
-    public void setCompartment(CompartmentGlyph compartment) {
-        this.compartment = compartment;
-    }
-
-    @JsonIgnore
     public CompartmentGlyph getCompartment() {
         return compartment;
+    }
+
+    public void setCompartment(CompartmentGlyph compartment) {
+        this.compartment = compartment;
     }
 
     @Override
@@ -147,6 +165,9 @@ public class EntityGlyph extends AbstractGlyph {
         return "EntityGlyph{" +
                 "pe=" + getName() +
                 ", roles=" + roles +
+                ", disease=" + isDisease() +
+                ", crossed=" + isCrossed() +
+                ", dashed=" + isDashed() +
                 '}';
     }
 }
