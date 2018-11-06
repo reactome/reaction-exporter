@@ -90,16 +90,8 @@ public class EntityGlyph extends AbstractGlyph {
         return crossed;
     }
 
-    public void setCrossed(Boolean crossed) {
-        this.crossed = crossed;
-    }
-
     public Boolean isDashed() {
         return dashed;
-    }
-
-    public void setDashed(Boolean dashed) {
-        this.dashed = dashed;
     }
 
     /**
@@ -110,7 +102,12 @@ public class EntityGlyph extends AbstractGlyph {
     }
 
     public Boolean isDisease() {
-        return pe.getInDisease() ? true : null;
+        //noinspection ConstantConditions
+        return isDashed()? true : (pe.getInDisease() ? true : null);
+    }
+
+    public Boolean isFadeOut(){
+        return isCrossed();
     }
 
     protected void addRole(Role role) {
