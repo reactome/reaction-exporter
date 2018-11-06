@@ -182,6 +182,10 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         }
         heightPerGlyph += VERTICAL_PADDING;
         layoutVerticalEntities(layout.getCompartmentRoot(), index.getOutputs(), heightPerGlyph, Transformer::center);
+        centerInputs(layout);
+    }
+
+    private void centerInputs(Layout layout) {
         // Center vertically and add horizontal space if needed
         double maxy = 0;
         double minx = Integer.MAX_VALUE;
@@ -256,6 +260,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * @param entities       list of sorted entities
      * @param heightPerGlyph height that each glyph occupies, including padding
      * @param apply          operation to apply to entities once its position has been calculated, use this method to
+     *                       invert axis or rotate the position.
      */
     private Coordinate layoutVerticalEntities(CompartmentGlyph compartment, List<EntityGlyph> entities, double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply) {
         // Sub compartments are layout first
@@ -508,13 +513,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final Position position = entity.getPosition();
             // is catalyst and input
             final boolean biRole = entity.getRoles().size() > 1;
-            final ConnectorImpl connector = new ConnectorImpl();
-            final List<Segment> segments = new ArrayList<>();
-            entity.setConnector(connector);
-            connector.setSegments(segments);
-            connector.setEdgeId(layout.getReaction().getId());
-            connector.setFadeOut(entity.isCrossed());
-            connector.setDisease(layout.getReaction().isDisease());
+            final ConnectorImpl connector = createConnector(entity, layout.getReaction());
+            final List<Segment> segments = connector.getSegments();
             double y = biRole ? position.getCenterY() + 5 : position.getCenterY();
             // Input
             if (entity.getRenderableClass() == RenderableClass.GENE) {
@@ -557,6 +557,17 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         }
     }
 
+    private ConnectorImpl createConnector(EntityGlyph entity, ReactionGlyph reaction) {
+        final ConnectorImpl connector = new ConnectorImpl();
+        connector.setEdgeId(reaction.getId());
+        connector.setDisease(reaction.isDisease() ? true : null);
+        connector.setFadeOut(entity.isFadeOut() ? true : null);
+        final List<Segment> segments = new ArrayList<>();
+        connector.setSegments(segments);
+        entity.setConnector(connector);
+        return connector;
+    }
+
     /**
      * Flattens the compartment tree, putting the outermost ones at the beginning. root is always the first
      */
@@ -576,13 +587,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final double mx = index.getOutputs().stream().map(Transformer::getBounds).mapToDouble(Position::getX).min().orElse(0);
         final double vRule = mx - MIN_SEGMENT - ARROW_SIZE;
         for (EntityGlyph entity : index.getOutputs()) {
-            final ConnectorImpl connector = new ConnectorImpl();
-            final List<Segment> segments = new ArrayList<>();
-            connector.setSegments(segments);
-            connector.setEdgeId(layout.getReaction().getId());
-            connector.setFadeOut(entity.isCrossed());
-            connector.setDisease(layout.getReaction().isDisease());
-            entity.setConnector(connector);
+            final ConnectorImpl connector = createConnector(entity, layout.getReaction());
+            final List<Segment> segments = connector.getSegments();
             final Position position = entity.getPosition();
             segments.add(new SegmentImpl(
                     new CoordinateImpl(position.getX() - 4, position.getCenterY()),
@@ -619,13 +625,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final double port = reactionPosition.getCenterY();
         final double hRule = port - REACTION_MIN_V_DISTANCE;
         for (EntityGlyph entity : index.getCatalysts()) {
-            final ConnectorImpl connector = new ConnectorImpl();
-            final List<Segment> segments = new ArrayList<>();
-            entity.setConnector(connector);
-            connector.setSegments(segments);
-            connector.setEdgeId(layout.getReaction().getId());
-            connector.setFadeOut(entity.isCrossed());
-            connector.setDisease(layout.getReaction().isDisease());
+            final ConnectorImpl connector = createConnector(entity, layout.getReaction());
+            final List<Segment> segments = connector.getSegments();
             final Position position = entity.getPosition();
             segments.add(new SegmentImpl(
                     new CoordinateImpl(position.getCenterX(), position.getMaxY()),
@@ -652,13 +653,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final double radius = reactionPosition.getHeight() / 2 + REGULATOR_SIZE * sectors / Math.PI;
         int i = 1;
         for (EntityGlyph entity : index.getRegulators()) {
-            final ConnectorImpl connector = new ConnectorImpl();
-            final List<Segment> segments = new ArrayList<>();
-            entity.setConnector(connector);
-            connector.setSegments(segments);
-            connector.setEdgeId(layout.getReaction().getId());
-            connector.setFadeOut(entity.isCrossed());
-            connector.setDisease(layout.getReaction().isDisease());
+            final ConnectorImpl connector = createConnector(entity, layout.getReaction());
+            final List<Segment> segments = connector.getSegments();
             final Position position = entity.getPosition();
             segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
             final double x = reactionPosition.getCenterX() - radius * Math.cos(Math.PI * i / sectors);
