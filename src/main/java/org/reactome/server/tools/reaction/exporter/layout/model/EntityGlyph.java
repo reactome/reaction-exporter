@@ -39,6 +39,11 @@ public class EntityGlyph extends AbstractGlyph {
 		super();
 		pe = entity.pe;
 		trivial = entity.trivial;
+		drug = entity.drug;
+		crossed = entity.crossed;
+		dashed = entity.dashed;
+		renderableClass = entity.renderableClass;
+		compartment = entity.compartment;
 		if (entity.attachments != null) {
 			attachments = new ArrayList<>();
 			for (AttachmentGlyph attachment : entity.attachments) {
