@@ -160,8 +160,9 @@ public class EntityGlyph extends AbstractGlyph {
         return "EntityGlyph{" +
                 "pe=" + getName() +
                 ", roles=" + roles +
-                ", crossed=" + crossed +
-                ", dashed=" + dashed +
+                ", disease=" + isDisease() +
+                ", crossed=" + isCrossed() +
+                ", dashed=" + isDashed() +
                 '}';
     }
 }
