@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.BorderLayout.Place.*;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic.BorderLayout.Place.*;
 
 /**
  * Places elements of a Layout into a BorderLayout.

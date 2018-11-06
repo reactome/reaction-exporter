@@ -1,10 +1,11 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic;
 
 import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.diagram.data.layout.Segment;
 import org.reactome.server.tools.diagram.data.layout.Shape;
 import org.reactome.server.tools.diagram.data.layout.Stoichiometry;
 import org.reactome.server.tools.diagram.data.layout.impl.*;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.LayoutAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
@@ -18,7 +19,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.BorderLayout.Place.*;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic.BorderLayout.Place.*;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
@@ -42,11 +43,11 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
     /**
      * Vertical (y-axis) distance between two glyphs.
      */
-    private static final double VERTICAL_PADDING = 12;
+    private static final double VERTICAL_PADDING = 20;
     /**
      * Horizontal (x-axis) distance between two glyphs.
      */
-    private static final double HORIZONTAL_PADDING = 12;
+    private static final double HORIZONTAL_PADDING = 20;
     /**
      * Minimum vertical distance between any glyph and the reaction glyph
      */

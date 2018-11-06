@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
 
 import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.diagram.data.layout.Segment;
@@ -13,12 +13,12 @@ import org.reactome.server.tools.reaction.exporter.layout.text.TextUtils;
 import java.awt.geom.Dimension2D;
 import java.util.ArrayList;
 
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BreatheAlgorithm.BACKBONE_LENGTH;
-
 /**
  * Helper class to perform transformations on glyphs: translating, scaling and sizing.
  */
-class Transformer {
+public class Transformer {
+
+    private static final double BACKBONE_LENGTH = 20;
     /**
      * Size of reaction glyph
      */
@@ -44,7 +44,7 @@ class Transformer {
     /**
      * Moves the given glyph, and content, adding dx and dy to {@link Glyph#getPosition()}
      */
-    static void move(Glyph glyph, double dx, double dy) {
+    public static void move(Glyph glyph, double dx, double dy) {
         move(glyph, new CoordinateImpl(dx, dy));
     }
 
@@ -102,14 +102,14 @@ class Transformer {
         }
     }
 
-    static void move(CompartmentGlyph compartment, Coordinate delta) {
+    public static void move(CompartmentGlyph compartment, Coordinate delta) {
         move(compartment, delta, false);
     }
 
     /**
      * moves the compartment and everything inside it if moveContent is true
      */
-    static void move(CompartmentGlyph compartment, Coordinate delta, boolean moveContent) {
+    public static void move(CompartmentGlyph compartment, Coordinate delta, boolean moveContent) {
         compartment.getPosition().move(delta.getX(), delta.getY());
         if (compartment.getLabelPosition() != null)
             compartment.setLabelPosition(compartment.getLabelPosition().add(delta));
@@ -122,7 +122,7 @@ class Transformer {
     /**
      * returns the outer bounds of a given glyph. This methods takes into account backbone and attachments.
      */
-    static Position getBounds(Glyph glyph) {
+    public static Position getBounds(Glyph glyph) {
         if (glyph instanceof ReactionGlyph) return getBounds((ReactionGlyph) glyph);
         else if (glyph instanceof EntityGlyph) return getBounds((EntityGlyph) glyph);
         return glyph.getPosition();
@@ -132,7 +132,7 @@ class Transformer {
      * @return the most outer limits of an entity glyph, taking into account if it contains attachments. In that case
      * the bounds include the position of the attachments on all sides, even if there is only one attachment.
      */
-    static Position getBounds(EntityGlyph entityGlyph) {
+    public static Position getBounds(EntityGlyph entityGlyph) {
         final Position position = new Position(entityGlyph.getPosition());
         if (entityGlyph.getAttachments().isEmpty()) return position;
         position.setWidth(position.getWidth() + ATTACHMENT_SIZE);
@@ -141,12 +141,12 @@ class Transformer {
         return position;
     }
 
-    static Position getBounds(ReactionGlyph reaction) {
+    public static Position getBounds(ReactionGlyph reaction) {
         final Position position = new Position(reaction.getPosition());
         if (reaction.getSegments() != null) {
             // just the backbone
             // actually, we should perform a for statement with segments, but this is faster
-            position.setWidth(position.getWidth() + 2 * BreatheAlgorithm.BACKBONE_LENGTH);
+            position.setWidth(position.getWidth() + 2 * BACKBONE_LENGTH);
             position.move(-BACKBONE_LENGTH, 0);
         }
         return position;
@@ -157,7 +157,7 @@ class Transformer {
         move(reactionGlyph, diff);
     }
 
-    static void center(EntityGlyph entityGlyph, Coordinate coordinate) {
+    public static void center(EntityGlyph entityGlyph, Coordinate coordinate) {
         final Coordinate diff = coordinate.minus(new CoordinateImpl(entityGlyph.getPosition().getCenterX(), entityGlyph.getPosition().getCenterY()));
         move(entityGlyph, diff);
     }
@@ -167,7 +167,7 @@ class Transformer {
         move(compartmentGlyph, diff);
     }
 
-    static void center(Glyph glyph, Coordinate center) {
+    public static void center(Glyph glyph, Coordinate center) {
         if (glyph instanceof CompartmentGlyph)
             center((CompartmentGlyph) glyph, center);
         else if (glyph instanceof ReactionGlyph)
@@ -177,12 +177,12 @@ class Transformer {
         else throw new UnsupportedOperationException();
     }
 
-    static void setSize(ReactionGlyph reaction) {
+    public static void setSize(ReactionGlyph reaction) {
         reaction.getPosition().setHeight(REACTION_SIZE);
         reaction.getPosition().setWidth(REACTION_SIZE);
     }
 
-    static void setSize(EntityGlyph glyph) {
+    public static void setSize(EntityGlyph glyph) {
         final Dimension2D textDimension = TextUtils.textDimension(glyph.getName());
         switch (glyph.getRenderableClass()) {
             case CHEMICAL:

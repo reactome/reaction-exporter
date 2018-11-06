@@ -6,6 +6,7 @@ import org.reactome.server.tools.diagram.data.layout.Shape;
 import org.reactome.server.tools.diagram.data.layout.Stoichiometry;
 import org.reactome.server.tools.diagram.data.layout.impl.*;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.LayoutAlgorithm;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
@@ -16,7 +17,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.Dedup.addDuplicates;
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.Transformer.*;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.*;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
 /**
@@ -34,7 +35,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     /**
      * Length of the backbone of the reaction
      */
-    static final double BACKBONE_LENGTH = 20;
+    private static final double BACKBONE_LENGTH = 20;
     /**
      * Size of the box surrounding regulator and catalysts shapes
      */
