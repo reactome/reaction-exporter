@@ -118,14 +118,17 @@ public class BorderLayoutFactory {
                 // 1 1 1 1 c
             else if (n && s && e && w) setOrMerge(borderLayout, CENTER, child);
                 // 0 1 0 0 s
+            else if (!n && s && !e && !w) setOrMerge(borderLayout, SOUTH, child);
                 // 0 1 1 1 s
-            else if (!n && s && (e && w || !e && !w)) setOrMerge(borderLayout, SOUTH, child);
+            else if (!n && s && e && w) setOrMerge(borderLayout, SOUTH, child);
                 // 1 0 1 1 n
+            else if (n && !s && e && w) setOrMerge(borderLayout, NORTH, child);
                 // 1 0 0 0 n
-            else if (n && !s && (e && w || !e && !w)) setOrMerge(borderLayout, NORTH, child);
+            else if (n && !s && !e && !w) setOrMerge(borderLayout, NORTH, child);
                 // 0 0 0 1 w
+            else if (!n && !s && !e && w) setOrMerge(borderLayout, WEST, child);
                 // 1 1 0 1 w
-            else if ((n && s || !n && !s) && !e && w) setOrMerge(borderLayout, WEST, child);
+            else if (n && s && !e && w) setOrMerge(borderLayout, WEST, child);
                 // 1 1 1 0 e
                 // 0 0 1 0 e
             else if ((n && s || !n && !s) && e && !w) setOrMerge(borderLayout, EAST, child);

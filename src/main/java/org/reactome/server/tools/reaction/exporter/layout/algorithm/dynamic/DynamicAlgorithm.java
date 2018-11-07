@@ -13,10 +13,8 @@ import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
-import org.reactome.server.tools.reaction.exporter.layout.text.TextUtils;
 
 import java.awt.*;
-import java.awt.geom.Dimension2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.*;
@@ -115,8 +113,8 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
     public void compute(Layout layout) {
         Dedup.addDuplicates(layout);
         index = new LayoutIndex(layout);
-        for (EntityGlyph entity : layout.getEntities()) setSize(entity);
-        setSize(layout.getReaction());
+        for (EntityGlyph entity : layout.getEntities()) Transformer.setSize(entity);
+        Transformer.setSize(layout.getReaction());
         final BorderLayout borderLayout = BorderLayoutFactory.get(layout);
 //        borderLayout.print();
         setPositions(borderLayout, Orientation.HORIZONTAL);
@@ -288,94 +286,6 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
             }
             borderLayout.getCompartment().setLabelPosition(coordinate);
             borderLayout.getCompartment().setPosition(new Position(borderLayout));
-        }
-    }
-
-    private void setSize(ReactionGlyph reaction) {
-        final Position position = reaction.getPosition();
-        position.setHeight(REACTION_SIZE);
-        position.setWidth(REACTION_SIZE);
-    }
-
-    private void setSize(EntityGlyph glyph) {
-        final Dimension2D textDimension = TextUtils.textDimension(glyph.getName());
-        switch (glyph.getRenderableClass()) {
-            case CHEMICAL:
-            case CHEMICAL_DRUG:
-            case COMPLEX:
-            case COMPLEX_DRUG:
-            case ENTITY:
-            case PROTEIN_DRUG:
-            case RNA:
-            case RNA_DRUG:
-                // exporter padding is 5
-                glyph.getPosition().setWidth(10 + textDimension.getWidth());
-                glyph.getPosition().setHeight(10 + textDimension.getHeight());
-                break;
-            case PROTEIN:
-                glyph.getPosition().setWidth(10 + textDimension.getWidth());
-                glyph.getPosition().setHeight(10 + textDimension.getHeight());
-                layoutAttachments(glyph);
-                break;
-            case ENCAPSULATED_NODE:
-            case PROCESS_NODE:
-            case ENTITY_SET:
-            case ENTITY_SET_DRUG:
-                glyph.getPosition().setWidth(15 + textDimension.getWidth());
-                glyph.getPosition().setHeight(15 + textDimension.getHeight());
-                break;
-            case GENE:
-                glyph.getPosition().setWidth(6 + textDimension.getWidth());
-                glyph.getPosition().setHeight(30 + textDimension.getHeight());
-                break;
-        }
-    }
-
-    private void layoutAttachments(EntityGlyph entity) {
-        if (entity.getAttachments() != null) {
-            final Position position = entity.getPosition();
-            position.setX(0.);
-            position.setY(0.);
-            double width = position.getWidth() - 2 * 8; // rounded rectangles
-            double height = position.getHeight() - 2 * 8; // rounded rectangles
-            int boxesInWidth = (int) (width / BOX_SIZE);
-            int boxesInHeight = (int) (height / BOX_SIZE);
-            int maxBoxes = 2 * (boxesInHeight + boxesInWidth);
-            while (entity.getAttachments().size() > maxBoxes) {
-                position.setWidth(position.getWidth() + BOX_SIZE);
-                position.setHeight(position.getWidth() / TextUtils.RATIO);
-                width = position.getWidth() - 2 * 8; // rounded rectangles
-                height = position.getHeight() - 2 * 8; // rounded rectangles
-                boxesInWidth = (int) (width / BOX_SIZE);
-                boxesInHeight = (int) (height / BOX_SIZE);
-                maxBoxes = 2 * (boxesInHeight + boxesInWidth);
-            }
-
-            final ArrayList<AttachmentGlyph> glyphs = new ArrayList<>(entity.getAttachments());
-            final double maxWidth = boxesInWidth * BOX_SIZE;
-            final double maxHeight = boxesInHeight * BOX_SIZE;
-            final double xOffset = 8 + 0.5 * (BOX_SIZE + width - maxWidth);
-            final double yOffset = 8 + 0.5 * (BOX_SIZE + height - maxHeight);
-            for (int i = 0; i < glyphs.size(); i++) {
-                glyphs.get(i).getPosition().setWidth(ATTACHMENT_SIZE);
-                glyphs.get(i).getPosition().setHeight(ATTACHMENT_SIZE);
-                if (i < boxesInWidth) {
-                    // Top line
-                    glyphs.get(i).getPosition().setCenter(position.getX() + xOffset + i * BOX_SIZE, position.getY());
-                } else if (i < boxesInWidth + boxesInHeight) {
-                    // Right line
-                    final int pos = i - boxesInWidth;
-                    glyphs.get(i).getPosition().setCenter(position.getMaxX(), position.getY() + yOffset + pos * BOX_SIZE);
-                } else if (i < 2 * boxesInWidth + boxesInHeight) {
-                    // Bottom line
-                    final int pos = i - boxesInWidth - boxesInHeight;
-                    glyphs.get(i).getPosition().setCenter(position.getMaxX() - xOffset - pos * BOX_SIZE, position.getMaxY());
-                } else {
-                    // Left line
-                    final int pos = i - boxesInHeight - 2 * boxesInWidth;
-                    glyphs.get(i).getPosition().setCenter(position.getX(), position.getMaxY() - yOffset - pos * BOX_SIZE);
-                }
-            }
         }
     }
 
