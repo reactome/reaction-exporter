@@ -23,7 +23,6 @@ public class BorderLayoutFactory {
         return getBorderLayout(layout.getCompartmentRoot());
     }
 
-    @SuppressWarnings("ConstantConditions")
     private static BorderLayout getBorderLayout(CompartmentGlyph compartment) {
         // Don't be afraid of reading this method, it places content of compartment into a new BorderLayout.
         // In every coordinate
@@ -81,6 +80,7 @@ public class BorderLayoutFactory {
         return borderLayout;
     }
 
+    @SuppressWarnings("ConstantConditions")
     private static void placeSubBorderLayout(BorderLayout borderLayout, BorderLayout child) {
         boolean n = false;
         boolean s = false;
@@ -124,9 +124,9 @@ public class BorderLayoutFactory {
         }
 
         // MEGA SUPER KARNAUGH MAP (4 inputs -> 8 outputs)
+        if (c) setOrMerge(borderLayout, CENTER, child);
         // n s e w
         // 0 0 0 0 error
-        if (c) setOrMerge(borderLayout, CENTER, child);
         else if (!n && !s && !e && !w) System.err.println("Whaaat");
             // 1 1 1 1 c
         else if (n && s && e && w) setOrMerge(borderLayout, CENTER, child);
