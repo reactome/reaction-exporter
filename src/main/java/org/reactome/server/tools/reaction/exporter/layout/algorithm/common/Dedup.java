@@ -28,13 +28,7 @@ public class Dedup {
                     if (role.getType() == INPUT
                             || role.getType() == CATALYST
                             || entity.getRoles().size() == 1) continue;
-                    // Call the copy constructor and link the new entity with its role and compartment
-                    final EntityGlyph copy = new EntityGlyph(entity);
-                    copy.setRole(role);
-                    entity.getRoles().remove(role);
-                    added.add(copy);
-                    copy.setCompartment(entity.getCompartment());
-                    entity.getCompartment().addGlyph(copy);
+                    added.add(clone(entity, role));
                 }
             }
         }
@@ -42,5 +36,15 @@ public class Dedup {
         for (EntityGlyph entity : added) {
             layout.add(entity);
         }
+    }
+
+    private static EntityGlyph clone(EntityGlyph entity, Role role) {
+        // Call the copy constructor and link the new entity with its role and compartment
+        final EntityGlyph copy = new EntityGlyph(entity);
+        copy.setRole(role);
+        entity.getRoles().remove(role);
+        copy.setCompartment(entity.getCompartment());
+        entity.getCompartment().addGlyph(copy);
+        return copy;
     }
 }
