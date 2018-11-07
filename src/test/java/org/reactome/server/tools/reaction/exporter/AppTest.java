@@ -36,7 +36,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Unit testing.
@@ -72,10 +73,9 @@ public class AppTest extends BaseTest {
 
     @Test
     public void findByDbIdTest() {
-
-        final List<String> identifiers = Arrays.asList(
-                "R-HSA-69144",
+        final Collection<String> identifiers = new HashSet<>(Arrays.asList(
                 "R-HSA-68947",
+                "R-HSA-69144",
                 "R-HSA-72107",
                 "R-HSA-112381",
                 "R-HSA-140664",
@@ -83,31 +83,119 @@ public class AppTest extends BaseTest {
                 "R-HSA-420586",
                 "R-HSA-425483",
                 "R-HSA-1218824",
+                "R-HSA-1218833",
+                "R-HSA-1220614",
                 "R-HSA-1247999",
                 "R-HSA-1362408",
                 "R-HSA-1592238",
+                "R-HSA-1839031",
+                "R-HSA-1839039",
+                "R-HSA-1839065",
+                "R-HSA-1839067",
+                "R-HSA-1839078",
+                "R-HSA-1839095",
+                "R-HSA-1839102",
+                "R-HSA-1839110",
+                "R-HSA-1839112",
+                "R-HSA-1839114",
+                "R-HSA-1888198",
+                "R-HSA-1982065",
+                "R-HSA-1982066",
+                "R-HSA-2012073",
+                "R-HSA-2012074",
+                "R-HSA-2012082",
+                "R-HSA-2012084",
+                "R-HSA-2023456",
+                "R-HSA-2023460",
+                "R-HSA-2023462",
+                "R-HSA-2029983",
+                "R-HSA-2029984",
+                "R-HSA-2029988",
+                "R-HSA-2029989",
+                "R-HSA-2029992",
+                "R-HSA-2033472",
+                "R-HSA-2033474",
+                "R-HSA-2033476",
+                "R-HSA-2033479",
+                "R-HSA-2033485",
+                "R-HSA-2033486",
+                "R-HSA-2033488",
+                "R-HSA-2033490",
+                "R-HSA-2038386",
+                "R-HSA-2038387",
+                "R-HSA-2046363",
+                "R-HSA-2067713",
+                "R-HSA-2077420",
+                "R-HSA-2077424",
+                "R-HSA-2220966",
+                "R-HSA-2220979",
+                "R-HSA-2220981",
+                "R-HSA-2220985",
+                "R-HSA-2263490",
+                "R-HSA-2263492",
                 "R-HSA-2265534",
+                "R-HSA-2666278",
                 "R-HSA-2993780",
+                "R-HSA-3215391",
+                "R-HSA-3274540",
+                "R-HSA-3791349",
+                "R-HSA-3814838",
+                "R-HSA-3828061",
+                "R-HSA-3858506",
                 "R-HSA-5205661",
                 "R-HSA-5205663",
                 "R-HSA-5205681",
                 "R-HSA-5228811",
+                "R-HSA-5358460",
+                "R-HSA-5362450",
+                "R-HSA-5387386",
+                "R-HSA-5387389",
+                "R-HSA-5387392",
+                "R-HSA-5483229",
+                "R-HSA-5483238",
                 "R-HSA-5578663",
-                "R-HSA-5602606",
                 "R-HSA-5602383",
+                "R-HSA-5602549",
+                "R-HSA-5602606",
                 "R-HSA-5617820",
                 "R-HSA-5638137",
+                "R-HSA-5654544",
+                "R-HSA-5654545",
+                "R-HSA-5683209",
                 "R-HSA-6785722",
                 "R-HSA-6787403",
                 "R-HSA-6791221",
                 "R-HSA-6791223",
+                "R-HSA-6802912",
+                "R-HSA-6802914",
+                "R-HSA-6802925",
+                "R-HSA-6802927",
+                "R-HSA-6802927",
+                "R-HSA-6802930",
+                "R-HSA-6802932",
+                "R-HSA-6802934",
+                "R-HSA-6802938",
+                "R-HSA-6802942",
                 "R-HSA-6814559",
+                "R-HSA-8851710",
+                "R-HSA-8853309",
+                "R-HSA-8853313",
+                "R-HSA-8853317",
+                "R-HSA-8853319",
+                "R-HSA-8853320",
+                "R-HSA-8853322",
+                "R-HSA-8853325",
                 "R-HSA-8948146",
                 "R-HSA-8948832",
                 "R-HSA-9013533",
                 "R-HSA-9015379",
-                "R-HSA-9036025"
-        );
+                "R-HSA-9036025",
+                "R-HSA-9036056",
+                "R-MMU-8851711",
+                "R-MMU-9005872",
+                "R-NUL-9005752",
+                "R-NUL-9606338"
+        ));
 //        final AnalysisStoredResult result = new TokenUtils("/home/plorente/resources/reactome/v66/analysis").getFromToken("MjAxODEwMDQxMDA3MDhfMw%253D%253D");
         final long start = System.nanoTime();
         for (String stId : identifiers) convert(stId);
@@ -174,40 +262,8 @@ public class AppTest extends BaseTest {
         System.out.println(mapper.writeValueAsString(graph));
     }
 
-    // Testing reactions
-    // disease: R-HSA-9015379, R-HSA-1218824
-    // NPE: R-HSA-1362408
-    // easy: R-HSA-211734, R-HSA-5205661, R-HSA-5205681, R-HSA-8948146, R-HSA-6787403, R-HSA-68947
-    // duplicates: R-HSA-6791223,
-    // many inputs: R-HSA-72107, R-HSA-5617820
-    // many outputs: R-HSA-6785722, R-HSA-69144 (dissociation)
-    // many regulators: R-HSA-6791221
-    // autocatalysis: R-HSA-6814559, R-HSA-112381, R-HSA-1362408
-    // reaction misplaced: R-HSA-5205661
-    // wrong: R-HSA-5205663
-    // attachments: R-HSA-140664
-    // uncertain
-
-    // Extract elements with more than one role
-    // MATCH (rle:ReactionLikeEvent{speciesName:"Homo sapiens"})
-    // MATCH (rle)-[:input]->(i:PhysicalEntity)
-    // WITH rle, collect(i) AS inputs
-    // MATCH (rle)-[:output]->(o:PhysicalEntity)
-    // WITH rle, inputs, collect(o) AS outputs
-    // OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(c:PhysicalEntity)
-    // WITH rle, inputs, outputs, collect(c) AS catalysts
-    // OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(p:PhysicalEntity)
-    // WITH rle, inputs, outputs, catalysts, collect(p) AS positives
-    // OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(n:PhysicalEntity)
-    // WITH rle, inputs, outputs, catalysts, positives, collect(n) AS negatives
-    // WITH rle, inputs, outputs, catalysts, positives, negatives, [x IN inputs WHERE x IN catalysts AND x in outputs | x.stId] AS both
-    // WHERE size(both) > 0
-    // OPTIONAL MATCH (a)-[:created]->(rle)
-    // RETURN rle.stId, rle.displayName, both, a.displayName
-
     // https://reactomedev.oicr.on.ca/download/current/reactome.graphdb.tgz
-
-    private String formatTime(long nanoSeconds) {
+    private static String formatTime(long nanoSeconds) {
         final long hours = nanoSeconds / 3_600_000_000_000L;
         nanoSeconds = nanoSeconds - hours * 3_600_000_000_000L;
         final long minutes = nanoSeconds / 60_000_000_000L;
