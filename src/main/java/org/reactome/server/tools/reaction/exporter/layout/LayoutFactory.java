@@ -68,6 +68,7 @@ public class LayoutFactory {
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
 
             "OPTIONAL MATCH (rle)-[s:entityFunctionalStatus]->(:EntityFunctionalStatus)-[:physicalEntity]->(pe:PhysicalEntity) " +
+            "WHERE NOT s.role IS NULL " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: s.role}, drug: (pe:Drug) OR NOT d IS NULL, dashed:s.dashed} END) AS ps " +
 
