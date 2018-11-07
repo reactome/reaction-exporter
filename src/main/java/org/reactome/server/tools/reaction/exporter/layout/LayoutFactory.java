@@ -44,6 +44,7 @@ public class LayoutFactory {
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: o.stoichiometry, type: 'output'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
 
             "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(pe:PhysicalEntity) " +
+            "WHERE NOT (rle)-[:entityFunctionalStatus]->()-[:physicalEntity]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "OPTIONAL MATCH (rle)-[:crossedCatalystActivity|physicalEntity*]->(pe:PhysicalEntity) " +
@@ -51,6 +52,7 @@ public class LayoutFactory {
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
 
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(pe:PhysicalEntity) " +
+            "WHERE NOT (rle)-[:entityFunctionalStatus]->()-[:physicalEntity]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "OPTIONAL MATCH (rle)-[:crossedRegulatedBy]->(:NegativeRegulation)-[:regulator]->(pe:PhysicalEntity) " +
@@ -58,6 +60,7 @@ public class LayoutFactory {
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
 
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pe:PhysicalEntity) " +
+            "WHERE NOT (rle)-[:entityFunctionalStatus]->()-[:physicalEntity]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "OPTIONAL MATCH (rle)-[:crossedRegulatedBy]->(:PositiveRegulation)-[:regulator]->(pe:PhysicalEntity) " +
