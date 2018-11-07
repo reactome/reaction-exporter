@@ -29,7 +29,7 @@ public class ReactionGlyph extends AbstractGlyph {
         stId = rle.getStId();
         schemaClass = rle.getSchemaClass();
         name = rle.getDisplayName();
-        disease = rle.getIsInDisease() ? true : null;
+        disease = rle.getIsInDisease() != null && rle.getIsInDisease();
         renderableClass = RenderableClass.getRenderableClass(rle);
     }
 

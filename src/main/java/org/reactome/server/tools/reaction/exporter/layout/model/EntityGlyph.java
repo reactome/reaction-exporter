@@ -19,14 +19,14 @@ public class EntityGlyph extends AbstractGlyph {
     //From the query
     private PhysicalEntity pe;
     private Collection<Role> roles = new HashSet<>();
-    private Boolean drug;
+    private Boolean drug = false;
     private Boolean crossed = false;
     private Boolean dashed = false;
 
     //Populated in this class
     private Collection<AttachmentGlyph> attachments = new ArrayList<>();
     private RenderableClass renderableClass;
-    private Boolean trivial = null; //Only true for trivial molecules. Null in any other case
+    private Boolean trivial = false;
 
     private Connector connector;
     private CompartmentGlyph compartment;
