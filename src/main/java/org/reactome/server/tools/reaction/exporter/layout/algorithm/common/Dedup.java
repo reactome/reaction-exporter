@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
 
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
@@ -11,9 +11,12 @@ import java.util.List;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
-class Dedup {
+public class Dedup {
 
-    static void addDuplicates(Layout layout) {
+    private Dedup() {
+    }
+
+    public static void addDuplicates(Layout layout) {
         // We duplicate every entity that has more than one role, except when the input is a catalyst
         final List<EntityGlyph> added = new ArrayList<>();
         for (EntityGlyph entity : layout.getEntities()) {

@@ -102,7 +102,7 @@ public class Transformer {
         }
     }
 
-    public static void move(CompartmentGlyph compartment, Coordinate delta) {
+    private static void move(CompartmentGlyph compartment, Coordinate delta) {
         move(compartment, delta, false);
     }
 
@@ -152,29 +152,9 @@ public class Transformer {
         return position;
     }
 
-    private static void center(ReactionGlyph reactionGlyph, Coordinate coordinate) {
-        final Coordinate diff = coordinate.minus(new CoordinateImpl(reactionGlyph.getPosition().getCenterX(), reactionGlyph.getPosition().getCenterY()));
-        move(reactionGlyph, diff);
-    }
-
-    public static void center(EntityGlyph entityGlyph, Coordinate coordinate) {
-        final Coordinate diff = coordinate.minus(new CoordinateImpl(entityGlyph.getPosition().getCenterX(), entityGlyph.getPosition().getCenterY()));
-        move(entityGlyph, diff);
-    }
-
-    private static void center(CompartmentGlyph compartmentGlyph, Coordinate coordinate) {
-        final Coordinate diff = coordinate.minus(new CoordinateImpl(compartmentGlyph.getPosition().getCenterX(), compartmentGlyph.getPosition().getCenterY()));
-        move(compartmentGlyph, diff);
-    }
-
     public static void center(Glyph glyph, Coordinate center) {
-        if (glyph instanceof CompartmentGlyph)
-            center((CompartmentGlyph) glyph, center);
-        else if (glyph instanceof ReactionGlyph)
-            center((ReactionGlyph) glyph, center);
-        else if (glyph instanceof EntityGlyph)
-            center((EntityGlyph) glyph, center);
-        else throw new UnsupportedOperationException();
+        final Coordinate diff = center.minus(new CoordinateImpl(glyph.getPosition().getCenterX(), glyph.getPosition().getCenterY()));
+        move(glyph, diff);
     }
 
     public static void setSize(ReactionGlyph reaction) {

@@ -1,4 +1,6 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
+
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BreatheAlgorithm;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -7,7 +9,7 @@ import java.io.IOException;
 /**
  * Helper class for measuring text
  */
-class FontProperties {
+public class FontProperties {
 
     private FontProperties(){}
 
@@ -25,12 +27,12 @@ class FontProperties {
         }
     }
 
-    static double getTextWidth(String text) {
+    public static double getTextWidth(String text) {
         return FONT_METRICS.stringWidth(text);
     }
 
 
-    static double getTextHeight() {
+    public static double getTextHeight() {
         return FONT_METRICS.getHeight();
     }
 }

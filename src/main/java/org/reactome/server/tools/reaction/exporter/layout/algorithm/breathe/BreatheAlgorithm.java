@@ -6,6 +6,8 @@ import org.reactome.server.tools.diagram.data.layout.Shape;
 import org.reactome.server.tools.diagram.data.layout.Stoichiometry;
 import org.reactome.server.tools.diagram.data.layout.impl.*;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.LayoutAlgorithm;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.FontProperties;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
@@ -16,7 +18,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.Dedup.addDuplicates;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Dedup.addDuplicates;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.*;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 

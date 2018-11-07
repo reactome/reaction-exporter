@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
 
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
@@ -7,14 +7,14 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Role;
 import java.util.ArrayList;
 import java.util.List;
 
-class LayoutIndex {
+public class LayoutIndex {
 
     private List<EntityGlyph> inputs = new ArrayList<>();
     private List<EntityGlyph> outputs = new ArrayList<>();
     private List<EntityGlyph> catalysts = new ArrayList<>();
     private List<EntityGlyph> regulators = new ArrayList<>();
 
-    LayoutIndex(Layout layout) {
+    public LayoutIndex(Layout layout) {
         final List<EntityGlyph> activators = new ArrayList<>();
         final List<EntityGlyph> inhibitors = new ArrayList<>();
         for (EntityGlyph entity : layout.getEntities()) {
@@ -42,19 +42,19 @@ class LayoutIndex {
         regulators.addAll(activators);
     }
 
-    List<EntityGlyph> getCatalysts() {
+    public List<EntityGlyph> getCatalysts() {
         return catalysts;
     }
 
-    List<EntityGlyph> getInputs() {
+    public List<EntityGlyph> getInputs() {
         return inputs;
     }
 
-    List<EntityGlyph> getOutputs() {
+    public List<EntityGlyph> getOutputs() {
         return outputs;
     }
 
-    List<EntityGlyph> getRegulators() {
+    public List<EntityGlyph> getRegulators() {
         return regulators;
     }
 }

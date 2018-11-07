@@ -210,13 +210,13 @@ public class AppTest extends BaseTest {
             final String pStId = rle.getEventOf().get(0).getStId();
 
             final LayoutFactory layoutFactory = new LayoutFactory(ads);
-            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.COMPACT);
+            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.DYNAMIC);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
             final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);
             final Graph graph = graphFactory.getGraph(rle, layout);
 
-            // runTest(diagram);
+            runTest(diagram);
             // printJsons(diagram, graph, layout);
             savePng(stId, pStId, diagram, graph);
             // saveSbgn(stId, diagram);

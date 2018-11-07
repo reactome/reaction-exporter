@@ -6,6 +6,9 @@ import org.reactome.server.tools.diagram.data.layout.Shape;
 import org.reactome.server.tools.diagram.data.layout.Stoichiometry;
 import org.reactome.server.tools.diagram.data.layout.impl.*;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.LayoutAlgorithm;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Dedup;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
@@ -20,7 +23,6 @@ import java.util.*;
 import java.util.List;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic.BorderLayout.Place.*;
-import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
 @SuppressWarnings("Duplicates")
@@ -29,7 +31,7 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
     /**
      * Minimum distance between the compartment border and any of ints contained glyphs.
      */
-    private static final double COMPARTMENT_PADDING = 20;
+    private static final double COMPARTMENT_PADDING = 10;
     /**
      * Minimum allocated height for any glyph. Even if glyphs have a lower height, they are placed in the middle of this
      * minimum distance.
@@ -107,16 +109,12 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
         }
     }
 
-    private List<Glyph> inputs;
-    private List<Glyph> outputs;
-    private List<Glyph> catalysts;
-    private List<Glyph> regulators;
-
+    private LayoutIndex index;
 
     @Override
     public void compute(Layout layout) {
-        addDuplicates(layout);
-        collectParticipants(layout);
+        Dedup.addDuplicates(layout);
+        index = new LayoutIndex(layout);
         for (EntityGlyph entity : layout.getEntities()) setSize(entity);
         setSize(layout.getReaction());
         final BorderLayout borderLayout = BorderLayoutFactory.get(layout);
@@ -128,179 +126,133 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
 
     }
 
-    private void addDuplicates(Layout layout) {
-        // We duplicate every entity that has more than one role, except when the input is a catalyst
-        final List<EntityGlyph> added = new ArrayList<>();
-        for (EntityGlyph entity : layout.getEntities()) {
-            final Collection<Role> roles = entity.getRoles();
-            if (roles.size() > 1) {
-                // Extract the role types
-                final ArrayList<Role> roleList = new ArrayList<>(roles);
-                for (final Role role : roleList) {
-                    if (role.getType() == INPUT
-                            || role.getType() == CATALYST
-                            || entity.getRoles().size() == 1) continue;
-                    final EntityGlyph copy = new EntityGlyph(entity);
-                    copy.setRole(role);
-                    entity.getRoles().remove(role);
-                    added.add(copy);
-                    entity.getCompartment().addGlyph(copy);
-                }
-            }
-        }
-        for (EntityGlyph entity : added) {
-            layout.add(entity);
-        }
-    }
-
-    private void collectParticipants(Layout layout) {
-        inputs = new ArrayList<>();
-        outputs = new ArrayList<>();
-        catalysts = new ArrayList<>();
-        final List<EntityGlyph> activators = new ArrayList<>();
-        final List<EntityGlyph> inhibitors = new ArrayList<>();
-        regulators = new ArrayList<>();
-        for (EntityGlyph entity : layout.getEntities()) {
-            for (Role role : entity.getRoles()) {
-                switch (role.getType()) {
-                    case INPUT:
-                        inputs.add(entity);
-                        break;
-                    case OUTPUT:
-                        outputs.add(entity);
-                        break;
-                    case CATALYST:
-                        catalysts.add(entity);
-                        break;
-                    case NEGATIVE_REGULATOR:
-                        inhibitors.add(entity);
-                        break;
-                    case POSITIVE_REGULATOR:
-                        activators.add(entity);
-                        break;
-                }
-            }
-        }
-        regulators.addAll(inhibitors);
-        regulators.addAll(activators);
-    }
-
-
     private void setPositions(BorderLayout borderLayout, Orientation orientation) {
         if (borderLayout == null) return;
         if (borderLayout.getGlyphs().isEmpty()) {
-            setPositions(borderLayout.get(CENTER), Orientation.HORIZONTAL);
-            setPositions(borderLayout.get(NORTH), Orientation.HORIZONTAL);
-            setPositions(borderLayout.get(SOUTH), Orientation.HORIZONTAL);
-            setPositions(borderLayout.get(WEST), Orientation.VERTICAL);
-            setPositions(borderLayout.get(EAST), Orientation.VERTICAL);
-            setPositions(borderLayout.get(SOUTH_WEST), Orientation.VERTICAL);
-            setPositions(borderLayout.get(SOUTH_EAST), Orientation.VERTICAL);
-            setPositions(borderLayout.get(NORTH_EAST), Orientation.VERTICAL);
-            setPositions(borderLayout.get(NORTH_WEST), Orientation.VERTICAL);
-
-            final Position north = nonNull(borderLayout.get(NORTH));
-            final Position south = nonNull(borderLayout.get(SOUTH));
-            final Position west = nonNull(borderLayout.get(WEST));
-            final Position east = nonNull(borderLayout.get(EAST));
-            final Position center = nonNull(borderLayout.get(CENTER));
-            final Position northWest = nonNull(borderLayout.get(NORTH_WEST));
-            final Position northEast = nonNull(borderLayout.get(NORTH_EAST));
-            final Position southEast = nonNull(borderLayout.get(SOUTH_EAST));
-            final Position southWest = nonNull(borderLayout.get(SOUTH_WEST));
-            final double westWidth = max(northWest.getWidth(), west.getWidth(), southWest.getWidth()) + HORIZONTAL_PADDING;
-            final double centerWidth = max(north.getWidth(), center.getWidth(), south.getWidth()) + HORIZONTAL_PADDING;
-            final double eastWidth = max(northEast.getWidth(), east.getWidth(), southEast.getWidth()) + HORIZONTAL_PADDING;
-
-            final double cx1 = 0.5 * westWidth;
-            final double cx2 = westWidth + 0.5 * centerWidth;
-            final double cx3 = westWidth + centerWidth + 0.5 * eastWidth;
-
-            final double northHeight = max(northEast.getHeight(), north.getHeight(), northWest.getHeight()) + VERTICAL_PADDING;
-            final double centerHeight = max(west.getHeight(), center.getHeight(), east.getHeight()) + VERTICAL_PADDING;
-            final double southHeight = max(southEast.getHeight(), south.getHeight(), southWest.getHeight()) + VERTICAL_PADDING;
-            final double cy1 = 0.5 * northHeight;
-            final double cy2 = northHeight + 0.5 * centerHeight;
-            final double cy3 = northHeight + centerHeight + 0.5 * southHeight;
-
-            northWest.setCenter(cx1, cy1);
-            north.setCenter(cx2, cy1);
-            northEast.setCenter(cx3, cy1);
-            west.setCenter(cx1, cy2);
-            center.setCenter(cx2, cy2);
-            east.setCenter(cx3, cy2);
-            southWest.setCenter(cx1, cy3);
-            south.setCenter(cx2, cy3);
-            southEast.setCenter(cx3, cy3);
-
-            borderLayout.union(center);
-            borderLayout.union(north);
-            borderLayout.union(south);
-            borderLayout.union(west);
-            borderLayout.union(east);
-            borderLayout.union(southEast);
-            borderLayout.union(southWest);
-            borderLayout.union(northEast);
-            borderLayout.union(northWest);
+            setChildrenPositions(borderLayout);
         } else {
-            if (orientation == Orientation.VERTICAL) vertical(borderLayout);
-            else horizontal(borderLayout);
+            setGlyphsPositions(borderLayout, orientation);
         }
         placeCompartment(borderLayout);
+    }
+
+    private void setChildrenPositions(BorderLayout borderLayout) {
+        setPositions(borderLayout.get(CENTER), Orientation.HORIZONTAL);
+        setPositions(borderLayout.get(NORTH), Orientation.HORIZONTAL);
+        setPositions(borderLayout.get(SOUTH), Orientation.HORIZONTAL);
+        setPositions(borderLayout.get(WEST), Orientation.VERTICAL);
+        setPositions(borderLayout.get(EAST), Orientation.VERTICAL);
+        setPositions(borderLayout.get(SOUTH_WEST), Orientation.VERTICAL);
+        setPositions(borderLayout.get(SOUTH_EAST), Orientation.VERTICAL);
+        setPositions(borderLayout.get(NORTH_EAST), Orientation.VERTICAL);
+        setPositions(borderLayout.get(NORTH_WEST), Orientation.VERTICAL);
+
+        final Position north = nonNull(borderLayout.get(NORTH));
+        final Position south = nonNull(borderLayout.get(SOUTH));
+        final Position west = nonNull(borderLayout.get(WEST));
+        final Position east = nonNull(borderLayout.get(EAST));
+        final Position center = nonNull(borderLayout.get(CENTER));
+        final Position northWest = nonNull(borderLayout.get(NORTH_WEST));
+        final Position northEast = nonNull(borderLayout.get(NORTH_EAST));
+        final Position southEast = nonNull(borderLayout.get(SOUTH_EAST));
+        final Position southWest = nonNull(borderLayout.get(SOUTH_WEST));
+        final double westWidth = max(northWest.getWidth(), west.getWidth(), southWest.getWidth()) + HORIZONTAL_PADDING;
+        final double centerWidth = max(north.getWidth(), center.getWidth(), south.getWidth()) + HORIZONTAL_PADDING;
+        final double eastWidth = max(northEast.getWidth(), east.getWidth(), southEast.getWidth()) + HORIZONTAL_PADDING;
+
+        final double cx1 = 0.5 * westWidth;
+        final double cx2 = westWidth + 0.5 * centerWidth;
+        final double cx3 = westWidth + centerWidth + 0.5 * eastWidth;
+
+        final double northHeight = max(northEast.getHeight(), north.getHeight(), northWest.getHeight()) + VERTICAL_PADDING;
+        final double centerHeight = max(west.getHeight(), center.getHeight(), east.getHeight()) + VERTICAL_PADDING;
+        final double southHeight = max(southEast.getHeight(), south.getHeight(), southWest.getHeight()) + VERTICAL_PADDING;
+
+        final double cy1 = 0.5 * northHeight;
+        final double cy2 = northHeight + 0.5 * centerHeight;
+        final double cy3 = northHeight + centerHeight + 0.5 * southHeight;
+
+        northWest.setCenter(cx1, cy1);
+        north.setCenter(cx2, cy1);
+        northEast.setCenter(cx3, cy1);
+        west.setCenter(cx1, cy2);
+        center.setCenter(cx2, cy2);
+        east.setCenter(cx3, cy2);
+        southWest.setCenter(cx1, cy3);
+        south.setCenter(cx2, cy3);
+        southEast.setCenter(cx3, cy3);
+
+        borderLayout.union(center);
+        borderLayout.union(north);
+        borderLayout.union(south);
+        borderLayout.union(west);
+        borderLayout.union(east);
+        borderLayout.union(southEast);
+        borderLayout.union(southWest);
+        borderLayout.union(northEast);
+        borderLayout.union(northWest);
     }
 
     private Position nonNull(Position position) {
         return position == null ? new Position() : position;
     }
 
+    private void setGlyphsPositions(BorderLayout borderLayout, Orientation orientation) {
+        if (orientation == Orientation.VERTICAL) {
+            vertical(borderLayout);
+        } else {
+            horizontal(borderLayout);
+        }
+    }
+
     private void vertical(BorderLayout borderLayout) {
         double h = 0;
         double w = 0;
         for (Glyph glyph : borderLayout.getGlyphs()) {
-            if (glyph.getPosition().getHeight() > h) h = glyph.getPosition().getHeight();
-            if (glyph.getPosition().getWidth() > w) w = glyph.getPosition().getWidth();
-            if (glyph instanceof ReactionGlyph) {
-                if (glyph.getPosition().getWidth() + 2 * BACKBONE_LENGTH > w)
-                    w = glyph.getPosition().getWidth() + 2 * BACKBONE_LENGTH;
-            }
+            final Position bounds = Transformer.getBounds(glyph);
+            if (bounds.getHeight() > h) h = bounds.getHeight();
+            if (bounds.getWidth() > w) w = bounds.getWidth();
         }
         h += VERTICAL_PADDING;
         final double x = 0.5 * w;
         final double y = 0.5 * h;
+        Position position = null;
         for (int i = 0; i < borderLayout.getGlyphs().size(); i++) {
             final Glyph glyph = borderLayout.getGlyphs().get(i);
-            final double x1 = glyph.getPosition().getX();
-            final double y1 = glyph.getPosition().getY();
-            glyph.getPosition().setCenter(x, y + i * h);
-            if (glyph instanceof EntityGlyph)
-                moveAttachments((EntityGlyph) glyph, glyph.getPosition().getX() - x1, glyph.getPosition().getY() - y1);
-            borderLayout.union(glyph.getPosition());
+            Transformer.center(glyph, new CoordinateImpl(x, y + i * h));
+            final Position bounds = Transformer.getBounds(glyph);
+            if (position == null) position = new Position(bounds);
+            else position.union(bounds);
         }
+        borderLayout.setX(position.getX());
+        borderLayout.setY(position.getY());
+        borderLayout.setWidth(position.getWidth());
+        borderLayout.setHeight(position.getHeight());
     }
 
     private void horizontal(BorderLayout borderLayout) {
         double h = 0;
         double w = 0;
         for (Glyph glyph : borderLayout.getGlyphs()) {
-            if (glyph.getPosition().getHeight() > h) h = glyph.getPosition().getHeight();
-            if (glyph.getPosition().getWidth() > w) w = glyph.getPosition().getWidth();
-            if (glyph instanceof ReactionGlyph) {
-                if (glyph.getPosition().getWidth() + 2 * BACKBONE_LENGTH > w)
-                    w = glyph.getPosition().getWidth() + 2 * BACKBONE_LENGTH;
-            }
+            final Position bounds = Transformer.getBounds(glyph);
+            if (bounds.getHeight() > h) h = bounds.getHeight();
+            if (bounds.getWidth() > w) w = bounds.getWidth();
         }
         w += HORIZONTAL_PADDING;
         final double x = 0.5 * w;
         final double y = 0.5 * h;
+        Position position = null;
         for (int i = 0; i < borderLayout.getGlyphs().size(); i++) {
             final Glyph glyph = borderLayout.getGlyphs().get(i);
-            final double x1 = glyph.getPosition().getX();
-            final double y1 = glyph.getPosition().getY();
-            glyph.getPosition().setCenter(x + i * w, y);
-            if (glyph instanceof EntityGlyph)
-                moveAttachments((EntityGlyph) glyph, glyph.getPosition().getX() - x1, glyph.getPosition().getY() - y1);
-            borderLayout.union(glyph.getPosition());
+            Transformer.center(glyph, new CoordinateImpl(x + i * w, y));
+            final Position bounds = Transformer.getBounds(glyph);
+            if (position == null) position = new Position(bounds);
+            else position.union(bounds);
         }
+        borderLayout.setX(position.getX());
+        borderLayout.setY(position.getY());
+        borderLayout.setWidth(position.getWidth());
+        borderLayout.setHeight(position.getHeight());
     }
 
     private void placeCompartment(BorderLayout borderLayout) {
@@ -336,13 +288,6 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
             }
             borderLayout.getCompartment().setLabelPosition(coordinate);
             borderLayout.getCompartment().setPosition(new Position(borderLayout));
-        }
-    }
-
-    private void moveAttachments(EntityGlyph glyph, double dx, double dy) {
-        if (glyph.getAttachments().isEmpty()) return;
-        for (AttachmentGlyph attachment : glyph.getAttachments()) {
-            attachment.getPosition().move(dx, dy);
         }
     }
 
@@ -459,7 +404,7 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getX() - BACKBONE_LENGTH;
         final double vRule = port - REACTION_MIN_H_DISTANCE + BACKBONE_LENGTH + reactionPosition.getWidth() + MIN_SEGMENT;
-        for (Glyph g : inputs) {
+        for (Glyph g : index.getInputs()) {
             final EntityGlyph entity = (EntityGlyph) g;
             final Position position = entity.getPosition();
             // is catalyst and input
@@ -507,7 +452,7 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getMaxX() + BACKBONE_LENGTH;
         final double vRule = port + REACTION_MIN_H_DISTANCE - BACKBONE_LENGTH - reactionPosition.getWidth() - MIN_SEGMENT;
-        for (Glyph g : outputs) {
+        for (Glyph g : index.getOutputs()) {
             final EntityGlyph entity = (EntityGlyph) g;
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
@@ -550,7 +495,7 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getCenterY();
         final double hRule = port - REACTION_MIN_V_DISTANCE;
-        for (Glyph g : catalysts) {
+        for (Glyph g : index.getCatalysts()) {
             final EntityGlyph entity = (EntityGlyph) g;
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
@@ -577,7 +522,7 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getMaxY();
         final double hRule = port + REACTION_MIN_V_DISTANCE;
-        for (Glyph g : regulators) {
+        for (Glyph g : index.getRegulators()) {
             final EntityGlyph entity = (EntityGlyph) g;
             final ConnectorImpl connector = new ConnectorImpl();
             final List<Segment> segments = new ArrayList<>();
@@ -611,49 +556,6 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
                 0.5 * (segment.getFrom().getX() + segment.getTo().getX()),
                 0.5 * (segment.getFrom().getY() + segment.getTo().getY())
         );
-    }
-
-    private void moveToOrigin(Layout layout) {
-        final double dx = -layout.getPosition().getX();
-        final double dy = -layout.getPosition().getY();
-        final CoordinateImpl delta = new CoordinateImpl(dx, dy);
-
-        layout.getPosition().move(dx, dy);
-        layout.getReaction().getPosition().move(dx, dy);
-
-        for (Segment segment : layout.getReaction().getSegments()) {
-            ((SegmentImpl) segment).setFrom(segment.getFrom().add(delta));
-            ((SegmentImpl) segment).setTo(segment.getTo().add(delta));
-        }
-
-        for (CompartmentGlyph compartment : layout.getCompartments()) {
-            compartment.getPosition().move(dx, dy);
-            compartment.setLabelPosition(compartment.getLabelPosition().add(delta));
-        }
-
-        for (EntityGlyph entity : layout.getEntities()) {
-            entity.getPosition().move(dx, dy);
-            for (AttachmentGlyph attachment : entity.getAttachments()) {
-                attachment.getPosition().move(dx, dy);
-            }
-            for (Segment segment : entity.getConnector().getSegments()) {
-                ((SegmentImpl) segment).setFrom(segment.getFrom().add(delta));
-                ((SegmentImpl) segment).setTo(segment.getTo().add(delta));
-            }
-            moveShape(delta, entity.getConnector().getEndShape());
-            if (entity.getConnector().getStoichiometry() != null) {
-                moveShape(delta, entity.getConnector().getStoichiometry().getShape());
-            }
-        }
-    }
-
-    private void moveShape(CoordinateImpl delta, Shape s) {
-        if (s != null) {
-            final ShapeImpl shape = (ShapeImpl) s;
-            if (shape.getA() != null) shape.setA(shape.getA().add(delta));
-            if (shape.getB() != null) shape.setB(shape.getB().add(delta));
-            if (shape.getC() != null) shape.setC(shape.getC().add(delta));
-        }
     }
 
     private void computeDimension(Layout layout) {
