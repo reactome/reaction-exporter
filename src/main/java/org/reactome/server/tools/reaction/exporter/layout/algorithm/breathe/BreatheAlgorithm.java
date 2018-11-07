@@ -426,7 +426,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                     reaction.getPosition().setCenter(x + reactionSep, 0);
                     for (EntityGlyph output : index.getOutputs()) move(output, x + reactionSep, 0);
                 }
-
             } else if (canMoveTo(index.getCatalysts(), reaction)) {
                 double y = 0;
                 for (CompartmentGlyph child : clashingCompartments)
@@ -513,35 +512,31 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final boolean biRole = entity.getRoles().size() > 1;
             final ConnectorImpl connector = createConnector(entity, layout.getReaction());
             final List<Segment> segments = connector.getSegments();
-            double y = biRole ? position.getCenterY() + 5 : position.getCenterY();
             // Input
             if (entity.getRenderableClass() == RenderableClass.GENE) {
                 // Genes need an extra segment from the arrow
                 segments.add(new SegmentImpl(position.getMaxX() + 8, position.getY(),
-                        position.getMaxX() + 30, y));
+                        position.getMaxX() + 30, position.getCenterY()));
                 segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getMaxX() + 30, y),
-                        new CoordinateImpl(vRule, y)));
+                        new CoordinateImpl(position.getMaxX() + 30, position.getCenterY()),
+                        new CoordinateImpl(vRule, position.getCenterY())));
                 segments.add(new SegmentImpl(
-                        new CoordinateImpl(vRule, y),
+                        new CoordinateImpl(vRule, position.getCenterY()),
                         new CoordinateImpl(port, reactionPosition.getCenterY())));
             } else {
                 segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getMaxX(), y),
-                        new CoordinateImpl(vRule, y)));
+                        new CoordinateImpl(position.getMaxX(), position.getCenterY()),
+                        new CoordinateImpl(vRule, position.getCenterY())));
                 segments.add(new SegmentImpl(
-                        new CoordinateImpl(vRule, y),
+                        new CoordinateImpl(vRule, position.getCenterY()),
                         new CoordinateImpl(port, reactionPosition.getCenterY())));
             }
             if (biRole) {
                 // Add catalyst segments
-                y = position.getCenterY() - 5;
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getMaxX(), y),
-                        new CoordinateImpl(vRule + 50, y)));
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(vRule + 50, y),
-                        new CoordinateImpl(reactionPosition.getCenterX(), reactionPosition.getCenterY())));
+                final double top = position.getY() - 5;
+                segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), top));
+                segments.add(new SegmentImpl(position.getCenterX(), top, vRule + 50, top));
+                segments.add(new SegmentImpl(vRule + 50, top, reactionPosition.getCenterX(), reactionPosition.getCenterY()));
                 connector.setPointer(ConnectorType.CATALYST);
             } else {
                 connector.setPointer(ConnectorType.INPUT);
@@ -757,7 +752,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     /**
      * Adds some extra spacing when no inputs or outputs are present
-     * @param layout
      */
     private void failedReactions(Layout layout) {
         if (index.getOutputs().isEmpty()) layout.getPosition().setWidth(layout.getPosition().getWidth() + 150);
