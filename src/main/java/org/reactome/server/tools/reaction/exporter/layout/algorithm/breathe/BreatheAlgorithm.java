@@ -255,9 +255,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     /**
      * This is a deep first recursive method, so the entities of the inner compartments are rendered first. Entities are
-     * placed top to bottom in the order of appearance in the list. All glyph share its <em>x</em> coordinate, depending
-     * on the level of the compartment and width of entities. The <em>y</em> coordinated is calculated as
-     * <code>y = -yOffset + i * heightPerGlyph</code>. Glyphs are centered at <em>(x,y)</em>
+     * placed top to bottom in the order of appearance in the list.
      *
      * @param compartment    current compartment
      * @param entities       list of sorted entities
@@ -279,7 +277,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 .collect(Collectors.toList());
         if (glyphs.isEmpty()) return new CoordinateImpl(COMPARTMENT_PADDING + startX, COMPARTMENT_PADDING + startY);
         if (compact && glyphs.size() > 6) {
-            return compact(heightPerGlyph, apply, startX, glyphs);
+            return compact(heightPerGlyph, apply, startX, startY, glyphs);
         } else {
             return oneRow(entities, heightPerGlyph, apply, startX, startY, glyphs);
         }
@@ -307,10 +305,10 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final double x = REACTION_MIN_H_DISTANCE + startX + 0.5 * width;
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
-            final double y = i * heightPerGlyph;
+            final double y = startY +  i * heightPerGlyph;
             apply.accept(glyph, new CoordinateImpl(x, y));
         }
-        return new CoordinateImpl(COMPARTMENT_PADDING + startX + width, COMPARTMENT_PADDING + startY);
+        return new CoordinateImpl(COMPARTMENT_PADDING + startX + width, COMPARTMENT_PADDING + startY + glyphs.size() * heightPerGlyph);
     }
 
     /**
@@ -322,7 +320,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * @param glyphs         list of entitites
      * @return the max x and y
      */
-    private Coordinate compact(double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply, double startX, List<EntityGlyph> glyphs) {
+    private Coordinate compact(double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply, double startX, double startY, List<EntityGlyph> glyphs) {
         // final int columns = (glyphs.size() - 1) / 6 + 1;
         final int columns = 2; // more columns do not improve height
         // the width of each column
@@ -467,7 +465,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private void followReactionInVertical(ReactionGlyph reaction, List<EntityGlyph> glyphs) {
         final List<EntityGlyph> canMove = glyphs.stream()
-                .filter(g -> nonChild(reaction.getCompartment(), g.getCompartment()))
+                .filter(g -> g.getCompartment() == reaction.getCompartment() || isChild(g.getCompartment(), reaction.getCompartment()))
                 .collect(Collectors.toList());
         if (canMove.isEmpty()) return;
         double miny = canMove.get(0).getPosition().getY();
@@ -480,7 +478,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private void followReactionInHorizontal(ReactionGlyph reaction, List<EntityGlyph> glyphs) {
         final List<EntityGlyph> canMove = glyphs.stream()
-                .filter(g -> nonChild(reaction.getCompartment(), g.getCompartment()))
+                .filter(g -> g.getCompartment() == reaction.getCompartment() || isChild(g.getCompartment(), reaction.getCompartment()))
                 .collect(Collectors.toList());
         if (canMove.isEmpty()) return;
         double minx = canMove.get(0).getPosition().getX();
@@ -506,20 +504,20 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      */
     private boolean clashes(ReactionGlyph reaction, CompartmentGlyph compartment) {
         return compartment != reaction.getCompartment()
-                && nonChild(compartment, reaction.getCompartment())
+                && !isChild(compartment, reaction.getCompartment())
                 && compartment.getPosition().intersects(reaction.getPosition());
     }
 
     /**
      * Test if child is a descendant of compartment.
      */
-    private boolean nonChild(CompartmentGlyph compartment, CompartmentGlyph child) {
+    private boolean isChild(CompartmentGlyph compartment, CompartmentGlyph child) {
         CompartmentGlyph parent = child.getParent();
         while (parent != null) {
-            if (parent == compartment) return false;
+            if (parent == compartment) return true;
             parent = parent.getParent();
         }
-        return true;
+        return false;
     }
 
     /**
@@ -547,7 +545,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             final Position position = entity.getPosition();
             // is catalyst and input
             final boolean biRole = entity.getRoles().size() > 1;
-            final ConnectorImpl connector = createConnector(entity, layout.getReaction());
+            final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
             // Input
             if (entity.getRenderableClass() == RenderableClass.GENE) {
@@ -587,11 +585,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         }
     }
 
-    private ConnectorImpl createConnector(EntityGlyph entity, ReactionGlyph reaction) {
+    private ConnectorImpl createConnector(EntityGlyph entity) {
         final ConnectorImpl connector = new ConnectorImpl();
-        connector.setEdgeId(reaction.getId());
-        connector.setDisease(reaction.isDisease() ? true : null);
-        connector.setFadeOut(entity.isFadeOut() ? true : null);
         final List<Segment> segments = new ArrayList<>();
         connector.setSegments(segments);
         entity.setConnector(connector);
@@ -617,7 +612,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final double mx = index.getOutputs().stream().map(Transformer::getBounds).mapToDouble(Position::getX).min().orElse(0);
         final double vRule = mx - MIN_SEGMENT - ARROW_SIZE;
         for (EntityGlyph entity : index.getOutputs()) {
-            final ConnectorImpl connector = createConnector(entity, layout.getReaction());
+            final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
             final Position position = entity.getPosition();
             segments.add(new SegmentImpl(
@@ -655,7 +650,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final double port = reactionPosition.getCenterY();
         final double hRule = port - REACTION_MIN_V_DISTANCE;
         for (EntityGlyph entity : index.getCatalysts()) {
-            final ConnectorImpl connector = createConnector(entity, layout.getReaction());
+            final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
             final Position position = entity.getPosition();
             segments.add(new SegmentImpl(
@@ -682,8 +677,10 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         // shapes without touching each other
         final double radius = reactionPosition.getHeight() / 2 + REGULATOR_SIZE * sectors / Math.PI;
         int i = 1;
-        for (EntityGlyph entity : index.getRegulators()) {
-            final ConnectorImpl connector = createConnector(entity, layout.getReaction());
+        final ArrayList<EntityGlyph> regulators = new ArrayList<>(index.getRegulators());
+        regulators.sort(Comparator.comparingDouble(v -> v.getPosition().getCenterX()));
+        for (EntityGlyph entity : regulators) {
+            final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
             final Position position = entity.getPosition();
             segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
