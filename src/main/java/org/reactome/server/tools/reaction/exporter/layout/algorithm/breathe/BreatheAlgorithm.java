@@ -324,7 +324,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      */
     private Coordinate compact(double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply, double startX, List<EntityGlyph> glyphs) {
         // final int columns = (glyphs.size() - 1) / 6 + 1;
-        final int columns = 2;
+        final int columns = 2; // more columns do not improve height
         // the width of each column
         final double[] ws = new double[columns];
         for (int i = 0; i < glyphs.size(); i++) {
@@ -419,6 +419,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 if (x != 0) {
                     reaction.getPosition().setCenter(x - reactionSep, 0);
                     for (EntityGlyph input : index.getInputs()) move(input, x - reactionSep, 0);
+                    followReactionInHorizontal(reaction, index.getCatalysts());
+                    followReactionInHorizontal(reaction, index.getRegulators());
                 }
             } else if (canMoveTo(index.getOutputs(), reaction)) {
                 double x = 0;
@@ -428,6 +430,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 if (x != 0) {
                     reaction.getPosition().setCenter(x + reactionSep, 0);
                     for (EntityGlyph output : index.getOutputs()) move(output, x + reactionSep, 0);
+                    followReactionInHorizontal(reaction, index.getCatalysts());
+                    followReactionInHorizontal(reaction, index.getRegulators());
                 }
             } else if (canMoveTo(index.getCatalysts(), reaction)) {
                 double y = 0;
@@ -463,7 +467,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private void followReactionInVertical(ReactionGlyph reaction, List<EntityGlyph> glyphs) {
         final List<EntityGlyph> canMove = glyphs.stream()
-                .filter(g -> !isChild(reaction.getCompartment(), g.getCompartment()))
+                .filter(g -> nonChild(reaction.getCompartment(), g.getCompartment()))
                 .collect(Collectors.toList());
         if (canMove.isEmpty()) return;
         double miny = canMove.get(0).getPosition().getY();
@@ -472,7 +476,19 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         for (final EntityGlyph glyph : canMove) {
             Transformer.move(glyph, 0, dy);
         }
+    }
 
+    private void followReactionInHorizontal(ReactionGlyph reaction, List<EntityGlyph> glyphs) {
+        final List<EntityGlyph> canMove = glyphs.stream()
+                .filter(g -> nonChild(reaction.getCompartment(), g.getCompartment()))
+                .collect(Collectors.toList());
+        if (canMove.isEmpty()) return;
+        double minx = canMove.get(0).getPosition().getX();
+        double maxx = canMove.get(canMove.size() - 1).getPosition().getMaxX();
+        final double dx = reaction.getPosition().getCenterX() - 0.5 * (maxx + minx);
+        for (final EntityGlyph glyph : canMove) {
+            Transformer.move(glyph, dx, 0);
+        }
     }
 
     /**
@@ -490,20 +506,20 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      */
     private boolean clashes(ReactionGlyph reaction, CompartmentGlyph compartment) {
         return compartment != reaction.getCompartment()
-                && !isChild(compartment, reaction.getCompartment())
+                && nonChild(compartment, reaction.getCompartment())
                 && compartment.getPosition().intersects(reaction.getPosition());
     }
 
     /**
      * Test if child is a descendant of compartment.
      */
-    private boolean isChild(CompartmentGlyph compartment, CompartmentGlyph child) {
+    private boolean nonChild(CompartmentGlyph compartment, CompartmentGlyph child) {
         CompartmentGlyph parent = child.getParent();
         while (parent != null) {
-            if (parent == compartment) return true;
+            if (parent == compartment) return false;
             parent = parent.getParent();
         }
-        return false;
+        return true;
     }
 
     /**
