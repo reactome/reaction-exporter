@@ -436,6 +436,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 if (y != 0) {
                     reaction.getPosition().setCenter(0, y - reactionSep);
                     for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y - reactionSep);
+                    followReactionInVertical(reaction, index.getInputs());
+                    followReactionInVertical(reaction, index.getOutputs());
                 }
             } else if (canMoveTo(index.getRegulators(), reaction)) {
                 double y = 0;
@@ -445,6 +447,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 if (y != 0) {
                     reaction.getPosition().setCenter(0, y + reactionSep);
                     for (EntityGlyph regulator : index.getRegulators()) move(regulator, 0, y + reactionSep);
+                    followReactionInVertical(reaction, index.getInputs());
+                    followReactionInVertical(reaction, index.getOutputs());
                 }
             }
         }
@@ -455,6 +459,20 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         reaction.getSegments().add(new SegmentImpl(
                 new CoordinateImpl(position.getMaxX(), position.getCenterY()),
                 new CoordinateImpl(position.getMaxX() + BACKBONE_LENGTH, position.getCenterY())));
+    }
+
+    private void followReactionInVertical(ReactionGlyph reaction, List<EntityGlyph> glyphs) {
+        final List<EntityGlyph> canMove = glyphs.stream()
+                .filter(g -> !isChild(reaction.getCompartment(), g.getCompartment()))
+                .collect(Collectors.toList());
+        if (canMove.isEmpty()) return;
+        double miny = canMove.get(0).getPosition().getY();
+        double maxy = canMove.get(canMove.size() - 1).getPosition().getMaxY();
+        final double dy = reaction.getPosition().getCenterY() - 0.5 * (maxy + miny);
+        for (final EntityGlyph glyph : canMove) {
+            Transformer.move(glyph, 0, dy);
+        }
+
     }
 
     /**
@@ -536,7 +554,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             }
             if (biRole) {
                 // Add catalyst segments
-                final double top = position.getY() - 5;
+                final double top = Math.min(position.getY(), reactionPosition.getY()) - 5;
                 segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), top));
                 segments.add(new SegmentImpl(position.getCenterX(), top, vRule + 50, top));
                 segments.add(new SegmentImpl(vRule + 50, top, reactionPosition.getCenterX(), reactionPosition.getCenterY()));

@@ -48,7 +48,7 @@ public class Transformer {
         move(glyph, new CoordinateImpl(dx, dy));
     }
 
-    private static void move(Glyph glyph, Coordinate delta) {
+    public static void move(Glyph glyph, Coordinate delta) {
         if (glyph instanceof EntityGlyph)
             move((EntityGlyph) glyph, delta);
         else if (glyph instanceof ReactionGlyph)
