@@ -160,7 +160,13 @@ public class EntityGlyph extends AbstractGlyph {
         this.compartment = compartment;
     }
 
-    public String getIdentifier(){
+    /*
+    In some cases, due to oddities in the curation, it could happen that the same entity (same stableidentifier) appears
+    more than once in the reaction with different roles AND in some cases crossed or dashed. This method has been put in
+    place in order to provide to the layout the data retrieved from the database.
+     */
+    @JsonIgnore
+    String getIdentifier(){
         return String.format("%s:%s:%s", getStId(), isCrossed(), isDashed());
     }
 
