@@ -84,12 +84,12 @@ public class Layout implements HasPosition {
         Map<String, EntityGlyph> entities = new HashMap<>();
 
         for (EntityGlyph participant : participants) {
-            EntityGlyph g = entities.get(participant.getStId());
+            EntityGlyph g = entities.get(participant.getIdentifier());
             if (g != null) {
                 //In this case participant ONLY has one role
                 g.addRole(participant.getRoles().iterator().next());
             } else {
-                entities.put(participant.getStId(), participant);
+                entities.put(participant.getIdentifier(), participant);
             }
         }
 

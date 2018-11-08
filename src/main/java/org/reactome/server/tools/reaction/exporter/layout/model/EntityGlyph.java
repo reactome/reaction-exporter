@@ -160,6 +160,10 @@ public class EntityGlyph extends AbstractGlyph {
         this.compartment = compartment;
     }
 
+    public String getIdentifier(){
+        return String.format("%s:%s:%s", getStId(), isCrossed(), isDashed());
+    }
+
     @Override
     public String toString() {
         return "EntityGlyph{" +
