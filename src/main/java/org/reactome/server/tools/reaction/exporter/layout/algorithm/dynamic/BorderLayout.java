@@ -23,7 +23,7 @@ final class BorderLayout extends Position {
      */
     private CompartmentGlyph compartment;
 
-    public BorderLayout() {
+    BorderLayout() {
     }
 
     public void add(Glyph glyph) {
@@ -38,11 +38,12 @@ final class BorderLayout extends Position {
         layoutMap.computeIfAbsent(place, p -> new BorderLayout()).add(glyph);
     }
 
-    public void set(Place place, BorderLayout borderLayout) {
-        layoutMap.put(place, borderLayout);
+    void set(Place place, BorderLayout borderLayout) {
+        if (borderLayout == null) layoutMap.remove(place);
+        else layoutMap.put(place, borderLayout);
     }
 
-    public List<Glyph> getGlyphs() {
+    List<Glyph> getGlyphs() {
         return glyphs;
     }
 
@@ -90,7 +91,7 @@ final class BorderLayout extends Position {
         move(x - getCenterX(), y - getCenterY());
     }
 
-    public boolean isEmpty() {
+    private boolean isEmpty() {
         return glyphs.isEmpty() && layoutMap.isEmpty();
     }
 
@@ -128,6 +129,10 @@ final class BorderLayout extends Position {
         final StringBuilder space = new StringBuilder();
         for (int i = 0; i < level; i++) space.append("    ");
         return space.toString();
+    }
+
+    Set<Place> getBusyPlaces() {
+        return layoutMap.keySet();
     }
 
 

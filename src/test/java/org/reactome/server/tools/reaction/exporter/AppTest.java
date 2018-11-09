@@ -37,7 +37,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 /**
  * Unit testing.
@@ -73,7 +73,7 @@ public class AppTest extends BaseTest {
 
     @Test
     public void findByDbIdTest() {
-        final Collection<String> identifiers = new HashSet<>(Arrays.asList(
+        final Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
                 "R-HSA-68947",
                 "R-HSA-69144",
                 "R-HSA-72107",
@@ -87,6 +87,9 @@ public class AppTest extends BaseTest {
                 "R-HSA-1220614",
                 "R-HSA-1247999",
                 "R-HSA-1362408",
+                "R-HSA-1368140",
+                "R-HSA-1592234",
+                "R-HSA-1592252",
                 "R-HSA-1592238",
                 "R-HSA-1839031",
                 "R-HSA-1839039",
@@ -157,15 +160,21 @@ public class AppTest extends BaseTest {
                 "R-HSA-5602383",
                 "R-HSA-5602549",
                 "R-HSA-5602606",
+                "R-HSA-5607838",
                 "R-HSA-5617820",
+                "R-HSA-5623513",
+                "R-HSA-5623521",
+                "R-HSA-5638014",
                 "R-HSA-5638137",
                 "R-HSA-5654544",
                 "R-HSA-5654545",
                 "R-HSA-5683209",
+                "R-HSA-5688025",
                 "R-HSA-6785722",
                 "R-HSA-6787403",
                 "R-HSA-6791221",
                 "R-HSA-6791223",
+                "R-HSA-6797568",
                 "R-HSA-6802912",
                 "R-HSA-6802914",
                 "R-HSA-6802925",
@@ -187,16 +196,19 @@ public class AppTest extends BaseTest {
                 "R-HSA-8853325",
                 "R-HSA-8948146",
                 "R-HSA-8948832",
+                "R-HSA-8949609",
                 "R-HSA-9013533",
                 "R-HSA-9015379",
                 "R-HSA-9036025",
-                "R-HSA-9036056",
-                "R-MMU-8851711",
-                "R-MMU-9005872",
-                "R-NUL-9005752",
-                "R-NUL-9606338"
+                "R-HSA-9036056"
+                // These throw IndexOutOfBoundsException
+                // "R-MMU-8851711",
+                // "R-MMU-9005872",
+                // "R-NUL-9005752",
+                // "R-NUL-9606338"
         ));
 //        final AnalysisStoredResult result = new TokenUtils("/home/plorente/resources/reactome/v66/analysis").getFromToken("MjAxODEwMDQxMDA3MDhfMw%253D%253D");
+        System.out.println(identifiers.size() + " diagrams");
         final long start = System.nanoTime();
         for (String stId : identifiers) convert(stId);
         final long elapsed = System.nanoTime() - start;
@@ -211,13 +223,13 @@ public class AppTest extends BaseTest {
             final String pStId = rle.getEventOf().get(0).getStId();
 
             final LayoutFactory layoutFactory = new LayoutFactory(ads);
-            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.COMPACT);
+            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BREATHE);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
             final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);
             final Graph graph = graphFactory.getGraph(rle, layout);
 
-            // runTest(diagram);
+            // runTest(stId, diagram);
             // printJsons(diagram, graph, layout);
             savePng(stId, pStId, diagram, graph);
             // saveSbgn(stId, diagram);
@@ -239,9 +251,8 @@ public class AppTest extends BaseTest {
         }
     }
 
-    private void runTest(Diagram diagram) {
-        new DiagramTest(diagram).printResults(DiagramTest.Level.WARNING);
-        System.out.println();
+    private void runTest(String stId, Diagram diagram) {
+        new DiagramTest(diagram).printResults(DiagramTest.Level.WARNING, stId);
     }
 
     private void savePptx(Diagram diagram) throws DiagramProfileException, DiagramJsonDeserializationException {

@@ -5,6 +5,7 @@ import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BreatheAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic.DynamicAlgorithm;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.grid.GridAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -111,7 +112,8 @@ public class LayoutFactory {
     public enum Style {
         COMPACT(layout -> new BreatheAlgorithm().compute(layout, true)),
         BREATHE(layout -> new BreatheAlgorithm().compute(layout)),
-        DYNAMIC(layout -> new DynamicAlgorithm().compute(layout));
+        DYNAMIC(layout -> new DynamicAlgorithm().compute(layout)),
+        GRID(layout -> new GridAlgorithm().compute(layout));
         private Consumer<Layout> consumer;
 
         Style(Consumer<Layout> consumer) {

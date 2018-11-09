@@ -115,8 +115,9 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
         index = new LayoutIndex(layout);
         for (EntityGlyph entity : layout.getEntities()) Transformer.setSize(entity);
         Transformer.setSize(layout.getReaction());
+
         final BorderLayout borderLayout = BorderLayoutFactory.get(layout);
-//        borderLayout.print();
+
         setPositions(borderLayout, Orientation.HORIZONTAL);
         layoutConnectors(layout);
         computeDimension(layout);
@@ -441,7 +442,7 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
             connector.setEdgeId(layout.getReaction().getId());
             final Position position = entity.getPosition();
             for (Role role : entity.getRoles()) {
-                segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), reactionPosition.getCenterX(), port));
+                segments.add(new SegmentImpl(position.getCenterX(), position.getY(), reactionPosition.getCenterX(), port));
 //                segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
 //                segments.add(new SegmentImpl(position.getCenterX(), hRule, reactionPosition.getCenterX(), port));
                 connector.setStoichiometry(getStoichiometry(segments, role));
