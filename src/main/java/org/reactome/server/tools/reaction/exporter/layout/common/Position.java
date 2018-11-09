@@ -16,6 +16,17 @@ public class Position {
 
     public Position(){}
 
+    public Position(double x, double y, double width, double height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.cx = x + 0.5 * width;
+        this.cy = y + 0.5 * height;
+        this.mx = x + width;
+        this.my = y + height;
+    }
+
     public Position(Position position) {
         this.x = position.x;
         this.y = position.y;
@@ -116,6 +127,13 @@ public class Position {
         setY(minY);
         setWidth(maxX - minX);
         setHeight(maxY - minY);
+    }
+
+    public void set(Position position) {
+        this.x = position.x;
+        this.y = position.y;
+        setWidth(position.width);
+        setHeight(position.height);
     }
 
     @Override

@@ -244,4 +244,21 @@ public class Transformer {
             }
         }
     }
+
+    public static Position padd(Position position, double padding) {
+        return new Position(
+                position.getX() - padding,
+                position.getY() - padding,
+                position.getWidth() + 2 * padding,
+                position.getHeight() + 2 * padding);
+    }
+
+    public static Position padd(Position position, double horizontal, double vertical ){
+        return new Position(
+                position.getX() - horizontal,
+                position.getY() - vertical,
+                position.getWidth() + 2 * horizontal,
+                position.getHeight() + 2 * vertical);
+    }
+
 }

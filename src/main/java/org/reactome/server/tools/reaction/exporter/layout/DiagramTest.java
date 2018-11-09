@@ -106,10 +106,10 @@ public class DiagramTest {
     }
 
     public void printResults() {
-        printResults(Level.PASSED);
+        printResults(Level.PASSED, diagram.getStableId());
     }
 
-    public void printResults(Level minLevel) {
+    public void printResults(Level minLevel, String name) {
         this.minLevel = minLevel;
         runTests();
         final int totalTests = logs.values().stream().mapToInt(List::size).sum();
@@ -119,7 +119,7 @@ public class DiagramTest {
                 .mapToInt(List::size)
                 .count();
         if (toPrint > 0) {
-            System.out.printf("Diagram %s %n", diagram.getStableId());
+            System.out.println(name);
             System.out.printf(" - %d tests run%n", totalTests);
         }
         logs.forEach((level, messages) -> {
