@@ -34,6 +34,7 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRo
  * does not belong to. In that case, it is moved to a safer position. In order of priority, it's moved towards inputs,
  * if not possible towards outputs, then catalysts and regulators.
  */
+@SuppressWarnings("Duplicates")
 public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private static final int COLUMN_PADDING = 20;
@@ -243,7 +244,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         if (compact && glyphs.size() > 6) {
             return compact(heightPerGlyph, apply, startX, startY, glyphs);
         } else {
-            return oneRow(entities, heightPerGlyph, apply, startX, startY, glyphs);
+            return oneRow(entities, heightPerGlyph, apply, startX, glyphs);
         }
     }
 
@@ -254,11 +255,10 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * @param heightPerGlyph vertical space for nodes
      * @param apply          function to transform the coordinates at the end
      * @param startX         x coordinate to be the minimum x for the compartment
-     * @param startY         y coordinate to be the minimum y for the compartment
      * @param glyphs         list of glyphs that fit in this compartment
      * @return a coordinate with the max x and y after laying out all glyphs
      */
-    private Coordinate oneRow(List<EntityGlyph> entities, double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply, double startX, double startY, List<EntityGlyph> glyphs) {
+    private Coordinate oneRow(List<EntityGlyph> entities, double heightPerGlyph, BiConsumer<EntityGlyph, Coordinate> apply, double startX, List<EntityGlyph> glyphs) {
         double width = MIN_GLYPH_WIDTH;
         for (EntityGlyph entity : entities) {
             final Position bounds = getBounds(entity);
@@ -269,10 +269,10 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         final double x = REACTION_MIN_H_DISTANCE + startX + 0.5 * width;
         for (EntityGlyph glyph : glyphs) {
             final int i = entities.indexOf(glyph);
-            final double y = startY + i * heightPerGlyph;
+            final double y = i * heightPerGlyph;
             apply.accept(glyph, new CoordinateImpl(x, y));
         }
-        return new CoordinateImpl(COMPARTMENT_PADDING + startX + width, COMPARTMENT_PADDING + startY + glyphs.size() * heightPerGlyph);
+        return new CoordinateImpl(COMPARTMENT_PADDING + startX + width, COMPARTMENT_PADDING + glyphs.size() * heightPerGlyph);
     }
 
     /**
@@ -543,7 +543,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             // We expect to have stoichiometry only in input role
             for (Role role : entity.getRoles())
                 if (role.getType() == INPUT) {
-                    connector.setStoichiometry(getStoichiometry(segments, role));
+                    connector.setStoichiometry(getStoichiometry(role, segments.get(0)));
                     break;
                 }
         }
@@ -588,7 +588,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             // only one role expected: OUTPUT
             for (Role role : entity.getRoles()) {
                 connector.setPointer(getConnectorType(role.getType()));
-                connector.setStoichiometry(getStoichiometry(segments, role));
+                connector.setStoichiometry(getStoichiometry(role, segments.get(0)));
             }
         }
     }
@@ -625,7 +625,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                     new CoordinateImpl(reactionPosition.getCenterX(), port)));
             // only one role expected: CATALYST
             for (Role role : entity.getRoles()) {
-                connector.setStoichiometry(getStoichiometry(segments, role));
+                connector.setStoichiometry(getStoichiometry(role, segments.get(0)));
                 connector.setType(role.getType().name());
                 connector.setPointer(getConnectorType(role.getType()));
             }
@@ -653,7 +653,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
             segments.add(new SegmentImpl(position.getCenterX(), hRule, x, y));
             // Only one role expected (negative or positive)
             for (Role role : entity.getRoles()) {
-                connector.setStoichiometry(getStoichiometry(segments, role));
+                connector.setStoichiometry(getStoichiometry(role, segments.get(0)));
                 connector.setPointer(getConnectorType(role.getType()));
             }
             i++;
@@ -663,10 +663,9 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     /**
      * Creates the stoichiometry box in the first segment.
      */
-    private Stoichiometry getStoichiometry(List<Segment> segments, Role role) {
+    private Stoichiometry getStoichiometry(Role role, Segment segment) {
         if (role.getStoichiometry() == 1)
             return new StoichiometryImpl(1, null);
-        final Segment segment = segments.get(0);
         final Coordinate center = center(segment);
         final Coordinate a = new CoordinateImpl(center.getX() - 6, center.getY() - 6);
         final Coordinate b = new CoordinateImpl(center.getX() + 6, center.getY() + 6);

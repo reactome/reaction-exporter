@@ -1,5 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
 
+import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
@@ -90,6 +91,8 @@ public class LayoutIndex {
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
                 .thenComparing(EntityGlyph::getName));
+
+        catalysts.removeIf(entityGlyph -> entityGlyph.getRoles().stream().anyMatch(role -> role.getType() == EntityRole.INPUT));
     }
 
     public List<EntityGlyph> getCatalysts() {
