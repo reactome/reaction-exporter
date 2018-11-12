@@ -63,7 +63,7 @@ public class GridAlgorithm implements LayoutAlgorithm {
     /**
      * Vertical (y-axis) distance between two glyphs.
      */
-    private static final double VERTICAL_PADDING = 4;
+    private static final double VERTICAL_PADDING = 12;
     /**
      * Horizontal (x-axis) distance between two glyphs.
      */
@@ -75,27 +75,28 @@ public class GridAlgorithm implements LayoutAlgorithm {
     /**
      * Minimum horizontal distance between any glyph and the reaction glyph
      */
-    private static final double REACTION_MIN_H_DISTANCE = 200;
-    /**
-     * Order in which nodes should be placed depending on their {@link RenderableClass}
-     */
-    private static final List<RenderableClass> CLASS_ORDER = Arrays.asList(
-            RenderableClass.PROCESS_NODE,
-            RenderableClass.ENCAPSULATED_NODE,
-            RenderableClass.COMPLEX,
-            RenderableClass.ENTITY_SET,
-            RenderableClass.PROTEIN,
-            RenderableClass.RNA,
-            RenderableClass.CHEMICAL,
-            RenderableClass.GENE,
-            RenderableClass.ENTITY);
+    private static final double REACTION_MIN_H_DISTANCE = 120;
     /**
      * Comparator that puts false (and null) elements before true elements.
      */
     private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
     private static final Comparator<Boolean> TRUE_FIRST = Comparator.nullsLast((o1, o2) -> o1.equals(o2) ? 0 : o1 ? -1 : 1);
+    private static final Comparator<CompartmentGlyph> OUTER_FIRST = (o1, o2) -> {
+        if (isDescendant(o1, o2)) return -1;
+        else if (isDescendant(o2, o1)) return 1;
+        return 0;
+    };
     private static final double ARROW_SIZE = 8;
     private LayoutIndex index;
+
+    private static boolean isDescendant(CompartmentGlyph root, CompartmentGlyph compartment) {
+        CompartmentGlyph parent = compartment.getParent();
+        while (parent != null) {
+            if (parent == root) return true;
+            parent = parent.getParent();
+        }
+        return false;
+    }
 
     @Override
     public void compute(Layout layout) {
@@ -103,20 +104,29 @@ public class GridAlgorithm implements LayoutAlgorithm {
         index = new LayoutIndex(layout);
         layoutParticipants(layout);
         layoutCompartments(layout);
-        // we need to recalculate compartment positions if reaction has been moved
-        // layoutCompartments(layout);
         layoutConnectors(layout);
         removeExtracellular(layout);
         computeDimension(layout);
         moveToOrigin(layout);
     }
 
-    private List<CompartmentGlyph> order(Layout layout) {
-        final List<CompartmentGlyph> compartments = flattenCompartments(layout.getCompartmentRoot());
+    private List<CompartmentGlyph> getVerticallyOrderedCompartments(Layout layout) {
+        final List<CompartmentGlyph> compartments = new ArrayList<>(layout.getCompartments());
         compartments.sort((o1, o2) -> Comparator
                 .comparing(((CompartmentGlyph cg) -> containsRole(cg, CATALYST)), TRUE_FIRST)
                 .thenComparing(cg -> containsRole(cg, NEGATIVE_REGULATOR), FALSE_FIRST)
                 .thenComparing(cg -> containsRole(cg, POSITIVE_REGULATOR), FALSE_FIRST)
+                .thenComparing(OUTER_FIRST)
+                .compare(o1, o2));
+        return compartments;
+    }
+
+    private List<CompartmentGlyph> getHorizontallyOrderedCompartments(Layout layout) {
+        final List<CompartmentGlyph> compartments = new ArrayList<>(layout.getCompartments());
+        compartments.sort((o1, o2) -> Comparator
+                .comparing(((CompartmentGlyph cg) -> containsRole(cg, INPUT)), TRUE_FIRST)
+                .thenComparing(cg -> containsRole(cg, OUTPUT), FALSE_FIRST)
+                .thenComparing(OUTER_FIRST)
                 .compare(o1, o2));
         return compartments;
     }
@@ -135,89 +145,137 @@ public class GridAlgorithm implements LayoutAlgorithm {
     }
 
     private void layoutParticipants(Layout layout) {
+        Map<CompartmentGlyph, Map<EntityRole, Tile>> board = new HashMap<>();
+
+        // Currently this method cannot be split into submethods since it uses several codependent variables
         for (EntityGlyph entity : layout.getEntities()) setSize(entity);
 
-        // We are going to use the empty position several times: we can reuse this one
-        final Position empty = new Position();
-
         // We will layout by row, every row is a compartment
-        final List<CompartmentGlyph> compartments = order(layout);
+        final List<CompartmentGlyph> verticalCompartments = getVerticallyOrderedCompartments(layout);
+        int row = 0;
 
-        // Keep track of groups of glyphs
-        final List<List<List<? extends Glyph>>> matrix = new ArrayList<>();
-        // Compute bounds of each group
-        final List<List<Position>> bounds = new ArrayList<>();
-        for (final CompartmentGlyph compartment : compartments) {
-            // top down: CA, IN/R/OUT, REG
-            final List<EntityGlyph> catalysts = index.getCatalysts().stream()
+        // catalysts
+        for (final CompartmentGlyph compartment : verticalCompartments) {
+            final List<Glyph> catalysts = index.getCatalysts().stream()
                     .filter(entityGlyph -> entityGlyph.getCompartment() == compartment)
                     .collect(Collectors.toList());
-            catalysts.removeIf(entityGlyph -> hasRole(entityGlyph, INPUT));
             final Position c = horizontal(catalysts);
-            final List<EntityGlyph> inputs = index.getInputs().stream()
+            if (!catalysts.isEmpty()) {
+                final Tile tile = board.computeIfAbsent(compartment, comp -> new HashMap<>())
+                        .computeIfAbsent(CATALYST, r -> new Tile(catalysts, c));
+                tile.row = row++;
+            }
+        }
+        // inputs, outputs, reaction
+        for (final CompartmentGlyph compartment : verticalCompartments) {
+            final List<Glyph> inputs = index.getInputs().stream()
                     .filter(entityGlyph -> entityGlyph.getCompartment() == compartment)
                     .collect(Collectors.toList());
             final Position i = vertical(inputs);
-            final List<EntityGlyph> outputs = index.getOutputs().stream()
+            if (!inputs.isEmpty()) {
+                final Tile tile = board.computeIfAbsent(compartment, comp -> new HashMap<>())
+                        .computeIfAbsent(INPUT, r -> new Tile(inputs, i));
+                tile.row = row;
+            }
+            final List<Glyph> outputs = index.getOutputs().stream()
                     .filter(entityGlyph -> entityGlyph.getCompartment() == compartment)
                     .collect(Collectors.toList());
             final Position o = vertical(outputs);
-            final List<EntityGlyph> regulators = index.getRegulators().stream()
+            if (!outputs.isEmpty()) {
+                final Tile tile = board.computeIfAbsent(compartment, comp -> new HashMap<>())
+                        .computeIfAbsent(OUTPUT, r -> new Tile(outputs, o));
+                tile.row = row;
+            }
+            final List<Glyph> reaction = new ArrayList<>();
+            if (layout.getReaction().getCompartment() == compartment) {
+                final Position r = reaction(layout.getReaction());
+                reaction.add(layout.getReaction());
+                final Tile tile = board.computeIfAbsent(compartment, comp -> new HashMap<>())
+                        .computeIfAbsent(NEGATIVE_REGULATOR, role -> new Tile(reaction, r));
+                tile.row = row;
+            }
+            if (!inputs.isEmpty() || !outputs.isEmpty() || !reaction.isEmpty()) row++;
+        }
+        // regulators
+        Collections.reverse(verticalCompartments);
+        for (final CompartmentGlyph compartment : verticalCompartments) {
+            final List<Glyph> regulators = index.getRegulators().stream()
                     .filter(entityGlyph -> entityGlyph.getCompartment() == compartment)
                     .collect(Collectors.toList());
             final Position reg = horizontal(regulators);
-            Position r = new Position();
-            final List<Glyph> reaction = new ArrayList<>();
-            if (layout.getReaction().getCompartment() == compartment) {
-                r = reaction(layout.getReaction());
-                reaction.add(layout.getReaction());
-            }
-            if (!catalysts.isEmpty()) {
-                matrix.add(Arrays.asList(Collections.emptyList(), catalysts, Collections.emptyList()));
-                bounds.add(Arrays.asList(empty, c, empty));
-            }
-            matrix.add(Arrays.asList(inputs, reaction, outputs));
-            bounds.add(Arrays.asList(i, r, o));
             if (!regulators.isEmpty()) {
-                matrix.add(Arrays.asList(Collections.emptyList(), regulators, Collections.emptyList()));
-                bounds.add(Arrays.asList(empty, reg, empty));
+                final Tile tile = board.computeIfAbsent(compartment, comp -> new HashMap<>())
+                        .computeIfAbsent(POSITIVE_REGULATOR, role -> new Tile(regulators, reg));
+                tile.row = row++;
             }
+        }
+        // inputs
+        final List<CompartmentGlyph> horizontalCompartments = getHorizontallyOrderedCompartments(layout);
+        int column = 0;
+        for (final CompartmentGlyph compartment : horizontalCompartments) {
+            final Tile tile = board.getOrDefault(compartment, Collections.emptyMap()).get(INPUT);
+            if (tile != null) tile.column = column++;
+        }
+        for (final CompartmentGlyph compartment : horizontalCompartments) {
+            final Tile cat = board.getOrDefault(compartment, Collections.emptyMap()).get(CATALYST);
+            if (cat != null) cat.column = column;
+            final Tile react = board.getOrDefault(compartment, Collections.emptyMap()).get(NEGATIVE_REGULATOR); // reaction
+            if (react != null) react.column = column;
+            final Tile reg = board.getOrDefault(compartment, Collections.emptyMap()).get(POSITIVE_REGULATOR);
+            if (reg != null) reg.column = column;
+            if (cat != null || react != null || reg != null) column++;
+        }
+        Collections.reverse(horizontalCompartments);
+        for (final CompartmentGlyph compartment : horizontalCompartments) {
+            final Tile tile = board.getOrDefault(compartment, Collections.emptyMap()).get(OUTPUT);
+            if (tile != null) tile.column = column++;
         }
 
-        // Compute overall widths
-        double[] ws = new double[3];
+        final Tile[][] tiling = new Tile[row][column];
+        board.forEach((comp, tileMap) -> tileMap.forEach((role, tile) -> {
+            tiling[tile.row][tile.column] = tile;
+        }));
+        setPositions((tiling));
+
+    }
+
+    private void setPositions(Tile[][] tiles) {
+        // Compute overall widths and heights to center elements
+        int rows = tiles.length;
+        int cols = tiles[0].length;
+        double[] ws = new double[cols];
+        double[] hs = new double[rows];
         Arrays.fill(ws, 0);
-        for (int i = 0; i < matrix.size(); i++) {
-            for (int j = 0; j < 3; j++) {
-                final double width = bounds.get(i).get(j).getWidth();
-                if (width > ws[j]) ws[j] = width;
+        Arrays.fill(hs, 0);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                final Tile tile = tiles[r][c];
+                if (tile != null) {
+                    if (tile.bounds.getWidth() > ws[c]) ws[c] = tile.bounds.getWidth();
+                    if (tile.bounds.getHeight() > hs[r]) hs[r] = tile.bounds.getHeight();
+                }
             }
         }
-        //
         double y = 0;
-        for (int i = 0; i < matrix.size(); i++) {
-            // Compute max height
-            double height = 0;
-            for (int j = 0; j < 3; j++) {
-                if (bounds.get(i).get(j).getHeight() > height)
-                    height = bounds.get(i).get(j).getHeight();
-            }
-            // Center the 3 groups at height
-            height += 2 * VERTICAL_PADDING;
-            double cy = y + 0.5 * height;
+        for (int r = 0; r < rows; r++) {
+            final double cy = y + 0.5 * hs[r];
             double x = 0;
-            for (int j = 0; j < 3; j++) {
-                final Position position = bounds.get(i).get(j);
-                double cx = x + 0.5 * ws[j];
-                double dx = cx - position.getCenterX();
-                double dy = cy - position.getCenterY();
-                final CoordinateImpl delta = new CoordinateImpl(dx, dy);
-                for (final Glyph glyph : matrix.get(i).get(j)) {
-                    Transformer.move(glyph, delta);
+            for (int c = 0; c < cols; c++) {
+                final Tile tile = tiles[r][c];
+                if (tile != null) {
+                    double cx = x + 0.5 * ws[c];
+                    final Position position = tile.getBounds();
+                    double dx = cx - position.getCenterX();
+                    double dy = cy - position.getCenterY();
+                    final CoordinateImpl delta = new CoordinateImpl(dx, dy);
+                    for (final Glyph glyph : tile.getGlyphs()) {
+                        Transformer.move(glyph, delta);
+                    }
+
                 }
-                x += ws[j];
+                x += ws[c];
             }
-            y += height;
+            y += hs[r];
         }
     }
 
@@ -231,15 +289,15 @@ public class GridAlgorithm implements LayoutAlgorithm {
         reaction.getSegments().add(new SegmentImpl(
                 position.getMaxX(), position.getCenterY(),
                 position.getMaxX() + BACKBONE_LENGTH, position.getCenterY()));
-        return Transformer.padd(Transformer.getBounds(reaction), 200, 100);
+        return Transformer.padd(Transformer.getBounds(reaction), REACTION_MIN_H_DISTANCE, REACTION_MIN_V_DISTANCE);
     }
 
-    private Position horizontal(List<EntityGlyph> glyphs) {
+    private Position horizontal(List<Glyph> glyphs) {
         if (glyphs.isEmpty()) return new Position();
         final double height = glyphs.stream().map(Transformer::getBounds).mapToDouble(Position::getHeight).max().orElse(MIN_GLYPH_HEIGHT);
         final double y = 0.5 * (height + VERTICAL_PADDING);
         double x = 0;
-        for (final EntityGlyph glyph : glyphs) {
+        for (final Glyph glyph : glyphs) {
             final double width = Transformer.getBounds(glyph).getWidth();
             Transformer.center(glyph, new CoordinateImpl(x + 0.5 * (HORIZONTAL_PADDING + width), y));
             x += HORIZONTAL_PADDING + width;
@@ -247,12 +305,13 @@ public class GridAlgorithm implements LayoutAlgorithm {
         return Transformer.padd(new Position(0d, 0d, x, height + VERTICAL_PADDING), COMPARTMENT_PADDING);
     }
 
-    private Position vertical(List<EntityGlyph> glyphs) {
+    private Position vertical(List<Glyph> glyphs) {
+        if (glyphs.size() > 6) return layoutInTwoColumns(glyphs);
         if (glyphs.isEmpty()) return new Position();
         final double width = glyphs.stream().map(Transformer::getBounds).mapToDouble(Position::getWidth).max().orElse(MIN_GLYPH_WIDTH);
         final double x = 0.5 * (width + HORIZONTAL_PADDING);
         double y = 0;
-        for (final EntityGlyph glyph : glyphs) {
+        for (final Glyph glyph : glyphs) {
             final double height = Transformer.getBounds(glyph).getHeight();
             Transformer.center(glyph, new CoordinateImpl(x, y + 0.5 * (VERTICAL_PADDING + height)));
             y += VERTICAL_PADDING + height;
@@ -260,6 +319,65 @@ public class GridAlgorithm implements LayoutAlgorithm {
         return Transformer.padd(new Position(0d, 0d, width + HORIZONTAL_PADDING, y), COMPARTMENT_PADDING);
     }
 
+    private Position layoutInTwoColumns(List<Glyph> glyphs) {
+        // the width of each column
+        final int columns = 2;
+        double[] widths = new double[columns];
+        Arrays.fill(widths, 0);
+        for (int i = 0; i < glyphs.size(); i++) {
+            final double width = getBounds(glyphs.get(i)).getWidth();
+            final int j = i % columns;
+            if (width > widths[j]) widths[j] = width;
+        }
+        // the x for each column (the center)
+        final double[] xs = new double[columns];
+        Arrays.fill(xs, 0);
+        xs[0] = 0.5 * widths[0];
+        for (int i = 1; i < columns; i++) {
+            xs[i] = xs[i - 1] + 0.5 * widths[i - 1] + 0.5 * widths[i] + COLUMN_PADDING;
+        }
+        final double height = glyphs.stream().map(Transformer::getBounds).mapToDouble(Position::getHeight).max().orElse(MIN_GLYPH_HEIGHT);
+        final double step = 0.5 * (height + VERTICAL_PADDING);
+        final Position limits = new Position();
+        double y = 0;
+        for (int i = 0; i < glyphs.size(); i++) {
+            final Glyph glyph = glyphs.get(i);
+            y += step;
+            final double x = xs[i % columns];
+            Transformer.center(glyph, new CoordinateImpl(x, y));
+            limits.union(Transformer.getBounds(glyph));
+        }
+        return limits;
+    }
+
+    private Tile[][] compact(Tile[][] tiling) {
+        final List<Tile[]> tiles = new ArrayList<>();
+        Collections.addAll(tiles, tiling);
+        // Compact by row
+        int row = 1;
+        int deleted = 0;
+        while (row < tiles.size()) {
+            boolean canMerge = true;
+            for (int col = 0; col < tiling[row].length; col++) {
+                if (tiles.get(row - 1)[col] != null && tiles.get(row)[col] != null) {
+                    canMerge = false;
+                    break;
+                }
+            }
+            if (canMerge) {
+                for (int col = 0; col < tiles.get(row).length; col++)
+                    if (tiles.get(row - 1)[col] == null && tiles.get(row)[col] != null)
+                        tiles.get(row - 1)[col] = tiles.get(row)[col];
+                tiles.remove(row);
+            } else row++;
+            deleted++;
+        }
+        // // Make a copy removing unnecessary rows
+        // Tile[][] tiles = new Tile[tiling.length - deleted][tiling[0].length];
+        // System.arraycopy(tiling, 0, tiles, 0, row - deleted);
+
+        return tiles.toArray(new Tile[tiles.size()][]);
+    }
 
     private void layoutConnectors(Layout layout) {
         inputConnectors(layout);
@@ -327,18 +445,6 @@ public class GridAlgorithm implements LayoutAlgorithm {
         return connector;
     }
 
-    /**
-     * Flattens the compartment tree, putting the outermost ones at the beginning. root is always the first
-     */
-    private List<CompartmentGlyph> flattenCompartments(CompartmentGlyph compartment) {
-        final List<CompartmentGlyph> order = new ArrayList<>();
-        order.add(compartment);
-        for (final CompartmentGlyph child : compartment.getChildren()) {
-            order.addAll(flattenCompartments(child));
-        }
-        return order;
-    }
-
 
     private void outputConnectors(Layout layout) {
         final Position reactionPosition = layout.getReaction().getPosition();
@@ -382,7 +488,8 @@ public class GridAlgorithm implements LayoutAlgorithm {
     private void catalystConnectors(Layout layout) {
         final Position reactionPosition = layout.getReaction().getPosition();
         final double port = reactionPosition.getCenterY();
-        final double hRule = port - REACTION_MIN_V_DISTANCE;
+        double my = index.getCatalysts().stream().map(Transformer::getBounds).mapToDouble(Position::getMaxY).max().orElse(0);
+        final double hRule = my + MIN_SEGMENT;
         for (EntityGlyph entity : index.getCatalysts()) {
             final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
@@ -404,7 +511,8 @@ public class GridAlgorithm implements LayoutAlgorithm {
 
     private void regulatorConnectors(Layout layout) {
         final Position reactionPosition = layout.getReaction().getPosition();
-        final double hRule = reactionPosition.getMaxY() + REACTION_MIN_V_DISTANCE;
+        double my = index.getRegulators().stream().map(Transformer::getBounds).mapToDouble(Position::getY).min().orElse(0);
+        final double hRule = my - MIN_SEGMENT;
         // we want to fit all catalysts in a semi-circumference, not using the corners
         final int sectors = index.getRegulators().size() + 1;
         // the semicircle is centered into the reaction, and its length (PI*radius) should be enough to fit all the
@@ -523,4 +631,23 @@ public class GridAlgorithm implements LayoutAlgorithm {
         layout.getCompartments().remove(layout.getCompartmentRoot());
     }
 
+    private class Tile {
+        private final List<Glyph> glyphs;
+        private final Position bounds;
+        private int row;
+        private int column;
+
+        private Tile(List<Glyph> glyphs, Position bounds) {
+            this.glyphs = glyphs;
+            this.bounds = bounds;
+        }
+
+        private List<Glyph> getGlyphs() {
+            return glyphs;
+        }
+
+        private Position getBounds() {
+            return bounds;
+        }
+    }
 }

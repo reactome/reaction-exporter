@@ -30,6 +30,7 @@ public class LayoutIndex {
      * Comparator that puts false (and null) elements before true elements.
      */
     private static final Comparator<Boolean> FALSE_FIRST = Comparator.nullsFirst((o1, o2) -> o1.equals(o2) ? 0 : o1 ? 1 : -1);
+    private static final Comparator<Boolean> TRUE_FIRST = Comparator.nullsLast(((o1, o2) -> o1.equals(o2) ? 0 : o1 ? -1 : 1));
 
 
     private List<EntityGlyph> inputs = new ArrayList<>();
@@ -88,6 +89,8 @@ public class LayoutIndex {
 
         regulators.sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
+                // negatives first
+                .thenComparing(e -> e.getRoles().stream().anyMatch(role -> role.getType() == EntityRole.NEGATIVE_REGULATOR), TRUE_FIRST)
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
                 .thenComparing(EntityGlyph::getName));
