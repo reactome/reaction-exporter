@@ -12,6 +12,8 @@ public class DiagramTest {
     private final HashMap<Long, Compartment> compartmentIndex;
     private final Diagram diagram;
     private Level minLevel = Level.PASSED;
+    private String name;
+    private boolean first;
 
     public DiagramTest(Diagram diagram) {
         this.diagram = diagram;
@@ -100,8 +102,13 @@ public class DiagramTest {
     }
 
     private void log(Level level, String message) {
-        if (level.ordinal() > minLevel.ordinal())
+        if (level.ordinal() > minLevel.ordinal()) {
+            if (first) {
+                System.out.println(name);
+                first = false;
+            }
             System.out.printf("[%s] %s%n", level, message);
+        }
         logs.computeIfAbsent(level, l -> new ArrayList<>()).add(message);
     }
 
@@ -111,6 +118,8 @@ public class DiagramTest {
 
     public void printResults(Level minLevel, String name) {
         this.minLevel = minLevel;
+        this.name = name;
+        this.first = true;
         runTests();
         final int totalTests = logs.values().stream().mapToInt(List::size).sum();
         final long toPrint = logs.keySet().stream()
@@ -119,7 +128,6 @@ public class DiagramTest {
                 .mapToInt(List::size)
                 .count();
         if (toPrint > 0) {
-            System.out.println(name);
             System.out.printf(" - %d tests run%n", totalTests);
         }
         logs.forEach((level, messages) -> {
