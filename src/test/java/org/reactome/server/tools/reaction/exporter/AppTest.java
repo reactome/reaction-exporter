@@ -72,7 +72,12 @@ public class AppTest extends BaseTest {
     }
 
     @Test
-    public void findByDbIdTest() {
+    public void testOne() {
+        convert("R-HSA-2666278");
+    }
+
+    @Test
+    public void testAll() {
         final Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
                 "R-HSA-68947",
                 "R-HSA-69144",
@@ -82,6 +87,7 @@ public class AppTest extends BaseTest {
                 "R-HSA-211734",
                 "R-HSA-420586",
                 "R-HSA-425483",
+                "R-HSA-549533",
                 "R-HSA-1218824",
                 "R-HSA-1218833",
                 "R-HSA-1220614",
@@ -175,6 +181,7 @@ public class AppTest extends BaseTest {
                 "R-HSA-6791221",
                 "R-HSA-6791223",
                 "R-HSA-6797568",
+                "R-HSA-6802834",
                 "R-HSA-6802912",
                 "R-HSA-6802914",
                 "R-HSA-6802925",
@@ -223,13 +230,13 @@ public class AppTest extends BaseTest {
             final String pStId = rle.getEventOf().get(0).getStId();
 
             final LayoutFactory layoutFactory = new LayoutFactory(ads);
-            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BREATHE);
+            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.GRID);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
             final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);
             final Graph graph = graphFactory.getGraph(rle, layout);
 
-            // runTest(stId, diagram);
+            runTest(stId, diagram);
             // printJsons(diagram, graph, layout);
             savePng(stId, pStId, diagram, graph);
             // saveSbgn(stId, diagram);
