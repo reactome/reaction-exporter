@@ -37,7 +37,6 @@ public class LayoutFactory {
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: i.stoichiometry, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
 
             "OPTIONAL MATCH (rle)-[o:output]->(pe:PhysicalEntity) " +
-            "WHERE NOT (rle)-[:entityFunctionalStatus|physicalEntity|role*]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: o.stoichiometry, type: 'output'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "OPTIONAL MATCH (nr)-[o:output]->(pe:PhysicalEntity) " +
