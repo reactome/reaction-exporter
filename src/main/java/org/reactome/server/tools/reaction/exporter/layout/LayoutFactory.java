@@ -77,8 +77,16 @@ public class LayoutFactory {
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:input]->(:PhysicalEntity)<-[:physicalEntity|role*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
+            "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
+            "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
+            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
 
             "OPTIONAL MATCH (nr)-[:catalystActivity|physicalEntity*]->(:PhysicalEntity)<-[:normalPhysicalEntity|role*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
+            "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
+            "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
+            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(:PhysicalEntity)<-[:physicalEntity|role*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
@@ -87,8 +95,16 @@ public class LayoutFactory {
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(:PhysicalEntity)<-[:physicalEntity|role*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
+            "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
+            "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
+            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
 
             "OPTIONAL MATCH (nr)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(:PhysicalEntity)<-[:normalPhysicalEntity|role*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
+            "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
+            "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
+            "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(:PhysicalEntity)<-[:physicalEntity|role*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
