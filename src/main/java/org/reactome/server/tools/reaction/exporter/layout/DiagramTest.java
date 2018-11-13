@@ -22,7 +22,10 @@ public class DiagramTest {
             compartmentIndex.put(compartment.getId(), compartment);
     }
 
-    private void runTests() {
+    public void runTests(String name, Level minLevel) {
+        this.name = name;
+        this.minLevel = minLevel;
+        this.first = true;
         notInCompartment();
     }
 
@@ -102,7 +105,7 @@ public class DiagramTest {
     }
 
     private void log(Level level, String message) {
-        if (level.ordinal() > minLevel.ordinal()) {
+        if (level.ordinal() >= minLevel.ordinal()) {
             if (first) {
                 System.out.println(name);
                 first = false;
@@ -113,14 +116,10 @@ public class DiagramTest {
     }
 
     public void printResults() {
-        printResults(Level.PASSED, diagram.getStableId());
+        printResults(Level.PASSED);
     }
 
-    public void printResults(Level minLevel, String name) {
-        this.minLevel = minLevel;
-        this.name = name;
-        this.first = true;
-        runTests();
+    public void printResults(Level minLevel) {
         final int totalTests = logs.values().stream().mapToInt(List::size).sum();
         final long toPrint = logs.keySet().stream()
                 .filter(level -> level.ordinal() >= minLevel.ordinal())
@@ -134,6 +133,10 @@ public class DiagramTest {
             if (level.ordinal() >= minLevel.ordinal())
                 System.out.printf(" - [%s] %d%n", level, messages.size());
         });
+    }
+
+    public Map<Level, List<String>> getLogs() {
+        return logs;
     }
 
     public enum Level {PASSED, WARNING, ERROR}
