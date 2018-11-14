@@ -1,11 +1,14 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic;
 
-import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
-import org.reactome.server.tools.reaction.exporter.layout.model.*;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
+import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
+import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
+import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic.BorderLayout.Place.*;
 
@@ -17,102 +20,110 @@ public class BorderLayoutFactory {
     private BorderLayoutFactory() {
     }
 
-    public static BorderLayout get(Layout layout) {
-        return getBorderLayout(layout.getCompartmentRoot());
+    public static BorderLayout get(Layout layout, LayoutIndex index) {
+        return getBorderLayout(layout, layout.getCompartmentRoot(), index);
     }
 
-    private static BorderLayout getBorderLayout(CompartmentGlyph compartment) {
-        // Don't be afraid of reading this method, it places content of compartment into a new BorderLayout.
-        // It places participants in coordinates (NSEW). Every child is wrapped in its own BorderLayout, recursively
-        // /-------+-------+-------\
-        // |       |       |       |
-        // |  NW   |   N   |   NE  |
-        // |       |       |       |
-        // +-------+-------+-------+
-        // |       |       |       |
-        // |   W   |   C   |   E   |
-        // |       |       |       |
-        // +-------+-------+-------+
-        // |       |       |       |
-        // |   SW  |   S   |   SE  |
-        // |       |       |       |
-        // \-------+-------+-------/
+    private static BorderLayout getBorderLayout(Layout layout, CompartmentGlyph compartment, LayoutIndex index) {
         final BorderLayout borderLayout = new BorderLayout();
         borderLayout.setCompartment(compartment);
 
-        // This is the easy part, put every participant in its place
-        for (Glyph glyph : compartment.getContainedGlyphs()) {
-            if (glyph instanceof ReactionGlyph) borderLayout.add(CENTER, glyph);
-            else if (glyph instanceof EntityGlyph) {
-                final EntityGlyph entity = (EntityGlyph) glyph;
-                final Set<EntityRole> roles = entity.getRoles().stream().map(Role::getType).collect(Collectors.toSet());
-                if (roles.equals(EnumSet.of(EntityRole.INPUT))) {
-                    borderLayout.add(WEST, glyph);
-                } else if (roles.equals(EnumSet.of(EntityRole.CATALYST))) {
-                    borderLayout.add(NORTH, glyph);
-                } else if (roles.equals(EnumSet.of(EntityRole.OUTPUT))) {
-                    borderLayout.add(EAST, glyph);
-                } else if (roles.equals(EnumSet.of(EntityRole.POSITIVE_REGULATOR))) {
-                    borderLayout.add(SOUTH, glyph);
-                } else if (roles.equals(EnumSet.of(EntityRole.NEGATIVE_REGULATOR))) {
-                    borderLayout.add(SOUTH, glyph);
-                } else if (roles.equals(EnumSet.of(EntityRole.INPUT, EntityRole.CATALYST))) {
-                    borderLayout.add(NORTH_WEST, glyph);
-                } else if (roles.equals(EnumSet.of(EntityRole.INPUT, EntityRole.NEGATIVE_REGULATOR))) {
-                    borderLayout.add(SOUTH_WEST, glyph);
-                } else if (roles.equals(EnumSet.of(EntityRole.OUTPUT, EntityRole.CATALYST))) {
-                    borderLayout.add(NORTH_EAST, glyph);
-                } else if (roles.equals(EnumSet.of(EntityRole.OUTPUT, EntityRole.POSITIVE_REGULATOR))) {
-                    borderLayout.add(SOUTH_EAST, glyph);
-                }
-            }
+        final List<EntityGlyph> inputs = index.filterInputs(compartment);
+        final List<EntityGlyph> outputs = index.filterOutputs(compartment);
+        final List<EntityGlyph> catalysts = index.filterCatalysts(compartment);
+        final List<EntityGlyph> regulators = index.filterRegulators(compartment);
+        if (!inputs.isEmpty()) borderLayout.set(LEFT, new VerticalLayout(inputs));
+        if (!outputs.isEmpty()) borderLayout.set(RIGHT, new VerticalLayout(outputs));
+        if (!catalysts.isEmpty()) borderLayout.set(TOP, new HorizontalLayout(catalysts));
+        if (!regulators.isEmpty()) borderLayout.set(BOTTOM, new HorizontalLayout(regulators));
+        if (layout.getReaction().getCompartment() == compartment) {
+            final HorizontalLayout reactionLayout = new HorizontalLayout(Collections.singletonList(layout.getReaction()));
+            reactionLayout.setHorizontalPadding(100);
+            reactionLayout.setVerticalPadding(60);
+            borderLayout.set(CENTER, reactionLayout);
+        } else {
+            // final HorizontalLayout emptyLayout = new HorizontalLayout(Collections.emptyList());
+            // emptyLayout.setVerticalPadding(60);
+            // emptyLayout.setHorizontalPadding(100);
+            // borderLayout.set(CENTER, emptyLayout);
         }
-        // Call subcompartments recursively
-        for (CompartmentGlyph child : compartment.getChildren()) {
-            addChild(borderLayout, getBorderLayout(child));
+
+        for (final CompartmentGlyph child : compartment.getChildren()) {
+            addChild(borderLayout, getBorderLayout(layout, child, index));
         }
         return borderLayout;
     }
 
     private static void addChild(BorderLayout parent, BorderLayout child) {
-        // there are 9! * 9! combinations
         final Set<BorderLayout.Place> places = child.getBusyPlaces();
-        if (places.equals(EnumSet.of(NORTH))) {
-            merge(parent, child, NORTH, WEST, EAST);
-        } else if (places.equals(EnumSet.of(SOUTH))) {
-            merge(parent, child, SOUTH, WEST, EAST);
-        } else if (places.equals(EnumSet.of(EAST))) {
-            merge(parent, child, EAST, NORTH, SOUTH);
-        } else if (places.equals(EnumSet.of(WEST))) {
-            merge(parent, child, WEST, NORTH, SOUTH);
-        } else if (places.containsAll(EnumSet.of(WEST, EAST))) {
-            final BorderLayout aux = new BorderLayout();
-            // clone parent
-            for (final BorderLayout.Place place : BorderLayout.Place.values()) {
-                aux.set(place, parent.get(place));
-                parent.set(place, null);
-            }
-            parent.set(NORTH, aux);
-            parent.set(SOUTH, child);
-        } else if (places.containsAll(EnumSet.of(NORTH, SOUTH))) {
-            // this one occupies the width of the image
-            final BorderLayout aux = new BorderLayout();
-            // clone parent
-            for (final BorderLayout.Place place : BorderLayout.Place.values()) {
-                aux.set(place, parent.get(place));
-                parent.set(place, null);
-            }
-            parent.set(WEST, aux);
-            parent.set(EAST, child);
-        } else if (places.contains(WEST)) {
-            merge(parent, child, CENTER, EAST, WEST);
-        } else if (places.contains(NORTH)) {
-            merge(parent, child, CENTER, SOUTH, NORTH);
+        if (places.contains(CENTER)) {
+            // Center is always available for reaction
+            parent.set(CENTER, child);
         }
-        else {
-            merge(parent, child, CENTER, WEST, EAST);
-        }
+        // When we merge, we are adding a whole compartment, see below for the bit table
+        if (places.equals(EnumSet.of(TOP))) {
+            merge(parent, child, TOP, LEFT, RIGHT);
+        } else if (places.equals(EnumSet.of(BOTTOM))) {
+            merge(parent, child, BOTTOM, LEFT, RIGHT);
+        } else if (places.equals(EnumSet.of(RIGHT))) {
+            merge(parent, child, RIGHT, TOP, BOTTOM);
+        } else if (places.equals(EnumSet.of(LEFT))) {
+            merge(parent, child, LEFT, TOP, BOTTOM);
+        } else if (places.equals(EnumSet.of(TOP, BOTTOM))) {
+            merge(parent, child, RIGHT, RIGHT, LEFT);
+        } else if (places.equals(EnumSet.of(TOP, RIGHT))) {
+            merge(parent, child, RIGHT, BOTTOM, TOP);
+        } else if (places.equals(EnumSet.of(TOP, LEFT))) {
+            merge(parent, child, LEFT, BOTTOM, TOP);
+        } else if (places.equals(EnumSet.of(BOTTOM, RIGHT))) {
+            merge(parent, child, RIGHT, TOP, BOTTOM);
+        } else if (places.equals(EnumSet.of(BOTTOM, LEFT))) {
+            merge(parent, child, LEFT, TOP, BOTTOM);
+        } else if (places.equals(EnumSet.of(RIGHT, LEFT))) {
+            merge(parent, child, BOTTOM, BOTTOM, TOP);
+        } else if (places.equals(EnumSet.of(TOP, BOTTOM, RIGHT))) {
+            merge(parent, child, RIGHT, RIGHT, LEFT);
+        } else if (places.equals(EnumSet.of(TOP, BOTTOM, LEFT))) {
+            merge(parent, child, LEFT, LEFT, RIGHT);
+        } else if (places.equals(EnumSet.of(TOP, RIGHT, LEFT))) {
+            merge(parent, child, LEFT, BOTTOM, TOP);
+        } else if (places.equals(EnumSet.of(BOTTOM, RIGHT, LEFT))) {
+            merge(parent, child, BOTTOM, TOP, BOTTOM);
+        } else if (places.equals(EnumSet.of(TOP, BOTTOM, RIGHT, LEFT))) {
+            // * This is the hardest case. By now we will use TOP, but we should use any available, when possible
+            merge(parent, child, TOP, BOTTOM, TOP);
+        } // last else is None, in that case we do nothing
     }
+    // /---+---+---\
+    // |   | n |   |
+    // +---+---+---+
+    // | w | c | e |
+    // +---+---+---+
+    // |   | s |   |
+    // \---+---+---/
+    //  child  | parent |     sides
+    // --------|--------|--------------
+    // n s e w |        | parent child
+    // --------|--------|--------------
+    // 0 0 0 0 |    -   |      -
+    // 0 0 0 1 |    w   |     n s
+    // 0 0 1 0 |    e   |     n s
+    // 0 0 1 1 |    s   |     s n (max horizontal padding)
+    // 0 1 0 0 |    s   |     e w (n s is also valid)
+    // 0 1 0 1 |    w   |     n s
+    // 0 1 1 0 |    e   |     n s
+    // 0 1 1 1 |    s   |     n s (max horizontal padding)
+    // 1 0 0 0 |    n   |     e w (n s is also valid)
+    // 1 0 0 1 |    w   |     s n
+    // 1 0 1 0 |    e   |     s n
+    // 1 0 1 1 |    n   |     n s
+    // 1 1 0 0 |    e   |     e w (max vertical padding)
+    // 1 1 0 1 |    w   |     w e
+    // 1 1 1 0 |    e   |     e w
+    // 1 1 1 1 |    n*  |     s n
+    // *an inner compartment has all roles' participants, we should use any coordinate available and put the element
+    // as close to the center as possible
+
 
     /**
      * Places child into place in parent.
@@ -124,7 +135,7 @@ public class BorderLayoutFactory {
      * @param b      where to put child if parent already has content in place
      */
     private static void merge(BorderLayout parent, BorderLayout child, BorderLayout.Place place, BorderLayout.Place a, BorderLayout.Place b) {
-        final BorderLayout content = parent.get(place);
+        final Div content = parent.get(place);
         if (content == null) {
             parent.set(place, child);
         } else {
@@ -135,135 +146,4 @@ public class BorderLayoutFactory {
         }
     }
 
-    @SuppressWarnings("ConstantConditions")
-    private static void placeSubBorderLayout(BorderLayout parent, BorderLayout child) {
-        boolean n = false;
-        boolean s = false;
-        boolean e = false;
-        boolean w = false;
-        boolean c = false;
-        if (!child.getGlyphs().isEmpty()) {
-            for (Glyph glyph : child.getGlyphs()) {
-                if (glyph instanceof ReactionGlyph) c = true;
-                else if (glyph instanceof EntityGlyph) {
-                    final EntityGlyph entityGlyph = (EntityGlyph) glyph;
-                    for (Role role : entityGlyph.getRoles()) {
-                        switch (role.getType()) {
-                            case INPUT:
-                                w = true;
-                                break;
-                            case OUTPUT:
-                                e = true;
-                                break;
-                            case CATALYST:
-                                n = true;
-                                break;
-                            case NEGATIVE_REGULATOR:
-                            case POSITIVE_REGULATOR:
-                                s = true;
-                                break;
-                        }
-                    }
-                }
-            }
-        } else {
-            n = child.get(NORTH) != null;
-            s = child.get(SOUTH) != null;
-            e = child.get(EAST) != null;
-            w = child.get(WEST) != null;
-            c = child.get(CENTER) != null;
-            if (child.get(NORTH_EAST) != null) n = e = true;
-            if (child.get(NORTH_WEST) != null) n = w = true;
-            if (child.get(SOUTH_EAST) != null) s = e = true;
-            if (child.get(SOUTH_WEST) != null) s = w = true;
-        }
-
-        // MEGA SUPER KARNAUGH MAP (4 inputs -> 8 outputs)
-        if (c) setOrMerge(parent, CENTER, child);
-            // n s e w
-            // 0 0 0 0 error
-        else if (!n && !s && !e && !w) System.err.println("Whaaat");
-            // 1 1 1 1 c
-        else if (n && s && e && w) setOrMerge(parent, CENTER, child);
-            // 0 1 0 0 s
-        else if (!n && s && !e && !w) setOrMerge(parent, SOUTH, child);
-            // 0 1 1 1 s
-        else if (!n && s && e && w) setOrMerge(parent, SOUTH, child);
-            // 1 0 1 1 n
-        else if (n && !s && e && w) setOrMerge(parent, NORTH, child);
-            // 1 0 0 0 n
-        else if (n && !s && !e && !w) setOrMerge(parent, NORTH, child);
-            // 0 0 0 1 w
-        else if (!n && !s && !e && w) setOrMerge(parent, WEST, child);
-            // 1 1 0 1 w
-        else if (n && s && !e && w) setOrMerge(parent, WEST, child);
-            // 1 1 1 0 e
-        else if (n && s && e && !w) setOrMerge(parent, EAST, child);
-            // 0 0 1 0 e
-        else if (!n && !s && e && !w) setOrMerge(parent, EAST, child);
-            // 0 1 0 1 sw
-        else if (!n && s && !e && w) setOrMerge(parent, SOUTH_WEST, child);
-            // 1 0 0 1 nw
-        else if (n && !s && !e && w) setOrMerge(parent, NORTH_WEST, child);
-            // 1 0 1 0 ne
-        else if (n && !s && e && !w) setOrMerge(parent, NORTH_EAST, child);
-            // 0 1 1 0 se
-        else if (!n && s && e && !w) setOrMerge(parent, SOUTH_EAST, child);
-            // 1 1 0 0 e (or w)
-        else if (n && s && !e && !w) setOrMerge(parent, EAST, child);
-            // 0 0 1 1 n (or s)
-        else if (!n && !s && e && w) setOrMerge(parent, NORTH, child);
-    }
-
-    /**
-     * If <em>parent</em> contains already a BorderLayout in position, creates a new BorderLayout containing the border
-     * layout and child.
-     */
-    private static void setOrMerge(BorderLayout parent, BorderLayout.Place place, BorderLayout child) {
-        final BorderLayout content = parent.get(place);
-        if (content == null) {
-            parent.set(place, child);
-        } else {
-            final BorderLayout auxBorderLayout = new BorderLayout();
-            switch (place) {
-                case NORTH:
-                    auxBorderLayout.set(EAST, content);
-                    auxBorderLayout.set(WEST, child);
-                    break;
-                case SOUTH:
-                    auxBorderLayout.set(EAST, content);
-                    auxBorderLayout.set(WEST, child);
-                    break;
-                case CENTER:
-                    auxBorderLayout.set(NORTH, content);
-                    auxBorderLayout.set(CENTER, child);
-                    break;
-                case EAST:
-                    auxBorderLayout.set(NORTH, content);
-                    auxBorderLayout.set(CENTER, child);
-                    break;
-                case WEST:
-                    auxBorderLayout.set(NORTH, content);
-                    auxBorderLayout.set(CENTER, child);
-                    break;
-                case SOUTH_WEST:
-                    auxBorderLayout.set(WEST, content);
-                    auxBorderLayout.set(SOUTH, child);
-                    break;
-                case NORTH_WEST:
-                    auxBorderLayout.set(NORTH, content);
-                    auxBorderLayout.set(WEST, child);
-                    break;
-                case SOUTH_EAST:
-                    auxBorderLayout.set(SOUTH, content);
-                    auxBorderLayout.set(EAST, child);
-                    break;
-                case NORTH_EAST:
-                    auxBorderLayout.set(NORTH, content);
-                    auxBorderLayout.set(EAST, child);
-                    break;
-            }
-            parent.set(place, auxBorderLayout);
-        }
-    }
 }

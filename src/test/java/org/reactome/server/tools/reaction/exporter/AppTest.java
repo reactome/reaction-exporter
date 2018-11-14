@@ -53,7 +53,6 @@ public class AppTest extends BaseTest {
     private AdvancedDatabaseObjectService ads;
 
     private RasterExporter rasterExporter = new RasterExporter();
-    private ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);
     private int total;
 
     @BeforeClass
@@ -74,7 +73,7 @@ public class AppTest extends BaseTest {
 
     @Test
     public void testOne() {
-        convert("R-HSA-70634");
+        convert("R-HSA-5483238");
     }
 
     @Test
@@ -175,32 +174,36 @@ public class AppTest extends BaseTest {
     }
 
     private void convert(String stId) {
+        convert(stId, true, true, false, false, false);
+    }
+
+    private void convert(String stId, boolean test, boolean svg, boolean json, boolean pptx, boolean sbgn) {
         try {
             ReactionLikeEvent rle = databaseObjectService.findById(stId);
             final String pStId = rle.getEventOf().isEmpty() ? stId : rle.getEventOf().get(0).getStId();
 
             final LayoutFactory layoutFactory = new LayoutFactory(ads);
-            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.GRID);
+            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.DYNAMIC);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
             final Graph graph = new ReactionGraphFactory(ads).getGraph(rle, layout);
 
-            runTest(diagram, stId);
-            // printJsons(diagram, graph, layout);
-            savePng(stId, pStId, diagram, graph);
-            // saveSbgn(stId, diagram);
-            // savePptx(diagram);
+            if (test) runTest(diagram, stId);
+            if (json) printJsons(diagram, graph, layout);
+            if (svg) saveSvg(stId, pStId, diagram, graph);
+            if (sbgn) saveSbgn(stId, diagram);
+            if (pptx) savePptx(diagram);
         } catch (Exception ex) {
             ex.printStackTrace();
             System.err.println(stId);
         }
     }
 
-    private void savePng(String stId, String pStId, Diagram diagram, Graph graph) {
+    private void saveSvg(String stId, String pStId, Diagram diagram, Graph graph) {
         try {
-            final File file = new File(TEST_IMAGES, String.format("%s.%s", stId, "svg"));
+            final File file = new File(TEST_IMAGES, String.format("%s.%s", stId, "png"));
             OutputStream os = new FileOutputStream(file);
-            RasterArgs args = new RasterArgs(pStId, "svg").setQuality(8).setMargin(1);
+            RasterArgs args = new RasterArgs(pStId, "png").setQuality(8).setMargin(1);
             rasterExporter.export(diagram, graph, args, null, os);
         } catch (IOException | AnalysisException | TranscoderException e) {
             e.printStackTrace();

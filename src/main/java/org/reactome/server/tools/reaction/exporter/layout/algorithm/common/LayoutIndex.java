@@ -2,6 +2,7 @@ package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
+import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.reactome.server.tools.reaction.exporter.layout.model.Role;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LayoutIndex {
 
@@ -112,5 +114,27 @@ public class LayoutIndex {
 
     public List<EntityGlyph> getRegulators() {
         return regulators;
+    }
+
+    public List<EntityGlyph> filterInputs(CompartmentGlyph compartment) {
+        return inputs.stream()
+                .filter(entity -> entity.getCompartment() == compartment)
+                .collect(Collectors.toList());
+    }
+
+    public List<EntityGlyph> filterOutputs(CompartmentGlyph compartment) {
+        return outputs.stream()
+                .filter(entity -> entity.getCompartment() == compartment)
+                .collect(Collectors.toList());
+    }
+    public List<EntityGlyph> filterCatalysts(CompartmentGlyph compartment) {
+        return catalysts.stream()
+                .filter(entity -> entity.getCompartment() == compartment)
+                .collect(Collectors.toList());
+    }
+    public List<EntityGlyph> filterRegulators(CompartmentGlyph compartment) {
+        return regulators.stream()
+                .filter(entity -> entity.getCompartment() == compartment)
+                .collect(Collectors.toList());
     }
 }

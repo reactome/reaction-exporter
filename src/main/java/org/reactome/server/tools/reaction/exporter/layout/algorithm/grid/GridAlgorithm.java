@@ -94,7 +94,8 @@ public class GridAlgorithm implements LayoutAlgorithm {
     public void compute(Layout layout) {
         addDuplicates(layout);
         index = new LayoutIndex(layout);
-        layoutParticipants(layout);
+        layoutEverything(layout);
+        // layoutParticipants(layout);
         layoutCompartments(layout);
         layoutConnectors(layout);
         removeExtracellular(layout);
@@ -132,6 +133,58 @@ public class GridAlgorithm implements LayoutAlgorithm {
 
     private boolean hasRole(EntityGlyph glyph, EntityRole role) {
         return glyph.getRoles().stream().anyMatch(r -> r.getType() == role);
+    }
+
+    private void layoutEverything(Layout layout) {
+        layoutEverything(layout.getCompartmentRoot());
+    }
+
+    private void layoutEverything(CompartmentGlyph compartment) {
+
+    }
+
+    private void displayBySide(CompartmentGlyph compartment, Map<CompartmentGlyph, Map<EntityRole, Tile>> tileMap) {
+
+    }
+
+    private void addReactionCompartment(Layout layout, Map<CompartmentGlyph, Map<EntityRole, Tile>> tileMap) {
+        final CompartmentGlyph compartment = layout.getReaction().getCompartment();
+        final HashMap<EntityRole, Tile> roleMap = new HashMap<>();
+        tileMap.put(compartment, roleMap);
+        final List<EntityGlyph> inputs = index.filterInputs(compartment);
+        final List<EntityGlyph> outputs = index.filterOutputs(compartment);
+        final List<EntityGlyph> catalysts = index.filterCatalysts(compartment);
+        final List<EntityGlyph> regulators = index.filterRegulators(compartment);
+        final int row = catalysts.isEmpty() ? 0 : 1;
+        final int col = inputs.isEmpty() ? 0 : 1;
+        final Tile reactionTile = new Tile(compartment, Collections.singletonList(layout.getReaction()), NEGATIVE_REGULATOR);
+        reactionTile.row = row;
+        reactionTile.column = col;
+        roleMap.put(NEGATIVE_REGULATOR, reactionTile);
+        if (!inputs.isEmpty()) {
+            final Tile inputTile = new Tile(compartment, inputs, INPUT);
+            inputTile.column = 0;
+            inputTile.row = row;
+            roleMap.put(INPUT, inputTile);
+        }
+        if (!catalysts.isEmpty()) {
+            final Tile catalystsTile = new Tile(compartment, catalysts, CATALYST);
+            catalystsTile.column = col;
+            catalystsTile.row = 0;
+            roleMap.put(CATALYST, catalystsTile);
+        }
+        if (!outputs.isEmpty()) {
+            final Tile outputsTile = new Tile(compartment, outputs, OUTPUT);
+            outputsTile.column = col + 1;
+            outputsTile.row = row;
+            roleMap.put(OUTPUT, outputsTile);
+        }
+        if (!regulators.isEmpty()) {
+            final Tile regulatorsTile = new Tile(compartment, regulators, POSITIVE_REGULATOR);
+            regulatorsTile.column = col;
+            regulatorsTile.row = row + 1;
+            roleMap.put(POSITIVE_REGULATOR, regulatorsTile);
+        }
     }
 
     private void layoutParticipants(Layout layout) {
@@ -241,7 +294,7 @@ public class GridAlgorithm implements LayoutAlgorithm {
         return Transformer.padd(Transformer.getBounds(reaction), REACTION_MIN_H_DISTANCE, REACTION_MIN_V_DISTANCE);
     }
 
-    private Position horizontal(List<Glyph> glyphs) {
+    private Position horizontal(List<? extends Glyph> glyphs) {
         if (glyphs.isEmpty()) return new Position();
         final double height = glyphs.stream().map(Transformer::getBounds).mapToDouble(Position::getHeight).max().orElse(MIN_GLYPH_HEIGHT);
         final double y = 0.5 * (height + VERTICAL_PADDING);
@@ -254,7 +307,7 @@ public class GridAlgorithm implements LayoutAlgorithm {
         return Transformer.padd(new Position(0d, 0d, x, height + VERTICAL_PADDING), COMPARTMENT_PADDING);
     }
 
-    private Position vertical(List<Glyph> glyphs) {
+    private Position vertical(List<? extends Glyph> glyphs) {
         if (glyphs.size() > 6) return layoutInTwoColumns(glyphs);
         if (glyphs.isEmpty()) return new Position();
         final double width = glyphs.stream().map(Transformer::getBounds).mapToDouble(Position::getWidth).max().orElse(MIN_GLYPH_WIDTH);
@@ -268,7 +321,7 @@ public class GridAlgorithm implements LayoutAlgorithm {
         return Transformer.padd(new Position(0d, 0d, width + HORIZONTAL_PADDING, y), COMPARTMENT_PADDING);
     }
 
-    private Position layoutInTwoColumns(List<Glyph> glyphs) {
+    private Position layoutInTwoColumns(List<? extends Glyph> glyphs) {
         // the width of each column
         final int columns = 2;
         double[] widths = new double[columns];
@@ -722,14 +775,14 @@ public class GridAlgorithm implements LayoutAlgorithm {
     }
 
     private class Tile {
-        private final List<Glyph> glyphs;
+        private final List<? extends Glyph> glyphs;
         private final Position bounds;
         private final CompartmentGlyph compartment;
         private final EntityRole role;
         private int row;
         private int column;
 
-        private Tile(CompartmentGlyph compartment, List<Glyph> glyphs, EntityRole role) {
+        private Tile(CompartmentGlyph compartment, List<? extends Glyph> glyphs, EntityRole role) {
             this.compartment = compartment;
             this.glyphs = glyphs;
             this.role = role;
@@ -754,7 +807,7 @@ public class GridAlgorithm implements LayoutAlgorithm {
             }
         }
 
-        private List<Glyph> getGlyphs() {
+        private List<? extends Glyph> getGlyphs() {
             return glyphs;
         }
 
