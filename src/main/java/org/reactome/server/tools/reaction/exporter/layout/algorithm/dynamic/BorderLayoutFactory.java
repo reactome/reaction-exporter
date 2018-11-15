@@ -1,7 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic;
 
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
-import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
@@ -10,7 +9,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic.BorderLayout.Place.*;
 
@@ -31,7 +29,6 @@ public class BorderLayoutFactory {
         borderLayout.setCompartment(compartment);
 
         final List<EntityGlyph> inputs = index.filterInputs(compartment);
-        final List<EntityGlyph> biRole = inputs.stream().filter(entityGlyph -> entityGlyph.getRoles().stream().anyMatch(role -> role.getType() == EntityRole.CATALYST)).collect(Collectors.toList());
         final List<EntityGlyph> outputs = index.filterOutputs(compartment);
         final List<EntityGlyph> catalysts = index.filterCatalysts(compartment);
         final List<EntityGlyph> regulators = index.filterRegulators(compartment);
@@ -43,7 +40,7 @@ public class BorderLayoutFactory {
         if (hasReaction) {
             final HorizontalLayout reactionLayout = new HorizontalLayout(Collections.singletonList(layout.getReaction()));
             reactionLayout.setHorizontalPadding(100);
-            reactionLayout.setVerticalPadding(60);
+            reactionLayout.setVerticalPadding(50);
             borderLayout.set(CENTER, reactionLayout);
         }
         for (final CompartmentGlyph child : compartment.getChildren()) {
@@ -53,7 +50,7 @@ public class BorderLayoutFactory {
     }
 
     private static void addChild(BorderLayout parent, BorderLayout child) {
-        final Set<BorderLayout.Place> places = child.getBusyPlaces();
+        Set<BorderLayout.Place> places = child.getBusyPlaces();
         if (places.contains(CENTER)) {
             // Center is always available for reaction
             parent.set(CENTER, child);
@@ -92,6 +89,50 @@ public class BorderLayoutFactory {
             merge(parent, child, TOP, BOTTOM, TOP);
         } // last else is None, in that case we do nothing
     }
+
+    // private static void add(BorderLayout parent, BorderLayout child) {
+    //     Set<BorderLayout.Place> places = child.getBusyPlaces();
+    //     if (places.contains(CENTER)) {
+    //         // Center is always available for reaction
+    //         parent.set(CENTER, child);
+    //     }
+    //     final Set<EntityRole> roles = child.containedRoles();
+    //     if (roles.contains(POSITIVE_REGULATOR)) roles.add(NEGATIVE_REGULATOR);
+    //     roles.remove(POSITIVE_REGULATOR);
+    //     // When we merge, we are adding a whole compartment, see below for the bit table
+    //     if (roles.equals(EnumSet.of(CATALYST))) {
+    //         merge(parent, child, TOP, LEFT, RIGHT);
+    //     } else if (roles.equals(EnumSet.of(NEGATIVE_REGULATOR)) ) {
+    //         merge(parent, child, BOTTOM, TOP, BOTTOM);
+    //     } else if (roles.equals(EnumSet.of(OUTPUT))) {
+    //         merge(parent, child, RIGHT, TOP, BOTTOM);
+    //     } else if (roles.equals(EnumSet.of(INPUT))) {
+    //         merge(parent, child, LEFT, TOP, BOTTOM);
+    //     } else if (roles.equals(EnumSet.of(CATALYST, NEGATIVE_REGULATOR))) {
+    //         merge(parent, child, RIGHT, RIGHT, LEFT);
+    //     } else if (roles.equals(EnumSet.of(CATALYST, OUTPUT))) {
+    //         merge(parent, child, RIGHT, BOTTOM, TOP);
+    //     } else if (roles.equals(EnumSet.of(CATALYST, INPUT))) {
+    //         merge(parent, child, LEFT, BOTTOM, TOP);
+    //     } else if (roles.equals(EnumSet.of(NEGATIVE_REGULATOR, OUTPUT))) {
+    //         merge(parent, child, RIGHT, TOP, BOTTOM);
+    //     } else if (roles.equals(EnumSet.of(NEGATIVE_REGULATOR, INPUT))) {
+    //         merge(parent, child, LEFT, TOP, BOTTOM);
+    //     } else if (roles.equals(EnumSet.of(OUTPUT, INPUT))) {
+    //         merge(parent, child, BOTTOM, BOTTOM, TOP);
+    //     } else if (roles.equals(EnumSet.of(CATALYST, NEGATIVE_REGULATOR, OUTPUT))) {
+    //         merge(parent, child, RIGHT, RIGHT, LEFT);
+    //     } else if (roles.equals(EnumSet.of(CATALYST, NEGATIVE_REGULATOR, INPUT))) {
+    //         merge(parent, child, LEFT, LEFT, RIGHT);
+    //     } else if (roles.equals(EnumSet.of(CATALYST, OUTPUT, INPUT))) {
+    //         merge(parent, child, TOP, TOP, BOTTOM);
+    //     } else if (roles.equals(EnumSet.of(NEGATIVE_REGULATOR, OUTPUT, INPUT))) {
+    //         merge(parent, child, BOTTOM, TOP, BOTTOM);
+    //     } else if (roles.equals(EnumSet.of(CATALYST, NEGATIVE_REGULATOR, OUTPUT, INPUT))) {
+    //         // * This is the hardest case. By now we will use CATALYST, but we should use any available, when possible
+    //         merge(parent, child, TOP, BOTTOM, TOP);
+    //     } // last else is None, in that case we do nothing
+    // }
     // /---+---+---\
     // |   | n |   |
     // +---+---+---+

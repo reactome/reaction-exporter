@@ -2,11 +2,16 @@ package org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic;
 
 import org.reactome.server.tools.diagram.data.layout.impl.CoordinateImpl;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
+import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
+import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
+import org.reactome.server.tools.reaction.exporter.layout.model.Role;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class VerticalLayout implements Div {
 
@@ -68,9 +73,22 @@ public class VerticalLayout implements Div {
         bounds.move(dx, dy);
     }
 
+    @Override
+    public Set<EntityRole> containedRoles() {
+        return glyphs.stream()
+                .filter(EntityGlyph.class::isInstance)
+                .map(EntityGlyph.class::cast)
+                .flatMap(entityGlyph -> entityGlyph.getRoles().stream())
+                .map(Role::getType)
+                .collect(Collectors.toSet());
+    }
+
     private Position vertical() {
         if (glyphs.isEmpty()) return new Position(0d, 0d, 2 * horizontalPadding, 2 * verticalPadding);
         if (glyphs.size() > 6) return layoutInTwoColumns();
+        // special case: the list of inputs has 2 catalysts: common in diseases
+        final long cats = glyphs.stream().filter(o -> hasRole((EntityGlyph) o, EntityRole.CATALYST)).count();
+        if (cats > 1) return layoutInTwoColumns();
         final double width = glyphs.stream().map(Transformer::getBounds).mapToDouble(Position::getWidth).max().orElse(0);
         final double cx = horizontalPadding + 0.5 * width;
         double y = verticalPadding;
@@ -81,6 +99,10 @@ public class VerticalLayout implements Div {
             y += separation + height;
         }
         return new Position(0d, 0d, width + 2 * horizontalPadding, y - separation + verticalPadding);
+    }
+
+    private boolean hasRole(EntityGlyph entity, EntityRole role) {
+        return entity.getRoles().stream().anyMatch(r -> r.getType() == role);
     }
 
     private Position layoutInTwoColumns() {

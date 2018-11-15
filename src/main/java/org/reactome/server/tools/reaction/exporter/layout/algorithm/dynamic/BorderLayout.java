@@ -4,6 +4,7 @@ import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.diagram.data.layout.impl.CoordinateImpl;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.FontProperties;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
+import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
 
@@ -55,7 +56,18 @@ final class BorderLayout implements Div {
         final Set<Place> places = new HashSet<>(layoutMap.keySet());
         for (final Div div : layoutMap.values())
             if (div instanceof BorderLayout) places.addAll(((BorderLayout) div).getBusyPlaces());
+        final Div div = layoutMap.get(LEFT);
+        if (div != null && div.containedRoles().contains(EntityRole.CATALYST)) {
+            places.add(TOP);
+        }
         return places;
+    }
+
+    @Override
+    public Set<EntityRole> containedRoles() {
+        final Set<EntityRole> roles = new HashSet<>();
+        for (final Div div : layoutMap.values()) roles.addAll(div.containedRoles());
+        return roles;
     }
 
     @Override
@@ -91,6 +103,10 @@ final class BorderLayout implements Div {
         for (final Div div : layoutMap.values()) div.move(dx, dy);
         bounds.move(dx, dy);
         if (compartment != null) Transformer.move(compartment, dx, dy);
+    }
+
+    void setSeparation(double separation) {
+        this.separation = separation;
     }
 
     private void borderLayout() {
