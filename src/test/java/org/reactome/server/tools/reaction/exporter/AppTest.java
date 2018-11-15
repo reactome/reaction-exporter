@@ -201,9 +201,9 @@ public class AppTest extends BaseTest {
 
     private void saveSvg(String stId, String pStId, Diagram diagram, Graph graph) {
         try {
-            final File file = new File(TEST_IMAGES, String.format("%s.%s", stId, "png"));
+            final File file = new File(TEST_IMAGES, String.format("%s.%s", stId, "svg"));
             OutputStream os = new FileOutputStream(file);
-            RasterArgs args = new RasterArgs(pStId, "png").setQuality(8).setMargin(1);
+            RasterArgs args = new RasterArgs(pStId, "svg").setQuality(8).setMargin(1);
             rasterExporter.export(diagram, graph, args, null, os);
         } catch (IOException | AnalysisException | TranscoderException e) {
             e.printStackTrace();

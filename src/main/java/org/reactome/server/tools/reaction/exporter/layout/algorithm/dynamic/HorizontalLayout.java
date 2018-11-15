@@ -69,7 +69,7 @@ public class HorizontalLayout implements Div {
     }
 
     private Position horizontal() {
-        if (glyphs.isEmpty()) return new Position();
+        if (glyphs.isEmpty()) return new Position(0d, 0d, 2 * horizontalPadding, 2 * verticalPadding);
         final double height = glyphs.stream().map(Transformer::getBounds).mapToDouble(Position::getHeight).max().orElse(0);
         final double cy = 0.5 * height + verticalPadding;
         double x = horizontalPadding;

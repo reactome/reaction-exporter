@@ -15,6 +15,7 @@ import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -29,19 +30,12 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
      * Size of the box surrounding regulator and catalysts shapes
      */
     private static final int REGULATOR_SIZE = 6;
-    private static final int MIN_SEGMENT = 20;
-    /**
-     * Minimum vertical distance between any glyph and the reaction glyph
-     */
-    private static final double REACTION_MIN_V_DISTANCE = 0;
-    /**
-     * Minimum horizontal distance between any glyph and the reaction glyph
-     */
-    private static final double REACTION_MIN_H_DISTANCE = 0;
+    private static final int MIN_SEGMENT = 30;
     /**
      * Length of the backbone of the reaction
      */
     private static final double BACKBONE_LENGTH = 20;
+    public static final int GENE_SEGMENT_LENGTH = 30;
 
     private LayoutIndex index;
 
@@ -53,11 +47,39 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
         Transformer.setSize(layout.getReaction());
 
         final BorderLayout borderLayout = BorderLayoutFactory.get(layout, index);
+        fillCenters(borderLayout);
         setPositions(borderLayout);
         layoutConnectors(layout);
         layout.getCompartments().remove(layout.getCompartmentRoot());
         computeDimension(layout);
         moveToOrigin(layout);
+    }
+
+    /**
+     * Add spacing in compartments with opposite participants
+     * @param borderLayout
+     */
+    private void fillCenters(BorderLayout borderLayout) {
+        if (borderLayout.get(BorderLayout.Place.CENTER) == null) {
+            final Div left = borderLayout.get(BorderLayout.Place.LEFT);
+            final Div right = borderLayout.get(BorderLayout.Place.RIGHT);
+            final Div top = borderLayout.get(BorderLayout.Place.TOP);
+            final Div bottom = borderLayout.get(BorderLayout.Place.BOTTOM);
+            if (left != null && right != null) {
+                final HorizontalLayout empty = new HorizontalLayout(Collections.emptyList());
+                empty.setHorizontalPadding(152);
+                borderLayout.set(BorderLayout.Place.CENTER, empty);
+            } else if (top != null && bottom != null) {
+                final HorizontalLayout empty = new HorizontalLayout(Collections.emptyList());
+                empty.setVerticalPadding(72);
+                borderLayout.set(BorderLayout.Place.CENTER, empty);
+            }
+        }
+        for (final BorderLayout.Place place : BorderLayout.Place.values()) {
+            final Div div = borderLayout.get(place);
+            if (div instanceof BorderLayout) fillCenters((BorderLayout) div);
+        }
+
     }
 
     private void setPositions(Div div) {
@@ -102,9 +124,9 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
             if (entity.getRenderableClass() == RenderableClass.GENE) {
                 // Genes need an extra segment from the arrow
                 segments.add(new SegmentImpl(position.getMaxX() + 8, position.getY(),
-                        position.getMaxX() + 30, position.getCenterY()));
+                        position.getMaxX() + GENE_SEGMENT_LENGTH, position.getCenterY()));
                 segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getMaxX() + 30, position.getCenterY()),
+                        new CoordinateImpl(position.getMaxX() + GENE_SEGMENT_LENGTH, position.getCenterY()),
                         new CoordinateImpl(vRule, position.getCenterY())));
                 segments.add(new SegmentImpl(
                         new CoordinateImpl(vRule, position.getCenterY()),
@@ -119,10 +141,11 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
             }
             if (biRole) {
                 // Add catalyst segments
-                final double top = min(position.getY(), reactionPosition.getY()) - 5;
+                final double top = min(position.getY(), reactionPosition.getY()) - 50;
+                final double catalystPosition = reactionPosition.getCenterX() - 20;
                 segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), top));
-                segments.add(new SegmentImpl(position.getCenterX(), top, vRule + 50, top));
-                segments.add(new SegmentImpl(vRule + 50, top, reactionPosition.getCenterX(), reactionPosition.getCenterY()));
+                segments.add(new SegmentImpl(position.getCenterX(), top, catalystPosition, top));
+                segments.add(new SegmentImpl(catalystPosition, top, reactionPosition.getCenterX(), reactionPosition.getCenterY()));
                 connector.setPointer(ConnectorType.CATALYST);
             } else {
                 connector.setPointer(ConnectorType.INPUT);
@@ -258,13 +281,25 @@ public class DynamicAlgorithm implements LayoutAlgorithm {
     }
 
     private void computeDimension(Layout layout) {
+        Position position = null;
         for (CompartmentGlyph compartment : layout.getCompartments()) {
-            layout.getPosition().union(compartment.getPosition());
+            if (position == null) position = new Position(compartment.getPosition());
+             else position.union(compartment.getPosition());
         }
         for (EntityGlyph entity : layout.getEntities()) {
-            layout.getPosition().union(entity.getPosition());
+            if (position == null) position = new Position(entity.getPosition());
+            else position.union(entity.getPosition());
+            for (final Segment segment : entity.getConnector().getSegments()) {
+                final double x = Math.min(segment.getFrom().getX(), segment.getTo().getX());
+                final double mx = Math.max(segment.getFrom().getX(), segment.getTo().getX());
+                final double y = Math.min(segment.getFrom().getY(), segment.getTo().getY());
+                final double my = Math.max(segment.getFrom().getY(), segment.getTo().getY());
+                position.union(new Position(x,y, mx -x, my -y));
+            }
         }
-        layout.getPosition().union(layout.getReaction().getPosition());
+        if (position == null) position = new Position(layout.getReaction().getPosition());
+        else position.union(layout.getReaction().getPosition());
+        layout.getPosition().set(position);
     }
 
     private void moveToOrigin(Layout layout) {

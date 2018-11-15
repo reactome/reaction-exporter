@@ -1,7 +1,5 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
 
-import org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BreatheAlgorithm;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -17,10 +15,10 @@ public class FontProperties {
 
     static {
         try {
-            final Font font = Font.createFont(Font.TRUETYPE_FONT, BreatheAlgorithm.class.getResourceAsStream("/fonts/arialbd.ttf"));
+            final Font font = Font.createFont(Font.TRUETYPE_FONT, FontProperties.class.getResourceAsStream("/fonts/arialbd.ttf")).deriveFont(8f);
             FONT_METRICS = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
                     .createGraphics()
-                    .getFontMetrics(font.deriveFont(8f));
+                    .getFontMetrics(font);
         } catch (FontFormatException | IOException e) {
             // resources shouldn't throw exceptions
             throw new IllegalArgumentException("/fonts/arialbd.ttf not found", e);

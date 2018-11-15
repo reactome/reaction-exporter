@@ -1,6 +1,7 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic;
 
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
+import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
@@ -9,6 +10,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic.BorderLayout.Place.*;
 
@@ -29,6 +31,7 @@ public class BorderLayoutFactory {
         borderLayout.setCompartment(compartment);
 
         final List<EntityGlyph> inputs = index.filterInputs(compartment);
+        final List<EntityGlyph> biRole = inputs.stream().filter(entityGlyph -> entityGlyph.getRoles().stream().anyMatch(role -> role.getType() == EntityRole.CATALYST)).collect(Collectors.toList());
         final List<EntityGlyph> outputs = index.filterOutputs(compartment);
         final List<EntityGlyph> catalysts = index.filterCatalysts(compartment);
         final List<EntityGlyph> regulators = index.filterRegulators(compartment);
@@ -36,18 +39,13 @@ public class BorderLayoutFactory {
         if (!outputs.isEmpty()) borderLayout.set(RIGHT, new VerticalLayout(outputs));
         if (!catalysts.isEmpty()) borderLayout.set(TOP, new HorizontalLayout(catalysts));
         if (!regulators.isEmpty()) borderLayout.set(BOTTOM, new HorizontalLayout(regulators));
-        if (layout.getReaction().getCompartment() == compartment) {
+        final boolean hasReaction = layout.getReaction().getCompartment() == compartment;
+        if (hasReaction) {
             final HorizontalLayout reactionLayout = new HorizontalLayout(Collections.singletonList(layout.getReaction()));
             reactionLayout.setHorizontalPadding(100);
             reactionLayout.setVerticalPadding(60);
             borderLayout.set(CENTER, reactionLayout);
-        } else {
-            // final HorizontalLayout emptyLayout = new HorizontalLayout(Collections.emptyList());
-            // emptyLayout.setVerticalPadding(60);
-            // emptyLayout.setHorizontalPadding(100);
-            // borderLayout.set(CENTER, emptyLayout);
         }
-
         for (final CompartmentGlyph child : compartment.getChildren()) {
             addChild(borderLayout, getBorderLayout(layout, child, index));
         }
@@ -64,7 +62,7 @@ public class BorderLayoutFactory {
         if (places.equals(EnumSet.of(TOP))) {
             merge(parent, child, TOP, LEFT, RIGHT);
         } else if (places.equals(EnumSet.of(BOTTOM))) {
-            merge(parent, child, BOTTOM, LEFT, RIGHT);
+            merge(parent, child, BOTTOM, TOP, BOTTOM);
         } else if (places.equals(EnumSet.of(RIGHT))) {
             merge(parent, child, RIGHT, TOP, BOTTOM);
         } else if (places.equals(EnumSet.of(LEFT))) {
@@ -86,7 +84,7 @@ public class BorderLayoutFactory {
         } else if (places.equals(EnumSet.of(TOP, BOTTOM, LEFT))) {
             merge(parent, child, LEFT, LEFT, RIGHT);
         } else if (places.equals(EnumSet.of(TOP, RIGHT, LEFT))) {
-            merge(parent, child, LEFT, BOTTOM, TOP);
+            merge(parent, child, TOP, TOP, BOTTOM);
         } else if (places.equals(EnumSet.of(BOTTOM, RIGHT, LEFT))) {
             merge(parent, child, BOTTOM, TOP, BOTTOM);
         } else if (places.equals(EnumSet.of(TOP, BOTTOM, RIGHT, LEFT))) {

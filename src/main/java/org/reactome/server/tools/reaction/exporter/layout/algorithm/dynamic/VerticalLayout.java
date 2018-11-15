@@ -69,7 +69,7 @@ public class VerticalLayout implements Div {
     }
 
     private Position vertical() {
-        if (glyphs.isEmpty()) return new Position();
+        if (glyphs.isEmpty()) return new Position(0d, 0d, 2 * horizontalPadding, 2 * verticalPadding);
         if (glyphs.size() > 6) return layoutInTwoColumns();
         final double width = glyphs.stream().map(Transformer::getBounds).mapToDouble(Position::getWidth).max().orElse(0);
         final double cx = horizontalPadding + 0.5 * width;

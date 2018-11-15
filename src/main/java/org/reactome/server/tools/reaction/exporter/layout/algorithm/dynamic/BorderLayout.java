@@ -7,10 +7,7 @@ import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Trans
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic.BorderLayout.Place.*;
 
@@ -21,16 +18,17 @@ final class BorderLayout implements Div {
     /**
      * Minimum distance between the compartment border and any of ints contained glyphs.
      */
-    private static final double COMPARTMENT_PADDING = 10;
+    private static final double COMPARTMENT_PADDING = 20;
     private static final int TEXT_PADDING = 10;
+    private double separation = 0;
 
     private final Map<Place, Div> layoutMap = new HashMap<>();
     /**
      * This is the compartment surrounding the border layout, in case it is not null
      */
     private CompartmentGlyph compartment;
-    private double verticalPadding;
-    private double horizontalPadding;
+    private double verticalPadding = 10;
+    private double horizontalPadding = 10;
     private Position bounds;
 
     void set(Place place, Div borderLayout) {
@@ -54,7 +52,10 @@ final class BorderLayout implements Div {
     }
 
     Set<Place> getBusyPlaces() {
-        return layoutMap.keySet();
+        final Set<Place> places = new HashSet<>(layoutMap.keySet());
+        for (final Div div : layoutMap.values())
+            if (div instanceof BorderLayout) places.addAll(((BorderLayout) div).getBusyPlaces());
+        return places;
     }
 
     @Override
@@ -108,8 +109,8 @@ final class BorderLayout implements Div {
         final double w3 = right == null ? 0 : right.getBounds().getWidth();
 
         final double cx1 = 0.5 * w1;
-        final double cx2 = w1 + 0.5 * w2;
-        final double cx3 = w1 + w2 + 0.5 * w3;
+        final double cx2 = w1 + 0.5 * w2 + separation;
+        final double cx3 = w1 + w2 + 0.5 * w3 + 2 * separation;
 
         final double h1 = top == null ? 0 : top.getBounds().getHeight();
         double h2 = 0;
@@ -119,8 +120,8 @@ final class BorderLayout implements Div {
         final double h3 = bottom == null ? 0 : bottom.getBounds().getHeight();
 
         final double cy1 = 0.5 * h1;
-        final double cy2 = h1 + 0.5 * h2;
-        final double cy3 = h1 + h2 + 0.5 * h3;
+        final double cy2 = h1 + 0.5 * h2 + separation;
+        final double cy3 = h1 + h2 + 0.5 * h3 + 2 * separation;
 
         if (top != null) top.center(cx2, cy1);
         if (bottom != null) bottom.center(cx2, cy3);
@@ -129,8 +130,8 @@ final class BorderLayout implements Div {
         if (center != null) center.center(cx2, cy2);
 
         for (final Div div : layoutMap.values()) bounds.union(div.getBounds());
-        bounds = Transformer.padd(bounds, horizontalPadding, verticalPadding);
         placeCompartment();
+        bounds = Transformer.padd(bounds, horizontalPadding, verticalPadding);
     }
 
     private void placeCompartment() {
@@ -147,17 +148,11 @@ final class BorderLayout implements Div {
                 compartmentPosition.move(-0.5 * diff, 0);
                 compartmentPosition.setWidth(textPadding);
             }
-            final Coordinate coordinate;
-            if (textWidth > 0.5 * compartmentPosition.getWidth()) {
-                // center
-                coordinate = new CoordinateImpl(compartmentPosition.getCenterX() - 0.5 * textWidth,
-                        compartmentPosition.getMaxY() - textHeight - COMPARTMENT_PADDING / 2);
-            } else {
-                // southeast
-                coordinate = new CoordinateImpl(
-                        compartmentPosition.getMaxX() - textWidth - TEXT_PADDING,
-                        compartmentPosition.getMaxY() - textHeight - COMPARTMENT_PADDING / 2);
-            }
+            final double x = textWidth < 0.5 * compartmentPosition.getWidth()
+                    ? compartmentPosition.getMaxX() - textWidth - TEXT_PADDING
+                    : compartmentPosition.getCenterX() - 0.5 * textWidth;
+            final double y = compartmentPosition.getMaxY() - .5 * (COMPARTMENT_PADDING - textHeight) - textHeight;
+            final Coordinate coordinate = new CoordinateImpl(x, y);
             compartment.setLabelPosition(coordinate);
             compartment.setPosition(compartmentPosition);
             bounds.set(compartmentPosition);
