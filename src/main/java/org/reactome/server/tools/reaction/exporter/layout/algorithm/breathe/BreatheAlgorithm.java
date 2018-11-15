@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import static java.lang.Math.*;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Dedup.addDuplicates;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.*;
+import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
 /**
@@ -83,6 +84,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     private static final double REACTION_MIN_H_DISTANCE = 200;
     private static final double ARROW_SIZE = 8;
     private static final double GENE_SEGMENT_LENGTH = 20;
+    private final Comparator<Boolean> TRUE_FIRST = (o1, o2) -> o1 == o2 ? 0 : o1 ? -1 : 1;
     private LayoutIndex index;
     private boolean compact = false;
 
@@ -118,6 +120,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     private void layoutInputs(Layout layout) {
         // TODO: 02/11/18 use a global variable
         final List<CompartmentGlyph> sortedCompartments = flattenCompartments(layout.getCompartmentRoot());
+        sortedCompartments.sort(Comparator.comparing(compartmentGlyph -> hasRole(compartmentGlyph, CATALYST), TRUE_FIRST));
         final List<EntityGlyph> inputs = new ArrayList<>(index.getInputs());
         inputs.sort(Comparator.comparingInt((EntityGlyph e) -> sortedCompartments.indexOf(e.getCompartment())));
         // To do the vertical layout, we need the max height
@@ -134,9 +137,24 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     }
 
+    private boolean hasRole(CompartmentGlyph compartment, EntityRole role) {
+        return compartment.getContainedGlyphs().stream()
+                .filter(EntityGlyph.class::isInstance)
+                .flatMap(glyph -> ((EntityGlyph) glyph).getRoles().stream())
+                .map(Role::getType)
+                .anyMatch(role::equals);
+    }
+
+    private boolean hasRole(EntityGlyph entity, EntityRole role) {
+        return entity.getRoles().stream()
+                .map(Role::getType)
+                .anyMatch(role::equals);
+    }
+
+
     private void layoutOutputs(Layout layout) {
         final List<CompartmentGlyph> sortedCompartments = flattenCompartments(layout.getCompartmentRoot());
-        // Collections.reverse(sortedCompartments);
+        sortedCompartments.sort(Comparator.comparing(compartmentGlyph -> hasRole(compartmentGlyph, CATALYST), TRUE_FIRST));
         final List<EntityGlyph> outputs = new ArrayList<>(index.getOutputs());
         outputs.sort(Comparator.comparingInt((EntityGlyph e) -> sortedCompartments.indexOf(e.getCompartment())));
         // Compute max height and call vertical layout
@@ -413,16 +431,6 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                     followReactionInHorizontal(reaction, index.getCatalysts());
                     followReactionInHorizontal(reaction, index.getRegulators());
                 }
-            } else if (canMoveTo(index.getCatalysts(), reaction)) {
-                double y = 0;
-                for (CompartmentGlyph child : clashingCompartments)
-                    if (child.getPosition().getY() < y) y = child.getPosition().getY();
-                if (y != 0) {
-                    reaction.getPosition().setCenter(0, y - reactionSep);
-                    for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y - reactionSep);
-                    followReactionInVertical(reaction, index.getInputs());
-                    followReactionInVertical(reaction, index.getOutputs());
-                }
             } else if (canMoveTo(index.getRegulators(), reaction)) {
                 double y = 0;
                 for (CompartmentGlyph child : clashingCompartments) {
@@ -431,6 +439,16 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
                 if (y != 0) {
                     reaction.getPosition().setCenter(0, y + reactionSep);
                     for (EntityGlyph regulator : index.getRegulators()) move(regulator, 0, y + reactionSep);
+                    followReactionInVertical(reaction, index.getInputs());
+                    followReactionInVertical(reaction, index.getOutputs());
+                }
+            } else if (canMoveTo(index.getCatalysts(), reaction)) {
+                double y = 0;
+                for (CompartmentGlyph child : clashingCompartments)
+                    if (child.getPosition().getY() < y) y = child.getPosition().getY();
+                if (y != 0) {
+                    reaction.getPosition().setCenter(0, y - reactionSep);
+                    for (EntityGlyph catalyst : index.getCatalysts()) move(catalyst, 0, y - reactionSep);
                     followReactionInVertical(reaction, index.getInputs());
                     followReactionInVertical(reaction, index.getOutputs());
                 }
@@ -448,7 +466,8 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private void followReactionInVertical(ReactionGlyph reaction, List<EntityGlyph> glyphs) {
         final List<EntityGlyph> canMove = glyphs.stream()
-                .filter(g -> g.getCompartment() == reaction.getCompartment() || isChild(g.getCompartment(), reaction.getCompartment()))
+                .filter(g -> !hasRole(g, CATALYST))
+                .filter(g -> g.getCompartment() == reaction.getCompartment() || isAncestor(g.getCompartment(), reaction.getCompartment()))
                 .collect(Collectors.toList());
         if (canMove.isEmpty()) return;
         double miny = canMove.get(0).getPosition().getY();
@@ -461,7 +480,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
 
     private void followReactionInHorizontal(ReactionGlyph reaction, List<EntityGlyph> glyphs) {
         final List<EntityGlyph> canMove = glyphs.stream()
-                .filter(g -> g.getCompartment() == reaction.getCompartment() || isChild(g.getCompartment(), reaction.getCompartment()))
+                .filter(g -> g.getCompartment() == reaction.getCompartment() || isAncestor(g.getCompartment(), reaction.getCompartment()))
                 .collect(Collectors.toList());
         if (canMove.isEmpty()) return;
         double minx = canMove.get(0).getPosition().getX();
@@ -487,14 +506,14 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      */
     private boolean clashes(ReactionGlyph reaction, CompartmentGlyph compartment) {
         return compartment != reaction.getCompartment()
-                && !isChild(compartment, reaction.getCompartment())
+                && !isAncestor(compartment, reaction.getCompartment())
                 && compartment.getPosition().intersects(reaction.getPosition());
     }
 
     /**
      * Test if child is a descendant of compartment.
      */
-    private boolean isChild(CompartmentGlyph compartment, CompartmentGlyph child) {
+    private boolean isAncestor(CompartmentGlyph compartment, CompartmentGlyph child) {
         CompartmentGlyph parent = child.getParent();
         while (parent != null) {
             if (parent == compartment) return true;
@@ -511,7 +530,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
     }
 
     private boolean fitsInto(CompartmentGlyph compartment, CompartmentGlyph parent) {
-        return compartment == parent || isChild(parent, compartment);
+        return compartment == parent || isAncestor(parent, compartment);
     }
 
     private void layoutConnectors(Layout layout) {
@@ -755,6 +774,13 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
         }
         for (EntityGlyph entity : layout.getEntities()) {
             layout.getPosition().union(Transformer.getBounds(entity));
+            for (final Segment segment : entity.getConnector().getSegments()) {
+                final double minX = Math.min(segment.getFrom().getX(), segment.getTo().getX());
+                final double maxX = Math.max(segment.getFrom().getX(), segment.getTo().getX());
+                final double minY = Math.min(segment.getFrom().getY(), segment.getTo().getY());
+                final double maxY = Math.max(segment.getFrom().getY(), segment.getTo().getY());
+                layout.getPosition().union(new Position(minX, minY, maxX - minX, maxY - minY));
+            }
         }
         layout.getPosition().union(Transformer.getBounds(layout.getReaction()));
     }
