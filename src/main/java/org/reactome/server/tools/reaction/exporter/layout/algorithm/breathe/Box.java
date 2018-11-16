@@ -8,6 +8,7 @@ import org.reactome.server.tools.reaction.exporter.layout.model.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.commons.lang3.text.WordUtils.initials;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.*;
@@ -117,16 +118,15 @@ public class Box implements Div {
                 return placeReaction((ReactionGlyph) glyph);
             }
         }
-        for (final Map<Integer, Div> map : divs.values()) {
-            for (final Div div : map.values()) {
-                if (div instanceof Box) {
-                    final Box box = (Box) div;
-                    final Point point = box.placeReaction();
-                    if (point != null) return point;
-                }
+        final AtomicReference<Point> p = new AtomicReference<>();
+        divs.forEach((row, map) -> map.forEach((col, div) -> {
+            if (div instanceof Box) {
+                final Box box = (Box) div;
+                final Point point = box.placeReaction();
+                if (point != null) p.set(new Point(point.x + col, point.y + row));
             }
-        }
-        return null;
+        }));
+        return p.get();
     }
 
     private Point placeReaction(ReactionGlyph reactionGlyph) {
@@ -136,26 +136,26 @@ public class Box implements Div {
                 childrenRoles.addAll(box.getContainedRoles());
             }
         }
+        int row;
+        int col;
         final Div reactionDiv = new HorizontalLayout(Collections.singletonList(reactionGlyph));
         reactionDiv.setHorizontalPadding(100);
         reactionDiv.setVerticalPadding(60);
-        if (childrenRoles.isEmpty()) {
-            // no children, place in the center
-            divs.computeIfAbsent(rows / 2, i -> new HashMap<>()).put(columns / 2, reactionDiv);
-            return null;
-        }
         if (childrenRoles.contains(POSITIVE_REGULATOR)) childrenRoles.add(NEGATIVE_REGULATOR);
         childrenRoles.remove(POSITIVE_REGULATOR);
-        int row;
-        int col;
+        // CENTER
+        if (childrenRoles.isEmpty()) {
+            row = rows / 2;
+            col = columns / 2;
+        }
         // RIGHT
-        if (childrenRoles.equals(EnumSet.of(INPUT))
+        else if (childrenRoles.equals(EnumSet.of(INPUT))
                 || childrenRoles.equals(EnumSet.of(INPUT, CATALYST))
                 || childrenRoles.equals(EnumSet.of(INPUT, NEGATIVE_REGULATOR))
                 || childrenRoles.equals(EnumSet.of(INPUT, CATALYST, NEGATIVE_REGULATOR))
                 || childrenRoles.equals(EnumSet.of(CATALYST, NEGATIVE_REGULATOR))) {
             row = rows / 2;
-            col = columns / 2;
+            col = columns - 2;
             // LEFT
         } else if (childrenRoles.equals(EnumSet.of(OUTPUT))
                 || childrenRoles.equals(EnumSet.of(OUTPUT, CATALYST))
@@ -182,7 +182,7 @@ public class Box implements Div {
             col = columns / 2;
         }
         set(row, col, reactionDiv);
-        return new Point(row, col);
+        return new Point(col, row);
     }
 
     private void set(int row, int col, Div div) {
@@ -237,15 +237,18 @@ public class Box implements Div {
 
     /**
      * Set the grid position of each element
+     *
      * @param reactionPosition
      */
     void placeElements(Point reactionPosition) {
         // call sub compartments
-        for (final Map<Integer, Div> map : divs.values()) {
-            for (final Div div : map.values()) {
-                if (div instanceof Box) ((Box) div).placeElements(reactionPosition);
+        divs.forEach((row, map) -> map.forEach((col, div) -> {
+            if (div instanceof Box) {
+                final Box box = (Box) div;
+                final Point point = new Point(reactionPosition.x - col, reactionPosition.y - row);
+                box.placeElements(point);
             }
-        }
+        }));
         final Div[][] divs = getDivs();
         final List<EntityGlyph> inputs = index.filterInputs(compartment);
         final List<EntityGlyph> outputs = index.filterOutputs(compartment);
@@ -254,65 +257,94 @@ public class Box implements Div {
         // TODO: 16/11/18 shift closer to reaction
 
         if (inputs.size() > 0) {
-            int row = getFreeRow(divs, EnumSet.of(INPUT));
+            final int row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y);
             final VerticalLayout layout = new VerticalLayout(inputs);
             layout.setLeftPadding(30);
             set(row, 0, layout);
         }
         if (outputs.size() > 0) {
-            int row = getFreeRow(divs, EnumSet.of(OUTPUT));
+            final int row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.y);
             final VerticalLayout layout = new VerticalLayout(outputs);
             layout.setRightPadding(30); // space for compartment
             set(row, columns - 1, layout);
         }
         if (catalysts.size() > 0) {
+            final int column = getFreeColumn(divs, EnumSet.of(CATALYST), reactionPosition.x);
             final HorizontalLayout layout = new HorizontalLayout(catalysts);
             layout.setTopPadding(30);
-            set(0, getFreeColumn(divs, EnumSet.of(CATALYST)), layout);
+            set(0, column, layout);
         }
         if (regulators.size() > 0) {
+            final int column = getFreeColumn(divs, EnumSet.of(NEGATIVE_REGULATOR, POSITIVE_REGULATOR), reactionPosition.x);
             final HorizontalLayout layout = new HorizontalLayout(regulators);
             layout.setBottomPadding(30);
-            set(rows - 1, getFreeColumn(divs, EnumSet.of(NEGATIVE_REGULATOR, POSITIVE_REGULATOR)), layout);
+            set(rows - 1, column, layout);
         }
     }
 
-    private int getFreeRow(Div[][] divs, Collection<EntityRole> roles) {
+    private int getFreeRow(Div[][] divs, Collection<EntityRole> roles, int reactionRow) {
+        // reaction is under this box
+        if (reactionRow > rows) return rows - 1;
+            // reaction is on top of this compartment
+        else if (reactionRow < 0) return 1;
+        else if (reactionRow < rows) {
+            if (!rowIsBusy(divs[reactionRow], roles)) return reactionRow;
+
+        }
+            // reaction is at the top of this compartment
+        else if (reactionRow == 1) return 1;
         int row = rows / 2;
         for (int i = 0; i < rows - 2; i++) {
             final boolean up = i % 2 == 0;
             final int h = i / 2;
             row = up ? rows / 2 - h : rows / 2 + h;
-            boolean busy = false;
-            for (int col = 0; col < columns; col++) {
-                final Div div = divs[row][col];
-                if (div != null && div.getContainedRoles().stream().anyMatch(roles::contains)) {
-                    busy = true;
-                    break;
-                }
-            }
+            boolean busy = rowIsBusy(divs[row], roles);
             if (!busy) return row;
         }
         return row;
     }
 
-    private int getFreeColumn(Div[][] divs, Collection<EntityRole> roles) {
+    private boolean rowIsBusy(Div[] divs, Collection<EntityRole> roles) {
+        boolean busy = false;
+        for (int col = 0; col < columns; col++) {
+            final Div div = divs[col];
+            if (div != null && div.getContainedRoles().stream().anyMatch(roles::contains)) {
+                busy = true;
+                break;
+            }
+        }
+        return busy;
+    }
+
+    private int getFreeColumn(Div[][] divs, Collection<EntityRole> roles, int reactionColumn) {
+        // reaction is right of this box
+        if (reactionColumn > columns) return columns - 1;
+        // reaction is left of this compartment
+        else if (reactionColumn < 0) return 1;
+        else if (reactionColumn < columns) {
+            if (!colIsBusy(divs, roles, reactionColumn)) return reactionColumn;
+        }
         int col = columns / 2;
         for (int i = 0; i < columns - 2; i++) {
             final boolean left = i % 2 == 0;
             final int h = i / 2;
             col = left ? columns / 2 - h : columns / 2 + h;
-            boolean busy = false;
-            for (int row = 0; row < rows; row++) {
-                final Div div = divs[row][col];
-                if (div != null && div.getContainedRoles().stream().anyMatch(roles::contains)) {
-                    busy = true;
-                    break;
-                }
-            }
+            boolean busy = colIsBusy(divs, roles, col);
             if (!busy) break;
         }
         return col;
+    }
+
+    private boolean colIsBusy(Div[][] divs, Collection<EntityRole> roles, int col) {
+        boolean busy = false;
+        for (int row = 0; row < rows; row++) {
+            final Div div = divs[row][col];
+            if (div != null && div.getContainedRoles().stream().anyMatch(roles::contains)) {
+                busy = true;
+                break;
+            }
+        }
+        return busy;
     }
 
     @Override
