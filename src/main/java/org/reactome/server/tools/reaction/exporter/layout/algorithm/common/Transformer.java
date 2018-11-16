@@ -158,8 +158,16 @@ public class Transformer {
     }
 
     public static void setSize(ReactionGlyph reaction) {
-        reaction.getPosition().setHeight(REACTION_SIZE);
-        reaction.getPosition().setWidth(REACTION_SIZE);
+        final Position position = reaction.getPosition();
+        position.setHeight(REACTION_SIZE);
+        position.setWidth(REACTION_SIZE);
+        // Add backbones
+        reaction.getSegments().add(new SegmentImpl(
+                new CoordinateImpl(position.getX(), position.getCenterY()),
+                new CoordinateImpl(position.getX() - BACKBONE_LENGTH, position.getCenterY())));
+        reaction.getSegments().add(new SegmentImpl(
+                new CoordinateImpl(position.getMaxX(), position.getCenterY()),
+                new CoordinateImpl(position.getMaxX() + BACKBONE_LENGTH, position.getCenterY())));
     }
 
     public static void setSize(EntityGlyph glyph) {
@@ -261,4 +269,8 @@ public class Transformer {
                 position.getHeight() + 2 * vertical);
     }
 
+    public static void setSize(Glyph glyph) {
+        if (glyph instanceof EntityGlyph) setSize((EntityGlyph) glyph);
+        if (glyph instanceof ReactionGlyph) setSize((ReactionGlyph) glyph);
+    }
 }

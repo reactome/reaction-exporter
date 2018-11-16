@@ -94,8 +94,8 @@ public class GridAlgorithm implements LayoutAlgorithm {
     public void compute(Layout layout) {
         addDuplicates(layout);
         index = new LayoutIndex(layout);
-        layoutEverything(layout);
-        // layoutParticipants(layout);
+        // layoutEverything(layout);
+        layoutParticipants(layout);
         layoutCompartments(layout);
         layoutConnectors(layout);
         removeExtracellular(layout);

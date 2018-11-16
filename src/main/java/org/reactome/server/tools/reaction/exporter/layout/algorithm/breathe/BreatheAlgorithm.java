@@ -14,10 +14,7 @@ import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -495,6 +492,7 @@ public class BreatheAlgorithm implements LayoutAlgorithm {
      * Get the list of compartments that clash with the reaction.
      */
     private Collection<CompartmentGlyph> clashingCompartments(Layout layout, ReactionGlyph reaction) {
+        if (reaction.getCompartment() == null) return Collections.emptyList();  // Yes! It happens
         return layout.getCompartments().stream()
                 .filter(compartment -> clashes(reaction, compartment))
                 .collect(Collectors.toList());

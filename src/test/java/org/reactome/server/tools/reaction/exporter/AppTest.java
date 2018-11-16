@@ -73,7 +73,7 @@ public class AppTest extends BaseTest {
 
     @Test
     public void testOne() {
-        convert("R-HSA-162730");
+        convert("R-HSA-265682");
     }
 
     @Test
@@ -183,7 +183,7 @@ public class AppTest extends BaseTest {
             final String pStId = rle.getEventOf().isEmpty() ? stId : rle.getEventOf().get(0).getStId();
 
             final LayoutFactory layoutFactory = new LayoutFactory(ads);
-            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.COMPACT);
+            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
             final Graph graph = new ReactionGraphFactory(ads).getGraph(rle, layout);

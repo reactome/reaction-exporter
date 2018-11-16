@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
 
 import org.reactome.server.tools.diagram.data.layout.impl.CoordinateImpl;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
@@ -17,22 +17,28 @@ public class VerticalLayout extends GlyphsLayout {
     }
 
     @Override
-     Position layout() {
-        if (getGlyphs().isEmpty()) return new Position(0d, 0d, 2 * getHorizontalPadding(), 2 * getVerticalPadding());
+    public String toString() {
+        return String.format("vertical (%d)", getGlyphs().size());
+    }
+
+    @Override
+    Position layout() {
+        if (getGlyphs().isEmpty()) return new Position(0d, 0d, getLeftPadding() + getRightPadding(), getTopPadding() + getBottomPadding());
+        for (final Glyph glyph : getGlyphs()) Transformer.setSize(glyph);
         if (getGlyphs().size() > 6) return layoutInTwoColumns();
         // special case: the list of inputs has 2 catalysts: common in diseases
         final long cats = getGlyphs().stream().filter(o -> hasRole((EntityGlyph) o, EntityRole.CATALYST)).count();
         if (cats > 1) return layoutInTwoColumns();
         final double width = getGlyphs().stream().map(Transformer::getBounds).mapToDouble(Position::getWidth).max().orElse(0);
-        final double cx = getHorizontalPadding() + 0.5 * width;
-        double y = getVerticalPadding();
+        final double cx = getLeftPadding() + 0.5 * width;
+        double y = getTopPadding();
         for (final Glyph glyph : getGlyphs()) {
             final double height = Transformer.getBounds(glyph).getHeight();
             final double cy = y + 0.5 * height;
             Transformer.center(glyph, new CoordinateImpl(cx, cy));
             y += getSeparation() + height;
         }
-        return new Position(0d, 0d, width + 2 * getHorizontalPadding(), y - getSeparation() + getVerticalPadding());
+        return new Position(0d, 0d, width + getLeftPadding() + getRightPadding(), y - getSeparation() + getBottomPadding());
     }
 
     private boolean hasRole(EntityGlyph entity, EntityRole role) {
@@ -69,5 +75,6 @@ public class VerticalLayout extends GlyphsLayout {
         }
         return limits;
     }
+
 
 }
