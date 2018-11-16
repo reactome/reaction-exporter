@@ -47,6 +47,10 @@ public class BoxAlgorithm {
                 if (bounds.getHeight() > heights[row]) heights[row] = bounds.getHeight();
             }
         }
+        for (int i = 0; i < cols / 2; i+= 2) widths[i] += COMPARTMENT_PADDING;
+        for (int i = cols - 1; i > cols / 2; i-= 2) widths[i] += COMPARTMENT_PADDING;
+        for (int i = 0; i < rows / 2; i+= 2) heights[i] += COMPARTMENT_PADDING;
+        for (int i = rows - 1; i > rows / 2; i-= 2) heights[i] += COMPARTMENT_PADDING;
         final double cy[] = new double[rows];
         cy[0] = 0.5 * heights[0];
         for (int i = 1; i < rows; i++) {
