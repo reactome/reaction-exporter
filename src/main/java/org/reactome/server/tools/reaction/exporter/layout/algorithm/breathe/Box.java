@@ -5,7 +5,9 @@ import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static org.apache.commons.lang3.text.WordUtils.initials;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.*;
@@ -66,11 +68,6 @@ public class Box implements Div {
         this.compartment = compartment;
         this.index = index;
         placeSubCompartments();
-        for (final Glyph glyph : compartment.getContainedGlyphs()) {
-            if (glyph instanceof ReactionGlyph) {
-                placeReaction((ReactionGlyph) glyph);
-            }
-        }
     }
 
     private void placeSubCompartments() {
@@ -114,7 +111,25 @@ public class Box implements Div {
         return false;
     }
 
-    private void placeReaction(ReactionGlyph reactionGlyph) {
+    Point placeReaction() {
+        for (final Glyph glyph : compartment.getContainedGlyphs()) {
+            if (glyph instanceof ReactionGlyph) {
+                return placeReaction((ReactionGlyph) glyph);
+            }
+        }
+        for (final Map<Integer, Div> map : divs.values()) {
+            for (final Div div : map.values()) {
+                if (div instanceof Box) {
+                    final Box box = (Box) div;
+                    final Point point = box.placeReaction();
+                    if (point != null) return point;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Point placeReaction(ReactionGlyph reactionGlyph) {
         final EnumSet<EntityRole> childrenRoles = EnumSet.noneOf(EntityRole.class);
         for (final Map<Integer, Div> map : divs.values()) {
             for (final Div box : map.values()) {
@@ -126,41 +141,48 @@ public class Box implements Div {
         reactionDiv.setVerticalPadding(60);
         if (childrenRoles.isEmpty()) {
             // no children, place in the center
-            divs.computeIfAbsent(1, i -> new HashMap<>()).put(1, reactionDiv);
-            return;
+            divs.computeIfAbsent(rows / 2, i -> new HashMap<>()).put(columns / 2, reactionDiv);
+            return null;
         }
         if (childrenRoles.contains(POSITIVE_REGULATOR)) childrenRoles.add(NEGATIVE_REGULATOR);
         childrenRoles.remove(POSITIVE_REGULATOR);
+        int row;
+        int col;
         // RIGHT
         if (childrenRoles.equals(EnumSet.of(INPUT))
                 || childrenRoles.equals(EnumSet.of(INPUT, CATALYST))
                 || childrenRoles.equals(EnumSet.of(INPUT, NEGATIVE_REGULATOR))
                 || childrenRoles.equals(EnumSet.of(INPUT, CATALYST, NEGATIVE_REGULATOR))
                 || childrenRoles.equals(EnumSet.of(CATALYST, NEGATIVE_REGULATOR))) {
-            set(rows / 2, columns - 2, reactionDiv);
+            row = rows / 2;
+            col = columns / 2;
             // LEFT
         } else if (childrenRoles.equals(EnumSet.of(OUTPUT))
                 || childrenRoles.equals(EnumSet.of(OUTPUT, CATALYST))
                 || childrenRoles.equals(EnumSet.of(OUTPUT, NEGATIVE_REGULATOR))
                 || childrenRoles.equals(EnumSet.of(OUTPUT, CATALYST, NEGATIVE_REGULATOR))) {
-            set(rows / 2, 1, reactionDiv);
+            row = rows / 2;
+            col = 1;
             // BOTTOM
         } else if (childrenRoles.equals(EnumSet.of(CATALYST))
                 || childrenRoles.equals(EnumSet.of(INPUT, OUTPUT))
                 || childrenRoles.equals(EnumSet.of(CATALYST, INPUT, OUTPUT))) {
-            // bottom center
-            set(rows - 2, columns / 2, reactionDiv);
+            row = rows - 2;
+            col = columns / 2;
             // TOP
         } else if (childrenRoles.equals(EnumSet.of(NEGATIVE_REGULATOR))
                 || childrenRoles.equals(EnumSet.of(NEGATIVE_REGULATOR, INPUT, OUTPUT))) {
-            // top center
-            set(1, columns / 2, reactionDiv);
+            row = 1;
+            col = columns / 2;
         } else {
             // the only remaining possibility is that children contain all of them, so there is no way to scape
             // so we insert reaction in the middle
             // WARNING: this will fall inside a subcompartment
-            set(rows / 2, columns / 2, reactionDiv);
+            row = rows / 2;
+            col = columns / 2;
         }
+        set(row, col, reactionDiv);
+        return new Point(row, col);
     }
 
     private void set(int row, int col, Div div) {
@@ -215,22 +237,20 @@ public class Box implements Div {
 
     /**
      * Set the grid position of each element
+     * @param reactionPosition
      */
-    void placeElements() {
+    void placeElements(Point reactionPosition) {
         // call sub compartments
         for (final Map<Integer, Div> map : divs.values()) {
             for (final Div div : map.values()) {
-                if (div instanceof Box) ((Box) div).placeElements();
+                if (div instanceof Box) ((Box) div).placeElements(reactionPosition);
             }
         }
-
         final Div[][] divs = getDivs();
         final List<EntityGlyph> inputs = index.filterInputs(compartment);
         final List<EntityGlyph> outputs = index.filterOutputs(compartment);
         final List<EntityGlyph> catalysts = index.filterCatalysts(compartment);
         final List<EntityGlyph> regulators = index.filterRegulators(compartment);
-
-        // TODO: 16/11/18 shift when subboxes already contain role
         // TODO: 16/11/18 shift closer to reaction
 
         if (inputs.size() > 0) {

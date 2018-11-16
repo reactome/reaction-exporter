@@ -13,6 +13,8 @@ import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 
+import java.awt.*;
+
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.getBounds;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.move;
 
@@ -31,7 +33,8 @@ public class BoxAlgorithm {
 
     public void compute() {
         final Box box = new Box(layout.getCompartmentRoot(), index);
-        box.placeElements();
+        final Point reactionPosition = box.placeReaction();
+        box.placeElements(reactionPosition);
         final Div[][] divs = box.getDivs();
 
         final int rows = divs.length;
@@ -127,20 +130,27 @@ public class BoxAlgorithm {
     }
 
     private void computeDimension(Layout layout) {
+        Position position = null;
         for (CompartmentGlyph compartment : layout.getCompartments()) {
-            layout.getPosition().union(compartment.getPosition());
+            if (position == null) position = new Position(compartment.getPosition());
+            else position.union(compartment.getPosition());
         }
         for (EntityGlyph entity : layout.getEntities()) {
-            layout.getPosition().union(Transformer.getBounds(entity));
+            final Position bounds = Transformer.getBounds(entity);
+            if (position == null) position = new Position(bounds);
+            else position.union(bounds);
             for (final Segment segment : entity.getConnector().getSegments()) {
                 final double minX = Math.min(segment.getFrom().getX(), segment.getTo().getX());
                 final double maxX = Math.max(segment.getFrom().getX(), segment.getTo().getX());
                 final double minY = Math.min(segment.getFrom().getY(), segment.getTo().getY());
                 final double maxY = Math.max(segment.getFrom().getY(), segment.getTo().getY());
-                layout.getPosition().union(new Position(minX, minY, maxX - minX, maxY - minY));
+                position.union(new Position(minX, minY, maxX - minX, maxY - minY));
             }
         }
-        layout.getPosition().union(Transformer.getBounds(layout.getReaction()));
+        final Position bounds = Transformer.getBounds(layout.getReaction());
+        if (position == null) position = new Position(bounds);
+        else position.union(bounds);
+        layout.getPosition().set(position);
     }
 
     private void moveToOrigin(Layout layout) {
