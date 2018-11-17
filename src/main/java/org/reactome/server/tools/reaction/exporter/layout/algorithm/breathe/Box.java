@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.commons.lang3.text.WordUtils.initials;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.*;
+import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils.hasRole;
 
 public class Box implements Div {
 
@@ -97,21 +98,6 @@ public class Box implements Div {
         rows = mr == 0 ? 3 : mr * boxes.size() + (boxes.size() - 1) + 4;
     }
 
-    private boolean hasRole(CompartmentGlyph compartment, EntityRole role) {
-        for (final Glyph glyph : compartment.getContainedGlyphs()) {
-            if (glyph instanceof EntityGlyph) {
-                final EntityGlyph entity = (EntityGlyph) glyph;
-                for (final Role entityRole : entity.getRoles()) {
-                    if (entityRole.getType() == role) return true;
-                }
-            }
-        }
-        for (final CompartmentGlyph child : compartment.getChildren()) {
-            if (hasRole(child, role)) return true;
-        }
-        return false;
-    }
-
     Point placeReaction() {
         for (final Glyph glyph : compartment.getContainedGlyphs()) {
             if (glyph instanceof ReactionGlyph) {
@@ -167,7 +153,12 @@ public class Box implements Div {
         } else if (childrenRoles.equals(EnumSet.of(CATALYST))
                 || childrenRoles.equals(EnumSet.of(INPUT, OUTPUT))
                 || childrenRoles.equals(EnumSet.of(CATALYST, INPUT, OUTPUT))) {
-            row = rows - 2;
+            // rule 22: the reaction can be set at the top if this compartment has a catalyst as a rol
+            if (hasCatalyst()) {
+                row = 1;
+            } else {
+                row = rows - 2;
+            }
             col = columns / 2;
             // TOP
         } else if (childrenRoles.equals(EnumSet.of(NEGATIVE_REGULATOR))
@@ -183,6 +174,14 @@ public class Box implements Div {
         }
         set(row, col, reactionDiv);
         return new Point(col, row);
+    }
+
+    private boolean hasCatalyst() {
+        return compartment.getContainedGlyphs().stream()
+                .filter(EntityGlyph.class::isInstance)
+                .flatMap(glyph -> ((EntityGlyph) glyph).getRoles().stream())
+                .map(Role::getType)
+                .anyMatch(CATALYST::equals);
     }
 
     private void set(int row, int col, Div div) {
@@ -257,13 +256,15 @@ public class Box implements Div {
         // TODO: 16/11/18 shift closer to reaction
 
         if (inputs.size() > 0) {
-            final int row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y);
+            final int row = inputs.stream().anyMatch(entityGlyph -> hasRole(entityGlyph, CATALYST))
+                    ? getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y, true, false)
+                    : getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y, false, true);
             final VerticalLayout layout = new VerticalLayout(inputs);
             layout.setLeftPadding(30);
             set(row, 0, layout);
         }
         if (outputs.size() > 0) {
-            final int row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.y);
+            final int row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.y, false, false);
             final VerticalLayout layout = new VerticalLayout(outputs);
             layout.setRightPadding(30); // space for compartment
             set(row, columns - 1, layout);
@@ -282,20 +283,39 @@ public class Box implements Div {
         }
     }
 
-    private int getFreeRow(Div[][] divs, Collection<EntityRole> roles, int reactionRow) {
+    private int getFreeRow(Div[][] divs, Collection<EntityRole> roles, int reactionRow, boolean up, boolean down) {
         // reaction is under this box
         if (reactionRow > rows) return rows - 1;
             // reaction is on top of this compartment
         else if (reactionRow < 0) return 1;
         else if (reactionRow < rows) {
             if (!rowIsBusy(divs[reactionRow], roles)) return reactionRow;
-
         }
-            // reaction is at the top of this compartment
+        // reaction is at the top of this compartment
         else if (reactionRow == 1) return 1;
+        if (up) return getFreeRowUp(divs, roles);
+        if (down) return getFreeRowDown(divs, roles);
+        return getFreeRow(divs, roles);
+
+    }
+
+    private int getFreeRowUp(Div[][] divs, Collection<EntityRole> roles) {
+        for (int i = rows / 2; i > 1; i--) {
+                if (!rowIsBusy(divs[i], roles)) return i;
+        }
+        return 1;
+    }
+
+    private int getFreeRowDown(Div[][] divs, Collection<EntityRole> roles) {
+        for (int i = rows / 2; i < rows - 1; i++) {
+            if (!rowIsBusy(divs[i], roles)) return i;
+        }
+        return rows - 1;
+    }
+    private int getFreeRow(Div[][] divs, Collection<EntityRole> roles) {
         int row = rows / 2;
         for (int i = 0; i < rows - 2; i++) {
-            final boolean up = i % 2 == 0;
+            final boolean up = i % 2 == 1;  // first try down
             final int h = i / 2;
             row = up ? rows / 2 - h : rows / 2 + h;
             boolean busy = rowIsBusy(divs[row], roles);
@@ -305,21 +325,19 @@ public class Box implements Div {
     }
 
     private boolean rowIsBusy(Div[] divs, Collection<EntityRole> roles) {
-        boolean busy = false;
         for (int col = 0; col < columns; col++) {
             final Div div = divs[col];
             if (div != null && div.getContainedRoles().stream().anyMatch(roles::contains)) {
-                busy = true;
-                break;
+                return true;
             }
         }
-        return busy;
+        return false;
     }
 
     private int getFreeColumn(Div[][] divs, Collection<EntityRole> roles, int reactionColumn) {
         // reaction is right of this box
         if (reactionColumn > columns) return columns - 1;
-        // reaction is left of this compartment
+            // reaction is left of this compartment
         else if (reactionColumn < 0) return 1;
         else if (reactionColumn < columns) {
             if (!colIsBusy(divs, roles, reactionColumn)) return reactionColumn;
@@ -336,15 +354,13 @@ public class Box implements Div {
     }
 
     private boolean colIsBusy(Div[][] divs, Collection<EntityRole> roles, int col) {
-        boolean busy = false;
         for (int row = 0; row < rows; row++) {
             final Div div = divs[row][col];
             if (div != null && div.getContainedRoles().stream().anyMatch(roles::contains)) {
-                busy = true;
-                break;
+                return true;
             }
         }
-        return busy;
+        return false;
     }
 
     @Override

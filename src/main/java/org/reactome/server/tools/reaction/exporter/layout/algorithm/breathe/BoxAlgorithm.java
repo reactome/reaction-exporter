@@ -17,6 +17,9 @@ import java.awt.*;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.getBounds;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.move;
+import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
+import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
+import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils.hasRole;
 
 public class BoxAlgorithm {
 
@@ -73,8 +76,8 @@ public class BoxAlgorithm {
             }
         }
 
-        layoutCompartments(layout);
         ConnectorFactory.addConnectors(layout, index);
+        layoutCompartments(layout);
         removeExtracellular(layout);
         computeDimension(layout);
         moveToOrigin(layout);
@@ -88,17 +91,25 @@ public class BoxAlgorithm {
      * Calculates the size of the compartments so each of them surrounds all of its contained glyphs and children.
      */
     private void layoutCompartment(CompartmentGlyph compartment) {
-        for (CompartmentGlyph child : compartment.getChildren()) {
-            layoutCompartment(child);
-        }
         Position position = null;
         for (CompartmentGlyph child : compartment.getChildren()) {
+            layoutCompartment(child);
             if (position == null) position = new Position(child.getPosition());
             else position.union(child.getPosition());
         }
         for (Glyph glyph : compartment.getContainedGlyphs()) {
             if (position == null) position = new Position(getBounds(glyph));
             else position.union(getBounds(glyph));
+            if (glyph instanceof EntityGlyph) {
+                final EntityGlyph entityGlyph = (EntityGlyph) glyph;
+                if (hasRole(entityGlyph, CATALYST, INPUT)) {
+                    double topy = entityGlyph.getPosition().getY();
+                    for (final Segment segment : entityGlyph.getConnector().getSegments()) {
+                        if (segment.getFrom().getY() < topy) topy = segment.getFrom().getY();
+                    }
+                    position.union(new Position(entityGlyph.getPosition().getX(), topy, 1, 1));
+                }
+            }
         }
         position.setX(position.getX() - COMPARTMENT_PADDING);
         position.setY(position.getY() - COMPARTMENT_PADDING);
