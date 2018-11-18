@@ -19,8 +19,8 @@ import java.util.function.Consumer;
  * Factory for single reaction {@link Layout}. Layout is computed with positions and dimensions already set for each
  * glyph. This factory uses a fixed layout, with an approximate O(number of entities + number of compartments) cost.
  *
- * @author Pascual Lorente (plorente@ebi.ac.uk)
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 @Component
 public class LayoutFactory {
