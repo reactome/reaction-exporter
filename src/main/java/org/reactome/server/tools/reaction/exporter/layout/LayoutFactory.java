@@ -135,9 +135,7 @@ public class LayoutFactory {
         Map<String, Object> params = new HashMap<>();
         params.put("stId", rle.getStId());
         try {
-            long start = System.currentTimeMillis();
             final Layout layout = ads.getCustomQueryResult(Layout.class, QUERY, params);
-            System.out.println(System.currentTimeMillis() - start);
             style.apply(layout);
             return layout;
         } catch (CustomQueryException e) {
