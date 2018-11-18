@@ -20,13 +20,12 @@ public class ReactionExporter {
     @Autowired
     private ReactionGraphFactory graphFactory;
 
-    //public ReactionExporter(AdvancedDatabaseObjectService ads) {
-    //    layoutFactory = new LayoutFactory(ads);
-    //    graphFactory = new ReactionGraphFactory(ads);
-    //}
-
     public Layout getReactionLayout(ReactionLikeEvent rle){
-        return layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.COMPACT);
+        return layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);
+    }
+
+    public Layout getReactionLayout(ReactionLikeEvent rle,  LayoutFactory.Style style){
+        return layoutFactory.getReactionLikeEventLayout(rle, style);
     }
 
     public Diagram getReactionDiagram(Layout layout){
