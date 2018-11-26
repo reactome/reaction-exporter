@@ -236,8 +236,6 @@ public class Box implements Div {
 
     /**
      * Set the grid position of each element
-     *
-     * @param reactionPosition
      */
     void placeElements(Point reactionPosition) {
         // call sub compartments

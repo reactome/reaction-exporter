@@ -32,6 +32,17 @@ public class BoxAlgorithm {
         this.layout = layout;
         Dedup.addDuplicates(layout);
         index = new LayoutIndex(layout);
+        fixReactionWithNoCompartment(layout);
+    }
+
+    /**
+     * This fixes reaction R-HSA-9006323 that does not contain a compartment. It can also happen in other species.
+     */
+    private void fixReactionWithNoCompartment(Layout layout) {
+        if (layout.getReaction().getCompartment() == null) {
+            layout.getReaction().setCompartment(layout.getCompartmentRoot());
+            layout.getCompartmentRoot().getContainedGlyphs().add(layout.getReaction());
+        }
     }
 
     public void compute() {
