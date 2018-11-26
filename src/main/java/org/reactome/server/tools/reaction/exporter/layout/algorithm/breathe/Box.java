@@ -293,27 +293,31 @@ public class Box implements Div {
         }
         // reaction is at the top of this compartment
         else if (reactionRow == 1) return 1;
-        if (up) return getFreeRowUp(divs, roles);
-        if (down) return getFreeRowDown(divs, roles);
-        return getFreeRow(divs, roles);
-
+        if (up) return getFreeRowUp(divs, roles, rows / 2);
+        if (down) return getFreeRowDown(divs, roles, rows / 2);
+        // By default, return the closest free row from the reaction row
+        final int freeRowDown = getFreeRowDown(divs, roles, Math.max(reactionRow, 0));
+        final int freeRowUp = getFreeRowUp(divs, roles, Math.min(reactionRow, rows - 1));
+        if (reactionRow - freeRowUp > freeRowDown - reactionRow)
+            return freeRowDown;
+        else return freeRowUp;
     }
 
-    private int getFreeRowUp(Div[][] divs, Collection<EntityRole> roles) {
-        for (int i = rows / 2; i > 1; i--) {
+    private int getFreeRowUp(Div[][] divs, Collection<EntityRole> roles, int start) {
+        for (int i = start; i > 1; i--) {
                 if (!rowIsBusy(divs[i], roles)) return i;
         }
         return 1;
     }
 
-    private int getFreeRowDown(Div[][] divs, Collection<EntityRole> roles) {
-        for (int i = rows / 2; i < rows - 1; i++) {
+    private int getFreeRowDown(Div[][] divs, Collection<EntityRole> roles, int start) {
+        for (int i = start; i < rows - 1; i++) {
             if (!rowIsBusy(divs[i], roles)) return i;
         }
         return rows - 1;
     }
-    private int getFreeRow(Div[][] divs, Collection<EntityRole> roles) {
-        int row = rows / 2;
+    private int getFreeRow(Div[][] divs, Collection<EntityRole> roles, int reactionRow) {
+        int row = rows / 2; // by default, center
         for (int i = 0; i < rows - 2; i++) {
             final boolean up = i % 2 == 1;  // first try down
             final int h = i / 2;
