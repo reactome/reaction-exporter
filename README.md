@@ -1,12 +1,12 @@
 [<img src=https://user-images.githubusercontent.com/6883670/31999264-976dfb86-b98a-11e7-9432-0316345a72ea.png height=75 />](https://reactome.org)
 
-# Reaction exporter
-Library to export a single reaction from Reactome into an image.
+# Reaction converter
+Creates diagram files out of single reactions, using the graph database as resource.
 
-An automatic layout is applied to the reaction.
-
-Supported output formats include raster (png, jpg, jpeg, gif) and vector (svg, pdf).
-
+Taking a single reaction, this library performs 3 steps:
+1. queries the graph database to retrieve the reaction, its participants and the compartments containing them.
+2. applies an automatic layout to show a left to right view of the reaction, while keeping every participant in its compartment.
+3. generates a diagram (_.json_) and a graph (_.graph.json_) files following Reactome [specifications](https://reactome.org/dev/diagram/pathway-diagram-specs).
 
 ## Usage:
 This project can be used as a standalone compiled tool through the provided _reaction-exporter.jar_ file.
