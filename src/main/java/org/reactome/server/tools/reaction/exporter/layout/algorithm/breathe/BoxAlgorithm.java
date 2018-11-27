@@ -9,10 +9,7 @@ import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Layou
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
 import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
-import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
-import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
-import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
-import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
+import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -54,9 +51,15 @@ public class BoxAlgorithm {
         final Box box = new Box(layout.getCompartmentRoot(), index);
         final Point reactionPosition = box.placeReaction();
         box.placeElements(reactionPosition);
-        // final Div[][] divs = box.getDivs();
-        final Div[][] divs = compactCols(compactRows(box.getDivs()));
+        final Div[][] preDivs = box.getDivs();
+        final Div[][] divs = compactCols(compactRows(preDivs));
+        final CompartmentGlyph[][] comps = new CompartmentGlyph[divs.length][divs[0].length];
+        computeCompartment(layout.getCompartmentRoot(), divs, comps);
+        final Point p = getReactionPosition(divs);
+        compactInputs(divs, p, comps);
+        compactOutputs(divs, p, comps);
 
+        // size every square
         final int rows = divs.length;
         final double heights[] = new double[rows];
         final int cols = divs[0].length;
@@ -70,8 +73,10 @@ public class BoxAlgorithm {
                 if (bounds.getHeight() > heights[row]) heights[row] = bounds.getHeight();
             }
         }
+        // add space for compartment padding and extra large compartments (long text)
         expandCompartment(layout.getCompartmentRoot(), divs, widths, heights);
 
+        // get centers by row and column
         final double cy[] = new double[rows];
         cy[0] = 0.5 * heights[0];
         for (int i = 1; i < rows; i++) {
@@ -83,6 +88,7 @@ public class BoxAlgorithm {
             cx[i] = cx[i - 1] + 0.5 * widths[i - 1] + 0.5 * widths[i];
         }
 
+        // place things (wheeeee!!)
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
                 final Div div = divs[row][col];
@@ -96,6 +102,91 @@ public class BoxAlgorithm {
         removeExtracellular(layout);
         computeDimension(layout);
         moveToOrigin(layout);
+    }
+
+    private void computeCompartment(CompartmentGlyph compartment, Div[][] divs,CompartmentGlyph[][] comps ) {
+        for (final CompartmentGlyph child : compartment.getChildren()) {
+            computeCompartment(child, divs, comps);
+        }
+        int minCol = Integer.MAX_VALUE;
+        int maxCol = 0;
+        int minRow = Integer.MAX_VALUE;
+        int maxRow = 0;
+        for (int r = 0; r < divs.length; r++) {
+            for (int c = 0; c < divs[0].length; c++) {
+                final Div div = divs[r][c];
+                if (div == null) continue;
+                if (compartment == div.getCompartment() || GlyphUtils.isAncestor(compartment, div.getCompartment())) {
+                    minCol = Math.min(minCol, c);
+                    maxCol = Math.max(maxCol, c);
+                    minRow = Math.min(minRow, r);
+                    maxRow = Math.max(maxRow, r);
+                }
+            }
+        }
+        for (int r = minRow; r <= maxRow; r++) {
+            for (int c = minCol; c <= maxCol; c++) {
+                if (comps[r][c] == null) comps[r][c] = compartment;
+            }
+        }
+    }
+
+    private void compactInputs(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
+        for (int row = 0; row < divs.length; row++) {
+            for (int col = 0; col < reactionPosition.x - 1; col++) {
+                // we know inputs are laid out using VerticalLayout
+                if (divs[row][col] instanceof VerticalLayout) {
+                    if (divs[row][col].getContainedRoles().contains(CATALYST)) continue;
+                    final CompartmentGlyph compartment = comps[row][col];
+                    for (int c = reactionPosition.x - 1; c >= col + 1; c--) {
+                        if (comps[row][c] == compartment) {
+                            divs[row][c] = divs[row][col];
+                            divs[row][col] = null;
+                            break;
+                        }
+                    }
+                    // only one VerticalLayout expected
+                    break;
+                }
+            }
+        }
+    }
+
+    private void compactOutputs(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
+        for (int row = 0; row < divs.length; row++) {
+            for (int col = divs[0].length - 1; col > reactionPosition.x + 1; col--) {
+                // we know outputs are laid out using VerticalLayout
+                if (divs[row][col] instanceof VerticalLayout) {
+                    final CompartmentGlyph compartment = comps[row][col];
+                    for (int c = reactionPosition.x + 1; c < col; c++) {
+                        if (comps[row][c] == compartment) {
+                            divs[row][c] = divs[row][col];
+                            divs[row][col] = null;
+                            break;
+                        }
+                    }
+                    // only one VerticalLayout expected
+                    break;
+                }
+            }
+        }
+    }
+
+    private Point getReactionPosition(Div[][] divs) {
+        for (int y = 0; y < divs.length; y++) {
+            for (int x = 0; x < divs[0].length; x++) {
+                if (divs[y] != null && divs[y][x] != null) {
+                    final Div div = divs[y][x];
+                    if (div instanceof GlyphsLayout) {
+                        final GlyphsLayout layout = (GlyphsLayout) div;
+                        if (layout.getGlyphs().iterator().next() instanceof ReactionGlyph) {
+                            return new Point(x, y);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private void expandCompartment(CompartmentGlyph compartment, Div[][] divs, double[] widths, double[] heights) {
@@ -150,27 +241,25 @@ public class BoxAlgorithm {
     }
 
     private Div[][] compactCols(Div[][] divs) {
-        final List<Div>[] rtn = new List[divs.length];
-        for (int i = 0; i < rtn.length; i++)
-            rtn[i] = new ArrayList<>();
-        int cols = 0;
+        final List<Div>[] semiMatrix = new List[divs.length];
+        for (int i = 0; i < semiMatrix.length; i++)
+            semiMatrix[i] = new ArrayList<>();
         for (int c = 0; c < divs[0].length; c++) {
             if (columnIsBusy(divs, c)) {
-                cols++;
                 for (int i = 0; i < divs.length; i++) {
                     final Div[] div = divs[i];
                     if (div != null && div[c] != null) {
-                        rtn[i].add(div[c]);
-                    } else rtn[i].add(null);
+                        semiMatrix[i].add(div[c]);
+                    } else semiMatrix[i].add(null);
                 }
             }
         }
-        final Div[][] divs1 = new Div[rtn.length][];
-        for (int i = 0; i < rtn.length; i++) {
-            final List<Div> list = rtn[i];
-            divs1[i] = list.toArray(new Div[list.size()]);
+        final Div[][] rtn = new Div[semiMatrix.length][];
+        for (int i = 0; i < semiMatrix.length; i++) {
+            final List<Div> list = semiMatrix[i];
+            rtn[i] = list.toArray(new Div[list.size()]);
         }
-        return divs1;
+        return rtn;
     }
 
     private boolean columnIsBusy(Div[][] divs, int c) {
@@ -195,8 +284,11 @@ public class BoxAlgorithm {
             else position.union(child.getPosition());
         }
         for (Glyph glyph : compartment.getContainedGlyphs()) {
-            if (position == null) position = new Position(getBounds(glyph));
-            else position.union(getBounds(glyph));
+            final Position bounds = glyph instanceof ReactionGlyph
+                    ? Transformer.padd(getBounds(glyph), 80, 40)
+                    : getBounds(glyph);
+            if (position == null) position = new Position(bounds);
+            else position.union(bounds);
             if (glyph instanceof EntityGlyph) {
                 final EntityGlyph entityGlyph = (EntityGlyph) glyph;
                 if (hasRole(entityGlyph, CATALYST, INPUT)) {

@@ -282,7 +282,7 @@ public class Box implements Div {
 
     private int getFreeRow(Div[][] divs, Collection<EntityRole> roles, int reactionRow, boolean up, boolean down) {
         // reaction is under this box
-        if (reactionRow > rows) return rows - 1;
+        if (reactionRow > rows) return rows - 2;
             // reaction is on top of this compartment
         else if (reactionRow < 0) return 1;
         else if (reactionRow < rows) {
