@@ -63,7 +63,7 @@ public class VerticalLayout extends GlyphsLayout {
             xs[i] = xs[i - 1] + 0.5 * widths[i - 1] + 0.5 * widths[i] + 30;
         }
         final double height = getGlyphs().stream().map(Transformer::getBounds).mapToDouble(Position::getHeight).max().orElse(0);
-        final double step = 0.5 * (height + getSeparation());
+        final double step = 0.5 * (height + Math.max(getSeparation(), 16));  // space for stoichiometry
         final Position limits = new Position();
         double y = 0;
         for (int i = 0; i < getGlyphs().size(); i++) {
