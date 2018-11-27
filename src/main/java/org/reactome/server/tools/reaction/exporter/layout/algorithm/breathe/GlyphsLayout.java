@@ -4,9 +4,7 @@ import org.reactome.server.tools.diagram.data.layout.impl.CoordinateImpl;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
-import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
-import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
-import org.reactome.server.tools.reaction.exporter.layout.model.Role;
+import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import java.util.List;
 import java.util.Set;
@@ -124,4 +122,14 @@ public abstract class GlyphsLayout implements Div {
 
     abstract Position layout();
 
+    @Override
+    public CompartmentGlyph getCompartment() {
+        if (glyphs.isEmpty()) return null;
+        final Glyph glyph = glyphs.get(0);
+        if (glyph instanceof ReactionGlyph)
+            return ((ReactionGlyph) glyph).getCompartment();
+        else if (glyph instanceof EntityGlyph)
+            return ((EntityGlyph) glyph).getCompartment();
+        return null;
+    }
 }

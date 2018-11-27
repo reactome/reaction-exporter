@@ -73,7 +73,7 @@ public class AppTest extends BaseTest {
 
     @Test
     public void testOne() {
-        convert("R-HSA-70634");
+        convert("R-HSA-5362450");
     }
 
     @Test
@@ -157,8 +157,8 @@ public class AppTest extends BaseTest {
                 "R-HSA-8853313", "R-HSA-8853317", "R-HSA-8853319", "R-HSA-8853320", "R-HSA-8853322", "R-HSA-8853325",
                 "R-HSA-8854908", "R-HSA-8855062", "R-HSA-8863101", "R-HSA-8865275", "R-HSA-8865276", "R-HSA-8867876",
                 "R-HSA-8869241", "R-HSA-8877620", "R-HSA-8948146", "R-HSA-8948832", "R-HSA-8949609", "R-HSA-8949687",
-                "R-HSA-8949688", "R-HSA-8949703", "R-HSA-8951850", "R-HSA-9013533", "R-HSA-9015379", "R-HSA-9036025",
-                "R-HSA-9036056",
+                "R-HSA-8949688", "R-HSA-8949703", "R-HSA-8951850", "R-HSA-9006323", "R-HSA-9013533", "R-HSA-9015379",
+                "R-HSA-9036025", "R-HSA-9036056",
                 "R-MMU-8851711", "R-MMU-9005872",
                 "R-NUL-9005752", "R-NUL-9606338"
         ));

@@ -38,4 +38,13 @@ public class GlyphUtils {
         return false;
     }
 
+    public static boolean isAncestor(CompartmentGlyph parent, CompartmentGlyph child) {
+        if (parent == null || child == null) return false;
+        CompartmentGlyph ancestor = child.getParent();
+        while (ancestor != null) {
+            if (ancestor == parent) return true;
+            ancestor = ancestor.getParent();
+        }
+        return false;
+    }
 }

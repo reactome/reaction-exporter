@@ -7,6 +7,7 @@ import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Dedup
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.FontProperties;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
+import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
@@ -14,6 +15,10 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.getBounds;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.move;
@@ -49,7 +54,8 @@ public class BoxAlgorithm {
         final Box box = new Box(layout.getCompartmentRoot(), index);
         final Point reactionPosition = box.placeReaction();
         box.placeElements(reactionPosition);
-        final Div[][] divs = box.getDivs();
+        // final Div[][] divs = box.getDivs();
+        final Div[][] divs = compactCols(compactRows(box.getDivs()));
 
         final int rows = divs.length;
         final double heights[] = new double[rows];
@@ -64,10 +70,8 @@ public class BoxAlgorithm {
                 if (bounds.getHeight() > heights[row]) heights[row] = bounds.getHeight();
             }
         }
-        for (int i = 0; i < cols / 2; i+= 2) widths[i] += COMPARTMENT_PADDING;
-        for (int i = cols - 1; i > cols / 2; i-= 2) widths[i] += COMPARTMENT_PADDING;
-        for (int i = 0; i < rows / 2; i+= 2) heights[i] += COMPARTMENT_PADDING;
-        for (int i = rows - 1; i > rows / 2; i-= 2) heights[i] += COMPARTMENT_PADDING;
+        expandCompartment(layout.getCompartmentRoot(), divs, widths, heights);
+
         final double cy[] = new double[rows];
         cy[0] = 0.5 * heights[0];
         for (int i = 1; i < rows; i++) {
@@ -92,6 +96,88 @@ public class BoxAlgorithm {
         removeExtracellular(layout);
         computeDimension(layout);
         moveToOrigin(layout);
+    }
+
+    private void expandCompartment(CompartmentGlyph compartment, Div[][] divs, double[] widths, double[] heights) {
+        for (final CompartmentGlyph child : compartment.getChildren()) {
+            expandCompartment(child, divs, widths, heights);
+        }
+        int minCol = Integer.MAX_VALUE;
+        int maxCol = 0;
+        int minRow = Integer.MAX_VALUE;
+        int maxRow = 0;
+        for (int r = 0; r < divs.length; r++) {
+            for (int c = 0; c < divs[0].length; c++) {
+                final Div div = divs[r][c];
+                if (div == null) continue;
+                if (compartment == div.getCompartment() || GlyphUtils.isAncestor(compartment, div.getCompartment())) {
+                    minCol = Math.min(minCol, c);
+                    maxCol = Math.max(maxCol, c);
+                    minRow = Math.min(minRow, r);
+                    maxRow = Math.max(maxRow, r);
+                }
+            }
+        }
+        double width = 0;
+        for (int i = minCol; i <= maxCol; i++) {
+            width += widths[i];
+        }
+        final double minWidth = getCompartmentMinWidth(compartment);
+        if (width < minWidth) {
+            final double factor = minWidth / width;
+            for (int i = minCol; i <= maxCol; i++) {
+                widths[i] *= factor;
+            }
+        } else {
+            widths[minCol] += COMPARTMENT_PADDING;
+            widths[maxCol] += COMPARTMENT_PADDING;
+        }
+        heights[minRow] += COMPARTMENT_PADDING;
+        heights[maxRow] += COMPARTMENT_PADDING;
+
+    }
+
+    private double getCompartmentMinWidth(CompartmentGlyph compartment) {
+        return 2 * COMPARTMENT_PADDING + FontProperties.getTextWidth(compartment.getName());
+    }
+
+    private Div[][] compactRows(Div[][] divs) {
+        final List<Div[]> rtn = new ArrayList<>();
+        for (final Div[] div : divs)
+            if (div != null && Arrays.stream(div).anyMatch(Objects::nonNull)) rtn.add(div);
+
+        return rtn.toArray(new Div[rtn.size()][]);
+    }
+
+    private Div[][] compactCols(Div[][] divs) {
+        final List<Div>[] rtn = new List[divs.length];
+        for (int i = 0; i < rtn.length; i++)
+            rtn[i] = new ArrayList<>();
+        int cols = 0;
+        for (int c = 0; c < divs[0].length; c++) {
+            if (columnIsBusy(divs, c)) {
+                cols++;
+                for (int i = 0; i < divs.length; i++) {
+                    final Div[] div = divs[i];
+                    if (div != null && div[c] != null) {
+                        rtn[i].add(div[c]);
+                    } else rtn[i].add(null);
+                }
+            }
+        }
+        final Div[][] divs1 = new Div[rtn.length][];
+        for (int i = 0; i < rtn.length; i++) {
+            final List<Div> list = rtn[i];
+            divs1[i] = list.toArray(new Div[list.size()]);
+        }
+        return divs1;
+    }
+
+    private boolean columnIsBusy(Div[][] divs, int c) {
+        for (final Div[] div : divs)
+            if (div != null && div[c] != null)
+                return true;
+        return false;
     }
 
     private void layoutCompartments(Layout layout) {

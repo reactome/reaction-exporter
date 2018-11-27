@@ -251,7 +251,6 @@ public class Box implements Div {
         final List<EntityGlyph> outputs = index.filterOutputs(compartment);
         final List<EntityGlyph> catalysts = index.filterCatalysts(compartment);
         final List<EntityGlyph> regulators = index.filterRegulators(compartment);
-        // TODO: 16/11/18 shift closer to reaction
 
         if (inputs.size() > 0) {
             final int row = inputs.stream().anyMatch(entityGlyph -> hasRole(entityGlyph, CATALYST))
@@ -262,7 +261,7 @@ public class Box implements Div {
             set(row, 0, layout);
         }
         if (outputs.size() > 0) {
-            final int row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.y, false, false);
+            final int row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.y, false, true);
             final VerticalLayout layout = new VerticalLayout(outputs);
             layout.setRightPadding(30); // space for compartment
             set(row, columns - 1, layout);
@@ -389,5 +388,8 @@ public class Box implements Div {
         return rtn;
     }
 
-
+    @Override
+    public CompartmentGlyph getCompartment() {
+        return compartment;
+    }
 }
