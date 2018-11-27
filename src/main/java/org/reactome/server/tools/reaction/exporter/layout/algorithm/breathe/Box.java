@@ -337,7 +337,7 @@ public class Box implements Div {
 
     private int getFreeColumn(Div[][] divs, Collection<EntityRole> roles, int reactionColumn) {
         // reaction is right of this box
-        if (reactionColumn > columns) return columns - 1;
+        if (reactionColumn > columns) return columns - 2;
             // reaction is left of this compartment
         else if (reactionColumn < 0) return 1;
         else if (reactionColumn < columns) {
