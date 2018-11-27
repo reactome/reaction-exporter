@@ -56,9 +56,10 @@ public class BoxAlgorithm {
         final CompartmentGlyph[][] comps = new CompartmentGlyph[divs.length][divs[0].length];
         computeCompartment(layout.getCompartmentRoot(), divs, comps);
         final Point p = getReactionPosition(divs);
-        compactInputs(divs, p, comps);
-        compactOutputs(divs, p, comps);
-
+        compactLeft(divs, p, comps);
+        compactRight(divs, p, comps);
+        // compactTop(divs, p, comps);
+        // compactBottom(divs, p, comps);
         // size every square
         final int rows = divs.length;
         final double heights[] = new double[rows];
@@ -131,15 +132,14 @@ public class BoxAlgorithm {
         }
     }
 
-    private void compactInputs(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
+    private void compactLeft(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
         for (int row = 0; row < divs.length; row++) {
             for (int col = 0; col < reactionPosition.x - 1; col++) {
-                // we know inputs are laid out using VerticalLayout
-                if (divs[row][col] instanceof VerticalLayout) {
+                if (divs[row][col] instanceof GlyphsLayout) {
                     if (divs[row][col].getContainedRoles().contains(CATALYST)) continue;
                     final CompartmentGlyph compartment = comps[row][col];
                     for (int c = reactionPosition.x - 1; c >= col + 1; c--) {
-                        if (comps[row][c] == compartment) {
+                        if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
                             divs[row][c] = divs[row][col];
                             divs[row][col] = null;
                             break;
@@ -152,15 +152,52 @@ public class BoxAlgorithm {
         }
     }
 
-    private void compactOutputs(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
+    private void compactRight(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
         for (int row = 0; row < divs.length; row++) {
             for (int col = divs[0].length - 1; col > reactionPosition.x + 1; col--) {
-                // we know outputs are laid out using VerticalLayout
                 if (divs[row][col] instanceof VerticalLayout) {
                     final CompartmentGlyph compartment = comps[row][col];
                     for (int c = reactionPosition.x + 1; c < col; c++) {
-                        if (comps[row][c] == compartment) {
+                        if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
                             divs[row][c] = divs[row][col];
+                            divs[row][col] = null;
+                            break;
+                        }
+                    }
+                    // only one VerticalLayout expected
+                    break;
+                }
+            }
+        }
+    }
+
+    private void compactTop(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
+        for (int row = 0; row < reactionPosition.y - 1; row++) {
+            for (int col = 0; col < divs[0].length; col++) {
+                if (divs[row][col] instanceof VerticalLayout) {
+                    final CompartmentGlyph compartment = comps[row][col];
+                    for (int r = reactionPosition.y - 1; r > row; r--) {
+                        if (comps[r][col] == compartment || GlyphUtils.isAncestor(comps[r][col], compartment)) {
+                            divs[r][col] = divs[row][col];
+                            divs[row][col] = null;
+                            break;
+                        }
+                    }
+                    // only one VerticalLayout expected
+                    break;
+                }
+            }
+        }
+    }
+
+    private void compactBottom(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
+        for (int row = reactionPosition.y + 2; row < divs.length; row++) {
+            for (int col = 0; col < divs[0].length; col++) {
+                if (divs[row][col] instanceof VerticalLayout) {
+                    final CompartmentGlyph compartment = comps[row][col];
+                    for (int r = reactionPosition.y + 1; r < divs.length; r++) {
+                        if (comps[r][col] == compartment || GlyphUtils.isAncestor(comps[r][col], compartment)) {
+                            divs[r][col] = divs[row][col];
                             divs[row][col] = null;
                             break;
                         }
