@@ -253,7 +253,8 @@ public class Box implements Div {
         final List<EntityGlyph> regulators = index.filterRegulators(compartment);
 
         if (inputs.size() > 0) {
-            final int row = inputs.stream().anyMatch(entityGlyph -> hasRole(entityGlyph, CATALYST))
+            final boolean hasCatalyst = inputs.stream().anyMatch(entityGlyph -> hasRole(entityGlyph, CATALYST));
+            final int row = hasCatalyst
                     ? getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y, true, false)
                     : getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y, false, true);
             final VerticalLayout layout = new VerticalLayout(inputs);
@@ -261,7 +262,7 @@ public class Box implements Div {
             set(row, 0, layout);
         }
         if (outputs.size() > 0) {
-            final int row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.y, false, true);
+            final int row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.y, false, false);
             final VerticalLayout layout = new VerticalLayout(outputs);
             layout.setRightPadding(30); // space for compartment
             set(row, columns - 1, layout);
@@ -282,7 +283,7 @@ public class Box implements Div {
 
     private int getFreeRow(Div[][] divs, Collection<EntityRole> roles, int reactionRow, boolean up, boolean down) {
         // reaction is under this box
-        if (reactionRow > rows) return rows - 2;
+        if (reactionRow >= rows) return rows - 2;
             // reaction is on top of this compartment
         else if (reactionRow < 0) return 1;
         else if (reactionRow < rows) {
@@ -337,7 +338,7 @@ public class Box implements Div {
 
     private int getFreeColumn(Div[][] divs, Collection<EntityRole> roles, int reactionColumn) {
         // reaction is right of this box
-        if (reactionColumn > columns) return columns - 2;
+        if (reactionColumn >= columns) return columns - 2;
             // reaction is left of this compartment
         else if (reactionColumn < 0) return 1;
         else if (reactionColumn < columns) {
