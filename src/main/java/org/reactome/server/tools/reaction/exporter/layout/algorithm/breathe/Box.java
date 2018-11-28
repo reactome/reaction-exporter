@@ -254,9 +254,12 @@ public class Box implements Div {
 
         if (inputs.size() > 0) {
             final boolean hasCatalyst = inputs.stream().anyMatch(entityGlyph -> hasRole(entityGlyph, CATALYST));
+            final boolean catalystInInputs = index.getInputs().stream().anyMatch(entityGlyph -> hasRole(entityGlyph, CATALYST));
             final int row = hasCatalyst
                     ? getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y, true, false)
-                    : getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y, false, true);
+                    : catalystInInputs
+                    ? getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y, false, true)
+                    : getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.y, false, false);
             final VerticalLayout layout = new VerticalLayout(inputs);
             layout.setLeftPadding(30);
             set(row, 0, layout);

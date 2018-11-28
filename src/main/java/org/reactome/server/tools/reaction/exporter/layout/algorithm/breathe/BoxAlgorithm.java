@@ -137,10 +137,30 @@ public class BoxAlgorithm {
             }
             if (hasHorizontal && hasVertical) {
                 divs = addRow(divs, r);
+                reactionPosition.y++;
                 for (int c = 0; c < divs[r].length; c++) {
                     if (divs[r + 1][c] instanceof HorizontalLayout) {
                         divs[r][c] = divs[r + 1][c];
                         divs[r + 1][c] = null;
+                    }
+                }
+            }
+            r++;
+        }
+        r = reactionPosition.y + 1;
+        while (r < divs.length) {
+            boolean hasVertical = false;
+            boolean hasHorizontal = false;
+            for (int c = 0; c < divs[r].length; c++) {
+                if (divs[r][c] instanceof VerticalLayout) hasVertical = true;
+                if (divs[r][c] instanceof HorizontalLayout) hasHorizontal = true;
+            }
+            if (hasHorizontal && hasVertical) {
+                divs = addRow(divs, r + 1);
+                for (int c = 0; c < divs[r].length; c++) {
+                    if (divs[r][c] instanceof HorizontalLayout) {
+                        divs[r + 1][c] = divs[r][c];
+                        divs[r][c] = null;
                     }
                 }
             }
