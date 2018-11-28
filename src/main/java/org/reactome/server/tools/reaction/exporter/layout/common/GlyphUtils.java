@@ -8,6 +8,7 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Role;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GlyphUtils {
@@ -17,10 +18,8 @@ public class GlyphUtils {
     }
 
     public static boolean hasRole(EntityGlyph entityGlyph, Collection<EntityRole> roles) {
-        return entityGlyph.getRoles().stream()
-                .map(Role::getType)
-                .collect(Collectors.toSet())
-                .equals(roles);
+        final Set<EntityRole> r = entityGlyph.getRoles().stream().map(Role::getType).collect(Collectors.toSet());
+        return r.containsAll(roles);
     }
 
     public static boolean hasRole(CompartmentGlyph compartment, EntityRole role) {
