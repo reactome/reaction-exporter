@@ -188,7 +188,7 @@ class ConnectorFactory {
             final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
             final Position position = entity.getPosition();
-            segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), hRule));
+            segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), hRule));
             final double x = reactionPosition.getCenterX() - radius * cos(PI * i / sectors);
             final double y = reactionPosition.getCenterY() + radius * sin(PI * i / sectors);
             segments.add(new SegmentImpl(position.getCenterX(), hRule, x, y));
