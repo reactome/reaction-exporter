@@ -6,6 +6,8 @@ import org.reactome.server.tools.diagram.data.layout.Shape;
 import org.reactome.server.tools.diagram.data.layout.impl.CoordinateImpl;
 import org.reactome.server.tools.diagram.data.layout.impl.SegmentImpl;
 import org.reactome.server.tools.diagram.data.layout.impl.ShapeImpl;
+import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
+import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 import org.reactome.server.tools.reaction.exporter.layout.text.TextUtils;
@@ -134,6 +136,10 @@ public class Transformer {
      */
     public static Position getBounds(EntityGlyph entityGlyph) {
         final Position position = new Position(entityGlyph.getPosition());
+        if (GlyphUtils.hasRole(entityGlyph, EntityRole.INPUT, EntityRole.CATALYST)) {
+            // A catalyst line will overflow 50px over the entity
+            position.setY(position.getY() - 50);
+        }
         if (entityGlyph.getAttachments().isEmpty()) return position;
         position.setWidth(position.getWidth() + ATTACHMENT_SIZE);
         position.setHeight(position.getHeight() + ATTACHMENT_SIZE);

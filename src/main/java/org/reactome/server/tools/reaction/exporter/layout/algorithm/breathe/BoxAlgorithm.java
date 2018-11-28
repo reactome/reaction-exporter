@@ -335,6 +335,11 @@ public class BoxAlgorithm {
         }
         heights[minRow] += COMPARTMENT_PADDING;
         heights[maxRow] += COMPARTMENT_PADDING;
+        if (compartment.getContainedGlyphs().stream()
+                .filter(EntityGlyph.class::isInstance)
+                .anyMatch(glyph -> hasRole((EntityGlyph) glyph, INPUT, CATALYST))) {
+            heights[minRow] += 50;
+        }
 
     }
 
