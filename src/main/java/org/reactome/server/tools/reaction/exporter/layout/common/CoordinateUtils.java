@@ -89,6 +89,6 @@ public class CoordinateUtils {
         double t = numT / div;
         double u = numU / div;
 
-        return !(t <= 0) && !(t >= 1) && !(u <= 0) && !(u >= 1);
+        return 0 < t && t < 1 && 0 < u && u < 1;
     }
 }
