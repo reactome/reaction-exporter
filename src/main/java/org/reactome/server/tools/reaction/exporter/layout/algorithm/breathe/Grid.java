@@ -1,5 +1,8 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.StringJoiner;
 
 /**
@@ -29,13 +32,6 @@ public class Grid<T> {
         columns = grid[0].length;
     }
 
-    /**
-     * Gets direct access to grid,
-     */
-    T[][] getGrid() {
-        return grid;
-    }
-
     public int getColumns() {
         return columns;
     }
@@ -56,15 +52,15 @@ public class Grid<T> {
         grid[row][column] = element;
     }
 
-    T[] getRow(int row) {
-        return row < rows ? grid[row] : null;
+    List<T> getRow(int row) {
+        return row < rows ? Arrays.asList(grid[row]) : null;
     }
 
-    T[] getColumn(int col) {
+    List<T> getColumn(int col) {
         if (col < columns) {
-            final T[] rtn = (T[]) new Object[rows];
-            for (int row = 0; row < rows; row++) {
-                rtn[row] = grid[row][col];
+            final List<T> rtn = new ArrayList<>(rows);
+            for (final T[] row : grid) {
+                rtn.add(row[col]);
             }
             return rtn;
         }

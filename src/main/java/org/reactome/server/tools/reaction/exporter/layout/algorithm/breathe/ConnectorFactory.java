@@ -57,7 +57,7 @@ class ConnectorFactory {
         final double vRule = mx + MIN_SEGMENT;
         final double port = reactionPosition.getX() - BACKBONE_LENGTH;
         for (EntityGlyph entity : index.getInputs()) {
-            final Position position = entity.getPosition();
+            final Position position = Transformer.getBounds(entity);
             // is catalyst and input
             final boolean biRole = entity.getRoles().size() > 1;
             final ConnectorImpl connector = createConnector(entity);
@@ -117,7 +117,7 @@ class ConnectorFactory {
         for (EntityGlyph entity : index.getOutputs()) {
             final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
-            final Position position = entity.getPosition();
+            final Position position = Transformer.getBounds(entity);
             segments.add(new SegmentImpl(
                     new CoordinateImpl(position.getX() - 4, position.getCenterY()),
                     new CoordinateImpl(vRule, position.getCenterY())));
@@ -156,7 +156,7 @@ class ConnectorFactory {
         for (EntityGlyph entity : index.getCatalysts()) {
             final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
-            final Position position = entity.getPosition();
+            final Position position = Transformer.getBounds(entity);
             segments.add(new SegmentImpl(
                     new CoordinateImpl(position.getCenterX(), position.getMaxY()),
                     new CoordinateImpl(position.getCenterX(), hRule)));
@@ -187,7 +187,7 @@ class ConnectorFactory {
         for (EntityGlyph entity : regulators) {
             final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
-            final Position position = entity.getPosition();
+            final Position position = Transformer.getBounds(entity);
             segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), hRule));
             final double x = reactionPosition.getCenterX() - radius * cos(PI * i / sectors);
             final double y = reactionPosition.getCenterY() + radius * sin(PI * i / sectors);

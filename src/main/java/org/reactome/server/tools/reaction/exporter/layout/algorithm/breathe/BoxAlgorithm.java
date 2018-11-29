@@ -12,7 +12,6 @@ import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import java.awt.*;
-import java.util.Arrays;
 import java.util.Objects;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.getBounds;
@@ -346,7 +345,7 @@ public class BoxAlgorithm {
     private void removeEmptyRows(Grid<Div> divs) {
         int r = 0;
         while (r < divs.getRows()) {
-            if (Arrays.stream(divs.getRow(r)).allMatch(Objects::isNull)) {
+            if (divs.getRow(r).stream().allMatch(Objects::isNull)) {
                 divs.removeRows(r, 1);
             } else r++;
         }
@@ -355,7 +354,7 @@ public class BoxAlgorithm {
     private void removeEmptyCols(Grid<Div> divs) {
         int c = 0;
         while (c < divs.getColumns()) {
-            if (Arrays.stream(divs.getColumn(c)).allMatch(Objects::isNull)) {
+            if (divs.getColumn(c).stream().allMatch(Objects::isNull)) {
                 divs.removeColumns(c, 1);
             } else c++;
         }
