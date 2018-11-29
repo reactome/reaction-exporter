@@ -11,7 +11,6 @@ import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
-import java.awt.*;
 import java.util.Objects;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.getBounds;
@@ -127,7 +126,7 @@ public class BoxAlgorithm {
     private Div[][] forceDiagonal(Div[][] divs, Point reactionPosition) {
         // top/dows
         int r = 0;
-        while (r < reactionPosition.y) {
+        while (r < reactionPosition.getRow()) {
             boolean hasVertical = false;
             boolean hasHorizontal = false;
             for (int c = 0; c < divs[r].length; c++) {
@@ -136,7 +135,7 @@ public class BoxAlgorithm {
             }
             if (hasHorizontal && hasVertical) {
                 divs = addRow(divs, r);
-                reactionPosition.y++;
+                reactionPosition.setRow(reactionPosition.getRow() + 1);
                 for (int c = 0; c < divs[r].length; c++) {
                     if (divs[r + 1][c] instanceof HorizontalLayout) {
                         divs[r][c] = divs[r + 1][c];
@@ -146,7 +145,7 @@ public class BoxAlgorithm {
             }
             r++;
         }
-        r = reactionPosition.y + 1;
+        r = reactionPosition.getRow() + 1;
         while (r < divs.length) {
             boolean hasVertical = false;
             boolean hasHorizontal = false;
@@ -205,11 +204,30 @@ public class BoxAlgorithm {
 
     private void compactLeft(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
         for (int row = 0; row < divs.length; row++) {
-            for (int col = 0; col < reactionPosition.x - 1; col++) {
+            for (int col = 0; col < reactionPosition.getCol() - 1; col++) {
                 if (divs[row][col] instanceof GlyphsLayout) {
                     if (divs[row][col].getContainedRoles().contains(CATALYST)) continue;
                     final CompartmentGlyph compartment = comps[row][col];
-                    for (int c = reactionPosition.x - 1; c >= col + 1; c--) {
+                    for (int c = reactionPosition.getCol() - 1; c >= col + 1; c--) {
+                        if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
+                            divs[row][c] = divs[row][col];
+                            divs[row][col] = null;
+                            break;
+                        }
+                    }
+                    // only one VerticalLayout expected
+                    break;
+                }
+            }
+        }
+    }
+
+    private void compactRight(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
+        for (int row = 0; row < divs.length; row++) {
+            for (int col = divs[0].length - 1; col > reactionPosition.getCol() + 1; col--) {
+                if (divs[row][col] instanceof VerticalLayout) {
+                    final CompartmentGlyph compartment = comps[row][col];
+                    for (int c = reactionPosition.getCol() + 1; c < col; c++) {
                         if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
                             divs[row][c] = divs[row][col];
                             divs[row][col] = null;
@@ -224,11 +242,11 @@ public class BoxAlgorithm {
     }
 
     private void compactTop(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
-        for (int row = reactionPosition.y - 2; row >= 0; row--) {
+        for (int row = reactionPosition.getRow() - 2; row >= 0; row--) {
             for (int col = 0; col < divs[0].length; col++) {
                 if (divs[row][col] instanceof VerticalLayout) {
                     final CompartmentGlyph compartment = comps[row][col];
-                    for (int r = reactionPosition.y - 1; r >= row + 1; r--) {
+                    for (int r = reactionPosition.getRow() - 1; r >= row + 1; r--) {
                         if (divs[r][col] != null) continue;
                         if (comps[r][col] == compartment || GlyphUtils.isAncestor(comps[r][col], compartment)) {
                             divs[r][col] = divs[row][col];
@@ -243,31 +261,12 @@ public class BoxAlgorithm {
         }
     }
 
-    private void compactRight(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
-        for (int row = 0; row < divs.length; row++) {
-            for (int col = divs[0].length - 1; col > reactionPosition.x + 1; col--) {
-                if (divs[row][col] instanceof VerticalLayout) {
-                    final CompartmentGlyph compartment = comps[row][col];
-                    for (int c = reactionPosition.x + 1; c < col; c++) {
-                        if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
-                            divs[row][c] = divs[row][col];
-                            divs[row][col] = null;
-                            break;
-                        }
-                    }
-                    // only one VerticalLayout expected
-                    break;
-                }
-            }
-        }
-    }
-
     private void compactBottom(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
-        for (int row = reactionPosition.y + 2; row < divs.length; row++) {
+        for (int row = reactionPosition.getRow() + 2; row < divs.length; row++) {
             for (int col = 0; col < divs[0].length; col++) {
                 if (divs[row][col] instanceof VerticalLayout) {
                     final CompartmentGlyph compartment = comps[row][col];
-                    for (int r = reactionPosition.y + 1; r < divs.length; r++) {
+                    for (int r = reactionPosition.getRow() + 1; r < divs.length; r++) {
                         if (comps[r][col] == compartment || GlyphUtils.isAncestor(comps[r][col], compartment)) {
                             divs[r][col] = divs[row][col];
                             divs[row][col] = null;
@@ -282,14 +281,14 @@ public class BoxAlgorithm {
     }
 
     private Point getReactionPosition(Div[][] divs) {
-        for (int y = 0; y < divs.length; y++) {
-            for (int x = 0; x < divs[0].length; x++) {
-                if (divs[y] != null && divs[y][x] != null) {
-                    final Div div = divs[y][x];
+        for (int r = 0; r < divs.length; r++) {
+            for (int c = 0; c < divs[0].length; c++) {
+                if (divs[r] != null && divs[r][c] != null) {
+                    final Div div = divs[r][c];
                     if (div instanceof GlyphsLayout) {
                         final GlyphsLayout layout = (GlyphsLayout) div;
                         if (layout.getGlyphs().iterator().next() instanceof ReactionGlyph) {
-                            return new Point(x, y);
+                            return new Point(r, c);
                         }
                     }
                 }
