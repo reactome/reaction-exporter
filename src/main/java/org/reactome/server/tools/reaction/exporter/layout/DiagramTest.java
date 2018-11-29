@@ -1,10 +1,12 @@
 package org.reactome.server.tools.reaction.exporter.layout;
 
 import org.reactome.server.tools.diagram.data.layout.*;
+import org.reactome.server.tools.reaction.exporter.layout.common.CoordinateUtils;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DiagramTest {
 
@@ -27,6 +29,7 @@ public class DiagramTest {
         this.minLevel = minLevel;
         this.first = true;
         notInCompartment();
+        crossingSegments();
     }
 
     private void notInCompartment() {
@@ -37,7 +40,6 @@ public class DiagramTest {
             }
             for (final Edge edge : diagram.getEdges()) {
                 testBounds(compartment, box, edge);
-                testSegments(compartment, box, edge);
             }
         }
     }
@@ -65,7 +67,7 @@ public class DiagramTest {
         final boolean expected = isInside(compartment, edge);
         int i = 0;
         for (final Segment segment : edge.getSegments()) {
-            final Line2D.Double line = new Line2D.Double(segment.getFrom().getX(), segment.getFrom().getY(), segment.getTo().getX(), segment.getTo().getY());
+            final Line2D.Double line = toLine(segment);
             final boolean intersects = box.intersectsLine(line);
             if (intersects == expected) {
                 log(Level.PASSED, String.format("[segment %d.%d %s] intersects with [compartment %d %s]",
@@ -104,6 +106,38 @@ public class DiagramTest {
         return new Rectangle2D.Double(object.getMinX(), object.getMinY(), width, height);
     }
 
+    private void crossingSegments() {
+        final List<Line2D> lines = diagram.getNodes().stream()
+                .flatMap(node -> node.getConnectors().stream())
+                .flatMap(connector -> connector.getSegments().stream())
+                .map(this::toLine)
+                .collect(Collectors.toList());
+        int intersections = 0;
+        for (int i = 0; i < lines.size(); i++) {
+            for (int j = i + 1; j < lines.size(); j++) {
+                final Line2D a = lines.get(i);
+                final Line2D b = lines.get(j);
+                if (CoordinateUtils.intersects(a, b)) intersections++;
+            }
+        }
+        if (intersections > 0) {
+            log(Level.ERROR, String.format("contains %d segment intersections", intersections));
+        }
+        for (final Node node : diagram.getNodes()) {
+            final Rectangle2D.Double box = getBounds(node);
+            for (final Line2D line : lines) {
+                if (CoordinateUtils.intersects(line, box)) {
+                    log(Level.ERROR, String.format("[%s %d %s] intersects with a segment",
+                            node.getRenderableClass(), node.getId(), node.getDisplayName()));
+                }
+            }
+        }
+    }
+
+    private Line2D.Double toLine(Segment segment) {
+        return new Line2D.Double(segment.getFrom().getX(), segment.getFrom().getY(), segment.getTo().getX(), segment.getTo().getY());
+    }
+
     private void log(Level level, String message) {
         if (level.ordinal() >= minLevel.ordinal()) {
             if (first) {
@@ -139,5 +173,6 @@ public class DiagramTest {
         return logs;
     }
 
-    public enum Level {PASSED, WARNING, ERROR}
+
+    public enum Level {PASSED, WARNING, ERROR;}
 }
