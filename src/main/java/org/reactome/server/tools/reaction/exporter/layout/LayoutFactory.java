@@ -28,10 +28,11 @@ public class LayoutFactory {
 
     private static final String QUERY = "" +
             "MATCH (rle:ReactionLikeEvent{stId:{stId}}) " +
-            "OPTIONAL MATCH (rle)-[:normalReaction]->(nr:ReactionLikeEvent)" +
+            "OPTIONAL MATCH (rle)-[:normalReaction]->(nr:ReactionLikeEvent) " +
+            "WHERE (rle:FailedReaction)" +
 
             "OPTIONAL MATCH (rle)-[i:input]->(pe:PhysicalEntity) " +
-            "WHERE NOT (rle)-[:entityFunctionalStatus|physicalEntity|mutatedEntity*]->(pe) " +
+            "WHERE NOT (rle:FailedReaction) OR NOT (rle)-[:entityFunctionalStatus|physicalEntity|mutatedEntity*]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: i.stoichiometry, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "OPTIONAL MATCH (nr)-[i:input]->(pe:PhysicalEntity) " +
@@ -48,7 +49,7 @@ public class LayoutFactory {
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: o.stoichiometry, type: 'output'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
 
             "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(pe:PhysicalEntity) " +
-            "WHERE NOT (rle)-[:entityFunctionalStatus|physicalEntity|mutatedEntity*]->(pe) " +
+            "WHERE NOT (rle:FailedReaction) OR NOT (rle)-[:entityFunctionalStatus|physicalEntity|mutatedEntity*]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "OPTIONAL MATCH (nr)-[:catalystActivity|physicalEntity*]->(pe:PhysicalEntity) " +
@@ -57,7 +58,7 @@ public class LayoutFactory {
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
 
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(pe:PhysicalEntity) " +
-            "WHERE NOT (rle)-[:entityFunctionalStatus|physicalEntity|mutatedEntity*]->(pe) " +
+            "WHERE NOT (rle:FailedReaction) OR NOT (rle)-[:entityFunctionalStatus|physicalEntity|mutatedEntity*]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "OPTIONAL MATCH (nr)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(pe:PhysicalEntity) " +
@@ -66,7 +67,7 @@ public class LayoutFactory {
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
 
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pe:PhysicalEntity) " +
-            "WHERE NOT (rle)-[:entityFunctionalStatus|physicalEntity|mutatedEntity*]->(pe) " +
+            "WHERE NOT (rle:FailedReaction) OR NOT (rle)-[:entityFunctionalStatus|physicalEntity|mutatedEntity*]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
             "OPTIONAL MATCH (nr)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pe:PhysicalEntity) " +
@@ -76,46 +77,52 @@ public class LayoutFactory {
 
 
             "OPTIONAL MATCH (nr)-[:input]->(:PhysicalEntity)<-[:normalEntity|mutatedEntity*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
-            "WHERE NOT (rle)-[:input]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs) " +
+            "WHERE (rle:FailedReaction) AND NOT (rle)-[:input]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
             "OPTIONAL MATCH (rle)-[:input]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
+            "WHERE (rle:FailedReaction) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
 
             "OPTIONAL MATCH (nr)-[:catalystActivity|physicalEntity*]->(:PhysicalEntity)<-[:normalEntity|mutatedEntity*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
-            "WHERE NOT (rle)-[:catalystActivity|physicalEntity*]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs) " +
+            "WHERE (rle:FailedReaction) AND NOT (rle)-[:catalystActivity|physicalEntity*]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
             "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
+            "WHERE (rle:FailedReaction) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
 
             "OPTIONAL MATCH (nr)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(:PhysicalEntity)<-[:normalEntity|mutatedEntity*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
-            "WHERE NOT (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs) " +
+            "WHERE (rle:FailedReaction) AND NOT (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
+            "WHERE (rle:FailedReaction) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
 
             "OPTIONAL MATCH (nr)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(:PhysicalEntity)<-[:normalEntity|mutatedEntity*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
-            "WHERE NOT (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs) " +
+            "WHERE (rle:FailedReaction) AND NOT (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(:PhysicalEntity)<-[:physicalEntity|mutatedEntity*]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
+            "WHERE (rle:FailedReaction) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|physicalEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate*]->(d:Drug) " +
             "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
 
-            "RETURN rle AS reactionLikeEvent, ps AS participants";
+            "OPTIONAL MATCH path=(p:Pathway{hasDiagram:true})-[:hasEvent*]->(rle) " +
+            "WHERE SINGLE(x IN NODES(path) WHERE (x:Pathway) AND x.hasDiagram) " +
+            "RETURN p.stId AS pathway, rle AS reactionLikeEvent, ps AS participants";
     private AdvancedDatabaseObjectService ads;
 
     @Autowired

@@ -1,6 +1,5 @@
 package org.reactome.server.tools.reaction.exporter.diagram;
 
-import org.reactome.server.graph.domain.model.Pathway;
 import org.reactome.server.tools.diagram.data.layout.*;
 import org.reactome.server.tools.diagram.data.layout.impl.*;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
@@ -32,8 +31,7 @@ public class ReactionDiagramFactory {
     public static Diagram get(Layout rxnLayout) {
         final DiagramImpl diagram = new DiagramImpl();
         final ReactionGlyph reaction = rxnLayout.getReaction();
-        Pathway pwy = rxnLayout.getPathway();
-        diagram.setStableId(pwy == null ? null : pwy.getStId());
+        diagram.setStableId(rxnLayout.getPathway());
         diagram.setDisease(reaction.isDisease());
         diagram.setDisplayName(reaction.getName());
         diagram.setDbId(reaction.getDbId());
