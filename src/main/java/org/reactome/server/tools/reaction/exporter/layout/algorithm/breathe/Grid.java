@@ -1,8 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.lang.reflect.Array;
 import java.util.StringJoiner;
 
 /**
@@ -15,18 +13,21 @@ public class Grid<T> {
     private int rows;
     private int columns;
     private T[][] grid;
+    private Class<?> clz;
 
-    public Grid() {
-        this(0,0);
+    public Grid(Class<T> clz) {
+        this(clz, 0, 0);
     }
 
-    public Grid(int rows, int columns) {
+    public Grid(Class<T> clz, int rows, int columns) {
+        this.clz = clz;
         this.rows = rows;
         this.columns = columns;
-        this.grid = (T[][]) new Object[rows][columns];
+        this.grid = createGrid(rows, columns);
     }
 
-    public Grid(T[][] grid) {
+    public Grid( Class<T> clz, T[][] grid) {
+        this.clz = clz;
         this.grid = grid;
         rows = grid.length;
         columns = grid[0].length;
@@ -52,24 +53,9 @@ public class Grid<T> {
         grid[row][column] = element;
     }
 
-    List<T> getRow(int row) {
-        return row < rows ? Arrays.asList(grid[row]) : null;
-    }
-
-    List<T> getColumn(int col) {
-        if (col < columns) {
-            final List<T> rtn = new ArrayList<>(rows);
-            for (final T[] row : grid) {
-                rtn.add(row[col]);
-            }
-            return rtn;
-        }
-        return null;
-    }
-
     void insertRows(int index, int n) {
         if (n <= 0) return;
-        final T[][] rtn = (T[][]) new Object[rows + n][columns];
+        final T[][] rtn = createGrid(rows + n, columns);
         if (index >= 0) System.arraycopy(grid, 0, rtn, 0, index);
         if (rows - index >= 0) System.arraycopy(grid, index, rtn, index + n, rows - index);
         rows += n;
@@ -78,7 +64,7 @@ public class Grid<T> {
 
     void insertColumns(int index, int n) {
         if (n <= 0) return;
-        final T[][] rtn = (T[][]) new Object[rows][columns + n];
+        final T[][] rtn = createGrid(rows, columns + n);
         for (int r = 0; r < rows; r++) {
             if (index >= 0) System.arraycopy(grid[r], 0, rtn[r], 0, index);
             if (columns - index >= 0)
@@ -88,11 +74,37 @@ public class Grid<T> {
         grid = rtn;
     }
 
+    @SuppressWarnings("unchecked")
+    private T[][] createGrid(int rows, int cols) {
+        return (T[][]) Array.newInstance(clz, rows, cols);
+    }
+
+    T[] getRow(int row) {
+        return row < rows ? grid[row] : null;
+    }
+
+    T[] getColumn(int col) {
+        if (col < columns) {
+            final T[] rtn = createArray(rows);
+            for (int i = 0; i < grid.length; i++) {
+                final T[] row = grid[i];
+                rtn[i] = row[col];
+            }
+            return rtn;
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private T[] createArray(int n) {
+        return (T[]) Array.newInstance(clz, n);
+    }
+
     void removeRows(int index, int n) {
         n = Math.min(n, rows - index);
         if (n <= 0) return;
         int p = index + n;
-        final T[][] rtn = (T[][]) new Object[rows - n][columns];
+        final T[][] rtn = createGrid(rows - n, columns);
         if (index >= 0) System.arraycopy(grid, 0, rtn, 0, index);
         if (p < rows) System.arraycopy(grid, p, rtn, index, rows - p);
         rows -= n;
@@ -103,7 +115,7 @@ public class Grid<T> {
         n = Math.min(n, columns - index);
         if (n <= 0) return;
         int p = index + n;
-        final T[][] rtn = (T[][]) new Object[rows][columns - n];
+        final T[][] rtn = createGrid(rows, columns - n);
         for (int r = 0; r < rows; r++) {
             if (index >= 0) System.arraycopy(grid[r], 0, rtn[r], 0, index);
             if (p < columns) System.arraycopy(grid[r], p, rtn[r], index, columns - p);
@@ -125,5 +137,9 @@ public class Grid<T> {
             rtn.add(line.toString());
         }
         return rtn.toString();
+    }
+
+    public T[][] getGrid() {
+        return grid;
     }
 }

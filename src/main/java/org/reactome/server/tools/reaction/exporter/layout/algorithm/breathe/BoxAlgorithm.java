@@ -11,10 +11,7 @@ import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.getBounds;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.move;
@@ -22,6 +19,25 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRo
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils.hasRole;
 
+/**
+ * This is the crown jewel of the algorithms. Though it is still under high development, its results outperform any
+ * other developed algorithm. The algorithm is divided in 3 steps: matrix generation, compaction and positioning.
+ * <p><p>
+ * <b>1. Matrix generation</b>
+ * <p>
+ * This part is performed by the {@link Box} class itself. A box is created by each compartment. A box can contain other
+ * boxes (representing subcompartments) and glyphs. Boxes are designed to have enough space to layout all of its
+ * content. A description of how it works can be found inside {@link Box} class.
+ * <p><p>
+ * <b>2. Compaction</b>
+ * This step is performed by a dozen of short methods that remove empty columns and rows in the matrix, and move
+ * elements in short steps so that they do not break any rule and represent a more compact view.
+ * <p><p>
+ * <b>3. Positioning</b>
+ * Finally, we transform rows and columns into 'x's and 'y's, by computing columns and rows max widths and height and
+ * centering each box into its 'x' and 'y'. Special attention to compartments in this step, as they can cause an
+ * enlargement of widths when their name is too long.
+ */
 public class BoxAlgorithm {
 
     private static final double COMPARTMENT_PADDING = 20;
@@ -29,6 +45,10 @@ public class BoxAlgorithm {
     private final Layout layout;
     private final LayoutIndex index;
 
+    /**
+     * Creates a BoxAlgorithm and prepares it to compute a layout. Use only one {@link BoxAlgorithm} per layout and call
+     * {@link BoxAlgorithm#compute()} only once.
+     */
     public BoxAlgorithm(Layout layout) {
         this.layout = layout;
         Dedup.addDuplicates(layout);
@@ -46,19 +66,23 @@ public class BoxAlgorithm {
         }
     }
 
+    /**
+     * Computes the position (dimension and coordinate) of every element in the Layout.
+     */
     public void compute() {
+        //
         final Box box = new Box(layout.getCompartmentRoot(), index);
         Point reactionPosition = box.placeReaction();
         box.placeElements(reactionPosition);
         final Div[][] preDivs = box.getDivs();
-        final Grid<Div> grid = new Grid<>(preDivs);
+        final Grid<Div> grid = new Grid<>(Div.class, preDivs);
 
         // Remove empty rows and cols
         removeEmptyRows(grid);
         removeEmptyCols(grid);
         // Compute compartments
         // Object[][] objects = grid.getGrid();
-        Div[][] divs = getDivs(grid);
+        Div[][] divs = grid.getGrid();
         final CompartmentGlyph[][] comps = new CompartmentGlyph[divs.length][divs[0].length];
         computeCompartment(layout.getCompartmentRoot(), divs, comps);
         reactionPosition = getReactionPosition(divs);
@@ -450,7 +474,7 @@ public class BoxAlgorithm {
     private void removeEmptyRows(Grid<Div> divs) {
         int r = 0;
         while (r < divs.getRows()) {
-            if (divs.getRow(r).stream().allMatch(Objects::isNull)) {
+            if (Arrays.stream(divs.getRow(r)).allMatch(Objects::isNull)) {
                 divs.removeRows(r, 1);
             } else r++;
         }
@@ -459,7 +483,7 @@ public class BoxAlgorithm {
     private void removeEmptyCols(Grid<Div> divs) {
         int c = 0;
         while (c < divs.getColumns()) {
-            if (divs.getColumn(c).stream().allMatch(Objects::isNull)) {
+            if (Arrays.stream(divs.getColumn(c)).allMatch(Objects::isNull)) {
                 divs.removeColumns(c, 1);
             } else c++;
         }
