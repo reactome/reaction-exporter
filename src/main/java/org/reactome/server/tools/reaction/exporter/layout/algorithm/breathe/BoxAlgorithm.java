@@ -70,28 +70,31 @@ public class BoxAlgorithm {
      * Computes the position (dimension and coordinate) of every element in the Layout.
      */
     public void compute() {
-        //
+        // Get the grid with all of the elements
         final Box box = new Box(layout.getCompartmentRoot(), index);
+        // As elements are positioned with respect to the reaction, we need to first find the position of the reaction
         Point reactionPosition = box.placeReaction();
         box.placeElements(reactionPosition);
         final Div[][] preDivs = box.getDivs();
         final Grid<Div> grid = new Grid<>(Div.class, preDivs);
 
-        // Remove empty rows and cols
         removeEmptyRows(grid);
         removeEmptyCols(grid);
-        // Compute compartments
-        // Object[][] objects = grid.getGrid();
+
         Div[][] divs = grid.getGrid();
+        // Get the parallel grid with the compartment of each position
         final CompartmentGlyph[][] comps = new CompartmentGlyph[divs.length][divs[0].length];
         computeCompartment(layout.getCompartmentRoot(), divs, comps);
+
+        // Compaction
         reactionPosition = getReactionPosition(divs);
         compactLeft(divs, reactionPosition, comps);
         compactRight(divs, reactionPosition, comps);
         // compactTop(divs, reactionPosition, comps);
         // compactBottom(divs, reactionPosition, comps);
-        divs = forceDiagonal(divs, reactionPosition);
 
+        // Me no like regulators on the same row as inputs, so me move them down
+        divs = forceDiagonal(divs, reactionPosition);
 
         // size every square
         final int rows = divs.length;
@@ -141,6 +144,10 @@ public class BoxAlgorithm {
         moveToOrigin();
     }
 
+    /**
+     * Usually, regulators are too separated. This methods tries to close them a little bit, not only to get a more
+     * compact view, but to avoid unnecessary segment crossings.
+     */
     private void compactRegulators() {
         final List<EntityGlyph> regulators = new ArrayList<>(index.getRegulators());
         regulators.sort(Comparator.comparing(r -> r.getPosition().getCenterX()));
@@ -169,6 +176,9 @@ public class BoxAlgorithm {
         }
     }
 
+    /**
+     * At this point, compartment sizes are not computed yet.
+     */
     private double getCompartmentX(CompartmentGlyph compartment) {
         return compartment.getContainedGlyphs().stream()
                 .map(Transformer::getBounds)
@@ -176,6 +186,9 @@ public class BoxAlgorithm {
                 .min().orElse(0.0);
     }
 
+    /**
+     * At this point, compartment sizes are not computed yet.
+     */
     private double getCompartmentMaxX(CompartmentGlyph compartment) {
         return compartment.getContainedGlyphs().stream()
                 .map(Transformer::getBounds)
@@ -183,20 +196,11 @@ public class BoxAlgorithm {
                 .max().orElse(0.0);
     }
 
-    private Div[][] getDivs(Grid<Div> grid) {
-        Div[][] divs = new Div[grid.getRows()][grid.getColumns()];
-        for (int r = 0; r < grid.getRows(); r++) {
-            for (int c = 0; c < grid.getColumns(); c++) {
-                divs[r][c] = grid.get(r, c);
-            }
-        }
-        return divs;
-    }
-
     /**
      * Avoid having catalysts in the same row as inputs or outputs
      */
     private Div[][] forceDiagonal(Div[][] divs, Point reactionPosition) {
+        // TODO: 30/11/18 this would look nicer using the Grid
         // top/dows
         int r = 0;
         while (r < reactionPosition.getRow()) {
@@ -410,6 +414,9 @@ public class BoxAlgorithm {
         }
     }
 
+    /**
+     * Calculates the absolute position of the reaction in the divs
+     */
     private Point getReactionPosition(Div[][] divs) {
         for (int r = 0; r < divs.length; r++) {
             for (int c = 0; c < divs[0].length; c++) {
@@ -427,6 +434,13 @@ public class BoxAlgorithm {
         return null;
     }
 
+    /**
+     * Adds extra space in widths and heights for compartments.
+     * @param compartment which compartment to expand
+     * @param divs   the grid
+     * @param widths the array with widths
+     * @param heights the array with heights
+     */
     private void expandCompartment(CompartmentGlyph compartment, Div[][] divs, double[] widths, double[] heights) {
         for (final CompartmentGlyph child : compartment.getChildren()) {
             expandCompartment(child, divs, widths, heights);
@@ -549,6 +563,9 @@ public class BoxAlgorithm {
         layout.getCompartments().remove(layout.getCompartmentRoot());
     }
 
+    /**
+     * Compute the absolute dimension of the layout.
+     */
     private void computeDimension() {
         Position position = null;
         for (CompartmentGlyph compartment : layout.getCompartments()) {
@@ -573,6 +590,9 @@ public class BoxAlgorithm {
         layout.getPosition().set(position);
     }
 
+    /**
+     * Modify all positions so the layout.position is (x,y)=(0,0)
+     */
     private void moveToOrigin() {
         final double dx = -layout.getPosition().getX();
         final double dy = -layout.getPosition().getY();

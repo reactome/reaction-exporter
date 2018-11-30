@@ -15,6 +15,93 @@ import static org.apache.commons.lang3.text.WordUtils.initials;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.*;
 import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils.hasRole;
 
+/**
+ * This is the main gear of the {@link BoxAlgorithm}. It finds a place for every participant so that every elements
+ * falls into its compartment, every compartment falls inside its parent compartment, keeping a left to right approach.
+ * The final result is not optimum, with extra rows and columns.
+ * <p>
+ * A box is a 2d matrix with enough columns and rows to fit its children boxes and elements. This is a simple box:
+ * <pre>
+ *     +---+
+ *     | c |
+ * +---+---+---+
+ * | i | x | o |
+ * +---+---+---+
+ *     | r |
+ *     +---+
+ * (i) inputs, (o) outputs, (c) catalysts, (r) regulators, (x) reaction
+ * </pre>
+ * When a box contains one box (a child compartment) space is created as follows:
+ * <pre>
+ *     +-------------------+
+ *     | c   c   c   c   c |
+ * +---+-------+---+-------+---+
+ * | i |       | x |       | o |
+ * |   |       +---+       |   |
+ * | i |       | c |       | o |
+ * |   +---+---+---+---+---+   |
+ * | i | x | i | x | o | x | o |
+ * |   +---+---+---+---+---+   |
+ * | i |       | r |       | o |
+ * |   |       +---+       |   |
+ * | i |       | x |       | o |
+ * +---+-------+---+-------+---+
+ *     | r   r   r   r   r |
+ *     +-------------------+
+ * </pre>
+ * The inner box remains as a simple box, the outer box creates 4 new columns and 4 new rows. 1 column for inputs, 1
+ * column for outputs, 2 columns for the reaction, 1 row for catalysts, 1 row for regulators and 2 rows for the
+ * reaction.
+ * <p>
+ * Finally, when a box contains more than 1 boxes, they are placed side by side with 1 space between them. If they are
+ * placed horizontally, each one can have a different number of columns, but all of them will have the same number of
+ * rows (the maximum of them). When they are placed vertically, different heights (rows) and same number of columns.
+ * <pre>
+ *     +-----------------------------------+
+ *     | c   c   c   c   c   c   c   c   c |
+ * +---+-------+---+-----------+---+-------+---+
+ * | i |       | x |           | x |       | o |
+ * |   |       +---+           +---+       |   |
+ * | i |       | c |           | c |       | o |
+ * |   +---+---+---+---+---+---+---+---+---+   |
+ * | i | x | i | x | o | x | i | x | o | x | o |
+ * |   +---+---+---+---+---+---+---+---+---+   |
+ * | i |       | r |           | r |       | o |
+ * |   |       +---+           +---+       |   |
+ * | i |       | x |           | x |       | o |
+ * +---+-------+---+-----------+---+-------+---+
+ *     | r   r   r   r   r   r   r   r   r |
+ *     +-----------------------------------+
+ * </pre>
+ * <pre>
+ *     +---------------------------------------------------+
+ *     | c   c   c   c   c   c   c   c   c   c   c   c   c |
+ * +---+---------------+---+-----------+---+---+---+-------+---+
+ * | i |               | x |                   | x |       | o |
+ * | i |       +-------+---+-------+           +---+       | o |
+ * | i |       | c   c   c   c   c |           | c |       | o |
+ * | i |   +---+-------+---+-------+---+       |   |       | o |
+ * | i |   | i |       | x |       | o |       |   |       | o |
+ * | i |   |   |       +---+       |   |       |   |       | o |
+ * | i |   | i |       | c |       | o |       |   |       | o |
+ * | i +---+   +---+---+---+---+---+   +---+---+---+---+---+ o |
+ * | i | x | i | x | i | x | o | x | o | x | i | x | o | x | o |
+ * | i +---+   +---+---+---+---+---+   +---+---+---+---+---+ o |
+ * | i |   | i |       | r |       | o |       |   |       | o |
+ * | i |   |   |       +---+       |   |       |   |       | o |
+ * | i |   | i |       | x |       | o |       |   |       | o |
+ * | i |   +---+-------+---+-------+---+       |   |       | o |
+ * | i |       | r   r   r   r   r |           | r |       | o |
+ * | i |       +-------+---+-------+           +---+       | o |
+ * | i |               | x |                   | x |       | o |
+ * +---+---------------+---+-----------+---+---+---+-------+---+
+ *     | c   c   c   c   c   c   c   c   c   c   c   c   c |
+ *     +---------------------------------------------------+
+ *  A box with two boxes inside, one of them with another box:
+ *   - A contains B and C
+ *   - C contains D
+ * </pre>
+ */
 public class Box implements Div {
 
     /*

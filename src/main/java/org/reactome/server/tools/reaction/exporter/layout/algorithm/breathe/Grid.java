@@ -4,7 +4,8 @@ import java.lang.reflect.Array;
 import java.util.StringJoiner;
 
 /**
- * Generic matrix, indexed by row and col. All rows have the same number of columns.
+ * Generic matrix, indexed by row and col. All rows have the same number of columns. It wraps an Array of Arrays, and
+ * contain operations to add or remove rows and columns and work with columns as rows.
  *
  * @param <T> type of elements in grid
  */
@@ -15,30 +16,34 @@ public class Grid<T> {
     private T[][] grid;
     private Class<?> clz;
 
-    public Grid(Class<T> clz) {
-        this(clz, 0, 0);
-    }
-
-    public Grid(Class<T> clz, int rows, int columns) {
-        this.clz = clz;
-        this.rows = rows;
-        this.columns = columns;
-        this.grid = createGrid(rows, columns);
-    }
-
-    public Grid( Class<T> clz, T[][] grid) {
+    Grid(Class<T> clz, T[][] grid) {
         this.clz = clz;
         this.grid = grid;
         rows = grid.length;
         columns = grid[0].length;
     }
 
-    public int getColumns() {
+    Grid(Class<T> clz) {
+        this(clz, 0, 0);
+    }
+
+    private Grid(Class<T> clz, int rows, int columns) {
+        this.clz = clz;
+        this.rows = rows;
+        this.columns = columns;
+        this.grid = createGrid(rows, columns);
+    }
+
+    int getColumns() {
         return columns;
     }
 
-    public int getRows() {
+    int getRows() {
         return rows;
+    }
+
+    T[][] getGrid() {
+        return grid;
     }
 
     T get(int row, int column) {
@@ -53,7 +58,7 @@ public class Grid<T> {
         grid[row][column] = element;
     }
 
-    void insertRows(int index, int n) {
+    private void insertRows(int index, int n) {
         if (n <= 0) return;
         final T[][] rtn = createGrid(rows + n, columns);
         if (index >= 0) System.arraycopy(grid, 0, rtn, 0, index);
@@ -62,7 +67,7 @@ public class Grid<T> {
         grid = rtn;
     }
 
-    void insertColumns(int index, int n) {
+    private void insertColumns(int index, int n) {
         if (n <= 0) return;
         final T[][] rtn = createGrid(rows, columns + n);
         for (int r = 0; r < rows; r++) {
@@ -72,11 +77,6 @@ public class Grid<T> {
         }
         columns += n;
         grid = rtn;
-    }
-
-    @SuppressWarnings("unchecked")
-    private T[][] createGrid(int rows, int cols) {
-        return (T[][]) Array.newInstance(clz, rows, cols);
     }
 
     T[] getRow(int row) {
@@ -93,11 +93,6 @@ public class Grid<T> {
             return rtn;
         }
         return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private T[] createArray(int n) {
-        return (T[]) Array.newInstance(clz, n);
     }
 
     void removeRows(int index, int n) {
@@ -125,6 +120,16 @@ public class Grid<T> {
     }
 
 
+    @SuppressWarnings("unchecked")
+    private T[] createArray(int n) {
+        return (T[]) Array.newInstance(clz, n);
+    }
+
+    @SuppressWarnings("unchecked")
+    private T[][] createGrid(int rows, int cols) {
+        return (T[][]) Array.newInstance(clz, rows, cols);
+    }
+
     @Override
     public String toString() {
         final StringJoiner rtn = new StringJoiner(System.lineSeparator());
@@ -137,9 +142,5 @@ public class Grid<T> {
             rtn.add(line.toString());
         }
         return rtn.toString();
-    }
-
-    public T[][] getGrid() {
-        return grid;
     }
 }
