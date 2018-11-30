@@ -62,8 +62,9 @@ public class BoxAlgorithm {
         compactLeft(divs, reactionPosition, comps);
         compactRight(divs, reactionPosition, comps);
         // compactTop(divs, reactionPosition, comps);
-        // compactBottom(divs, p, comps);
+        // compactBottom(divs, reactionPosition, comps);
         divs = forceDiagonal(divs, reactionPosition);
+
 
         // size every square
         final int rows = divs.length;
@@ -205,7 +206,8 @@ public class BoxAlgorithm {
     private void compactLeft(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
         for (int row = 0; row < divs.length; row++) {
             for (int col = 0; col < reactionPosition.getCol() - 1; col++) {
-                if (divs[row][col] instanceof GlyphsLayout) {
+                // inputs
+                if (divs[row][col] instanceof VerticalLayout) {
                     if (divs[row][col].getContainedRoles().contains(CATALYST)) continue;
                     final CompartmentGlyph compartment = comps[row][col];
                     for (int c = reactionPosition.getCol() - 1; c >= col + 1; c--) {
@@ -217,6 +219,26 @@ public class BoxAlgorithm {
                     }
                     // only one VerticalLayout expected
                     break;
+                    // catalyst/regulators
+                } else if (divs[row][col] instanceof HorizontalLayout) {
+                    final CompartmentGlyph compartment = comps[row][col];
+                    for (int c = reactionPosition.getCol(); c >= col + 1; c--) {
+                        if ((comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment))) {
+                            boolean busy = false;
+                            for (int r = reactionPosition.getRow(); r < row; r++) {
+                                if (divs[r][c] != null) {
+                                    busy = true;
+                                    break;
+                                }
+                            }
+                            if (!busy) {
+                                divs[row][c] = divs[row][col];
+                                divs[row][col] = null;
+                            }
+                            break;
+                        }
+                    }
+                    break;
                 }
             }
         }
@@ -224,17 +246,35 @@ public class BoxAlgorithm {
 
     private void compactRight(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
         for (int row = 0; row < divs.length; row++) {
-            for (int col = divs[0].length - 1; col > reactionPosition.getCol() + 1; col--) {
+            for (int col = reactionPosition.getCol() + 1; col <= divs[0].length - 1; col++) {
+                // 1 move outputs closer to reaction
                 if (divs[row][col] instanceof VerticalLayout) {
                     final CompartmentGlyph compartment = comps[row][col];
-                    for (int c = reactionPosition.getCol() + 1; c < col; c++) {
+                    for (int c = reactionPosition.getCol() + 1; c <= col - 1; c++) {
                         if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
                             divs[row][c] = divs[row][col];
                             divs[row][col] = null;
+                        }
+                    }
+                    break;
+                } else if (divs[row][col] instanceof HorizontalLayout) {
+                    final CompartmentGlyph compartment = comps[row][col];
+                    for (int c = reactionPosition.getCol(); c < col; c++) {
+                        if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
+                            boolean busy = false;
+                            for (int r = reactionPosition.getRow(); r < row; r++) {
+                                if (divs[r][c] != null) {
+                                    busy = true;
+                                    break;
+                                }
+                            }
+                            if (!busy) {
+                                divs[row][c] = divs[row][col];
+                                divs[row][col] = null;
+                            }
                             break;
                         }
                     }
-                    // only one VerticalLayout expected
                     break;
                 }
             }
@@ -249,9 +289,18 @@ public class BoxAlgorithm {
                     for (int r = reactionPosition.getRow() - 1; r >= row + 1; r--) {
                         if (divs[r][col] != null) continue;
                         if (comps[r][col] == compartment || GlyphUtils.isAncestor(comps[r][col], compartment)) {
-                            divs[r][col] = divs[row][col];
-                            divs[row][col] = null;
-                            break;
+                            boolean busy = false;
+                            for (int c = reactionPosition.getCol(); c < col; c++) {
+                                if (divs[r][c] != null) {
+                                    busy = true;
+                                    break;
+                                }
+                            }
+                            if (!busy) {
+                                divs[r][col] = divs[row][col];
+                                divs[row][col] = null;
+                                break;
+                            }
                         }
                     }
                     // only one VerticalLayout expected
@@ -268,9 +317,18 @@ public class BoxAlgorithm {
                     final CompartmentGlyph compartment = comps[row][col];
                     for (int r = reactionPosition.getRow() + 1; r < divs.length; r++) {
                         if (comps[r][col] == compartment || GlyphUtils.isAncestor(comps[r][col], compartment)) {
-                            divs[r][col] = divs[row][col];
-                            divs[row][col] = null;
-                            break;
+                            boolean busy = false;
+                            for (int c = reactionPosition.getCol(); c < col; c++) {
+                                if (divs[r][c] != null) {
+                                    busy = true;
+                                    break;
+                                }
+                            }
+                            if (!busy) {
+                                divs[r][col] = divs[row][col];
+                                divs[row][col] = null;
+                                break;
+                            }
                         }
                     }
                     // only one VerticalLayout expected
@@ -336,7 +394,7 @@ public class BoxAlgorithm {
         if (compartment.getContainedGlyphs().stream()
                 .filter(EntityGlyph.class::isInstance)
                 .anyMatch(glyph -> hasRole((EntityGlyph) glyph, INPUT, CATALYST))) {
-            heights[minRow] += 50;
+            heights[minRow] += 50; // TODO: 29/11/18 find a better approach
         }
 
     }

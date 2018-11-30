@@ -46,4 +46,21 @@ public class GlyphUtils {
         }
         return false;
     }
+
+    public static Collection<EntityRole> getContainedRoles(CompartmentGlyph compartmentGlyph) {
+        final Set<EntityRole> roles = new HashSet<>();
+        for (final Glyph glyph : compartmentGlyph.getContainedGlyphs()) {
+            if (glyph instanceof EntityGlyph) {
+                roles.addAll(getRoles((EntityGlyph) glyph));
+            }
+        }
+        for (final CompartmentGlyph child : compartmentGlyph.getChildren()) {
+            roles.addAll(getContainedRoles(child));
+        }
+        return roles;
+    }
+
+    private static Collection<EntityRole> getRoles(EntityGlyph entityGlyph) {
+        return entityGlyph.getRoles().stream().map(Role::getType).collect(Collectors.toSet());
+    }
 }

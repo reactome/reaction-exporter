@@ -2,6 +2,7 @@ package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
 
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
+import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
@@ -83,29 +84,111 @@ public class Box implements Div {
 
     private void placeSubCompartments() {
         final List<CompartmentGlyph> children = new ArrayList<>(compartment.getChildren());
-        // Top down, the only case we need a left right is if 2 subcompartments have both catalyst or regulators
-        // TODO: 16/11/18 add horizontal layout
-        children.sort(Comparator
-                .comparing((CompartmentGlyph c) -> hasRole(c, CATALYST), TRUE_FIRST)
-                .thenComparing(c -> hasRole(c, NEGATIVE_REGULATOR), FALSE_FIRST)
-                .thenComparing(c -> hasRole(c, POSITIVE_REGULATOR), FALSE_FIRST));
+        // I can do this because there are never more than 3 sub compartments
         final List<Box> boxes = new ArrayList<>();
         for (final CompartmentGlyph child : children) boxes.add(new Box(child, index));
-        int mc = 0;
-        int mr = 0;
-        for (final Box box : boxes) {
-            if (box.columns > mc) mc = box.columns;
-            if (box.rows > mr) mr = box.rows;
+        if (boxes.size() == 1) {
+            final Box box = boxes.get(0);
+            columns = 4 + box.columns;
+            rows = 4 + box.rows;
+            set(2, 2, box);
+        } else if (boxes.size() == 2) {
+            final Place place = PlacePositioner.haggle(boxes.get(0).getContainedRoles(), boxes.get(1).getContainedRoles());
+            if (place == Place.LEFT) {
+                placeHorizontal(boxes.get(0), boxes.get(1));
+            } else if (place == Place.RIGHT) {
+                placeHorizontal(boxes.get(1), boxes.get(0));
+            } else if (place == Place.TOP) {
+                placeVertical(boxes.get(0), boxes.get(1));
+            } else if (place == Place.BOTTOM) {
+                placeVertical(boxes.get(1), boxes.get(0));
+            }
+        } else if (boxes.size() > 2) {
+            // Top down, the only case we need a left right is if 2 subcompartments have both catalyst or regulators
+            // TODO: 16/11/18 add horizontal layout
+            children.sort(Comparator
+                    .comparing((CompartmentGlyph c) -> hasRole(c, CATALYST), TRUE_FIRST)
+                    .thenComparing(c -> hasRole(c, NEGATIVE_REGULATOR), FALSE_FIRST)
+                    .thenComparing(c -> hasRole(c, POSITIVE_REGULATOR), FALSE_FIRST));
+            int mc = 0;
+            int mr = 0;
+            for (final Box box : boxes) {
+                if (box.columns > mc) mc = box.columns;
+                if (box.rows > mr) mr = box.rows;
+            }
+            for (int i = 0; i < boxes.size(); i++) {
+                final Box box = boxes.get(i);
+                box.columns = mc;
+                box.rows = mr;
+                set(2 + i * (mr + 1), 2, box);
+            }
+            columns = mc == 0 ? 3 : 4 + mc;
+            rows = mr == 0 ? 3 : mr * boxes.size() + (boxes.size() - 1) + 4;
+        } else {
+            columns = 3;
+            rows = 3;
         }
-        for (int i = 0; i < boxes.size(); i++) {
-            final Box box = boxes.get(i);
-            box.columns = mc;
-            box.rows = mr;
-            set(2 + i * (mr + 1), 2, box);
-        }
-        columns = mc == 0 ? 3 : 4 + mc;
-        rows = mr == 0 ? 3 : mr * boxes.size() + (boxes.size() - 1) + 4;
+
     }
+
+    private void placeHorizontal(Box left, Box right) {
+        columns = 5 + left.columns + right.columns;
+        final int maxRows = Math.max(left.rows, right.rows);
+        left.rows = right.rows = maxRows;
+        rows = 4 + maxRows;
+        set(2, 2, left);
+        set(2, 3 + left.columns, right);
+    }
+
+    private void placeVertical(Box top, Box bottom) {
+        rows = 5 + top.rows + bottom.rows;
+        final int maxCols = Math.max(top.columns, bottom.columns);
+        top.columns = bottom.columns = maxCols;
+        columns = 4 + maxCols;
+        set(2, 2, top);
+        set(3 + top.rows, 2, bottom);
+    }
+
+    // TODO: 30/11/18 this is extremely hard
+    // private void subCompartments() {
+    //     final List<CompartmentGlyph> children = new ArrayList<>(compartment.getChildren());
+    //     final List<Box> boxes = new ArrayList<>();
+    //     for (final CompartmentGlyph child : children) boxes.add(new Box(child, index));
+    //     final List<List<Box>> boxGrid = getBoxGrid(boxes);
+    //
+    // }
+    //
+    // private List<List<Box>> getBoxGrid(List<Box> boxes) {
+    //     //     |   3
+    //     //     | 2 1 5 4
+    //     // ----|---------
+    //     // 1 2 | 2 1
+    //     // 3   |   3
+    //     // 4 5 |     5 4
+    //     final List<List<Box>> horizontalGroups = sortAndGroup(boxes, PlacePositioner.HORIZONTAL);
+    //     final List<List<Box>> verticalGroups = sortAndGroup(boxes, PlacePositioner.VERTICAL);
+    //     final List<List<Box>>
+    //     return null;
+    // }
+    //
+    // private List<List<Box>> sortAndGroup(List<Box> boxes, Comparator<Box> comparator) {
+    //     if (boxes.isEmpty()) return Collections.emptyList();
+    //     boxes.sort(comparator);
+    //     final List<List<Box>> groups = new ArrayList<>();
+    //     List<Box> list = new ArrayList<>();
+    //     groups.add(list);
+    //     list.add(boxes.get(0));
+    //     for (int i = 1; i < boxes.size(); i++) {
+    //         if (comparator.compare(boxes.get(i - 1), boxes.get(i)) == 0) {
+    //             list.add(boxes.get(i));
+    //         } else {
+    //             list = new ArrayList<>();
+    //             list.add(boxes.get(i));
+    //         }
+    //     }
+    //     return groups;
+    // }
+
 
     private void set(int row, int col, Div div) {
         divs.computeIfAbsent(row, r -> new HashMap<>()).put(col, div);
@@ -146,67 +229,10 @@ public class Box implements Div {
     }
 
     private Point getReactionPosition() {
-        final EnumSet<EntityRole> childrenRoles = EnumSet.noneOf(EntityRole.class);
-        for (final Map<Integer, Div> map : divs.values()) {
-            for (final Div box : map.values()) {
-                childrenRoles.addAll(box.getContainedRoles());
-            }
-        }
-        int row;
-        int col;
-        if (childrenRoles.contains(POSITIVE_REGULATOR)) childrenRoles.add(NEGATIVE_REGULATOR);
-        childrenRoles.remove(POSITIVE_REGULATOR);
-        // CENTER
-        if (childrenRoles.isEmpty()) {
-            row = rows / 2;
-            col = columns / 2;
-        }
-        // RIGHT
-        else if (childrenRoles.equals(EnumSet.of(INPUT))
-                || childrenRoles.equals(EnumSet.of(INPUT, CATALYST))
-                || childrenRoles.equals(EnumSet.of(INPUT, NEGATIVE_REGULATOR))
-                || childrenRoles.equals(EnumSet.of(INPUT, CATALYST, NEGATIVE_REGULATOR))
-                || childrenRoles.equals(EnumSet.of(CATALYST, NEGATIVE_REGULATOR))) {
-            row = rows / 2;
-            col = columns - 2;
-            // LEFT
-        } else if (childrenRoles.equals(EnumSet.of(OUTPUT))
-                || childrenRoles.equals(EnumSet.of(OUTPUT, CATALYST))
-                || childrenRoles.equals(EnumSet.of(OUTPUT, NEGATIVE_REGULATOR))
-                || childrenRoles.equals(EnumSet.of(OUTPUT, CATALYST, NEGATIVE_REGULATOR))) {
-            row = rows / 2;
-            col = 1;
-            // BOTTOM
-        } else if (childrenRoles.equals(EnumSet.of(CATALYST))
-                || childrenRoles.equals(EnumSet.of(INPUT, OUTPUT))
-                || childrenRoles.equals(EnumSet.of(CATALYST, INPUT, OUTPUT))) {
-            // rule 22: the reaction can be set at the top if this compartment has a catalyst as a rol
-            if (hasCatalyst()) {
-                row = 1;
-            } else {
-                row = rows - 2;
-            }
-            col = columns / 2;
-            // TOP
-        } else if (childrenRoles.equals(EnumSet.of(NEGATIVE_REGULATOR))
-                || childrenRoles.equals(EnumSet.of(NEGATIVE_REGULATOR, INPUT, OUTPUT))) {
-            row = 1;
-            col = columns / 2;
-        } else {
-            // the only remaining possibility is that children contain all of them, so there is no way to scape
-            // so we insert reaction in the middle
-            // WARNING: this will fall inside a subcompartment
-            row = rows / 2;
-            col = columns / 2;
-        }
-        return new Point(row, col);
-    }
-
-    private Point getReactionPosition(ReactionGlyph reactionGlyph) {
         // Ok, first of all, where can I place the reaction?
         //  1) any of the four borders
         //  2) if I contain more than 1 child, in the middle of two of them
-        final Collection<Div> children = getChildren();
+        final Collection<Div> children = getChildren().stream().filter(Box.class::isInstance).collect(Collectors.toList());
         if (children.isEmpty()) {
             // center
             return new Point(rows / 2, columns / 2);
@@ -215,8 +241,9 @@ public class Box implements Div {
         boolean right = true;
         boolean top = true;
         boolean bottom = true;
-        for (final Div div : children) {
-            final Collection<EntityRole> roles = div.getContainedRoles();
+
+        for (final CompartmentGlyph child : compartment.getChildren()) {
+            final Collection<EntityRole> roles = GlyphUtils.getContainedRoles(child);
             if (roles.contains(INPUT)) left = false;
             if (roles.contains(OUTPUT)) right = false;
             if (roles.contains(CATALYST)) top = false;
@@ -224,20 +251,14 @@ public class Box implements Div {
         }
         // TODO: 29/11/18 generalize to n children
         if (children.size() == 2) {
-
+            return new Point(rows / 2, columns / 2);
         } else {
-            if (left) return new Point(rows / 2, 0);
+            if (left) return new Point(rows / 2, 1);
             if (right) return new Point(rows / 2, columns - 2);
-            if (top) return new Point(0, columns / 2);
+            if (top) return new Point(1, columns / 2);
             if (bottom) return new Point(rows - 2, columns / 2);
         }
         return new Point(rows / 2, columns / 2);
-    }
-
-    private Collection<Div> getChildren() {
-        return divs.values().stream()
-                .flatMap(map -> map.values().stream())
-                .collect(Collectors.toList());
     }
 
     private boolean hasCatalyst() {
@@ -290,6 +311,12 @@ public class Box implements Div {
                 .map(Role::getType)
                 .forEach(roles::add);
         return roles;
+    }
+
+    private Collection<Div> getChildren() {
+        return divs.values().stream()
+                .flatMap(map -> map.values().stream())
+                .collect(Collectors.toList());
     }
 
     @Override
