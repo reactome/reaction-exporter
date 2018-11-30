@@ -11,6 +11,9 @@ import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.getBounds;
@@ -104,11 +107,56 @@ public class BoxAlgorithm {
             }
         }
 
+        // usually, regulators are too widespread, let's compact them
+        compactRegulators();
+
         ConnectorFactory.addConnectors(layout, index);
-        layoutCompartments(layout);
-        removeExtracellular(layout);
-        computeDimension(layout);
-        moveToOrigin(layout);
+        layoutCompartments();
+        removeExtracellular();
+        computeDimension();
+        moveToOrigin();
+    }
+
+    private void compactRegulators() {
+        final List<EntityGlyph> regulators = new ArrayList<>(index.getRegulators());
+        regulators.sort(Comparator.comparing(r -> r.getPosition().getCenterX()));
+        final double centerX = layout.getReaction().getPosition().getCenterX();
+        for (int i = 0; i < regulators.size(); i++) {
+            final EntityGlyph regulator = regulators.get(i);
+            // move regulators on the right
+            if (regulator.getPosition().getCenterX() > centerX) {
+                final double maxX = i == 0
+                        ? layout.getReaction().getPosition().getCenterX() - regulator.getPosition().getWidth() * .5
+                        : regulators.get(i - 1).getPosition().getMaxX() + 16;
+                final double x = Math.max(maxX, getCompartmentX(regulator.getCompartment()));
+                Transformer.move(regulator, x - regulator.getPosition().getX(), 0);
+            }
+        }
+        for (int i = regulators.size() - 1; i >= 0; i--) {
+            final EntityGlyph regulator = regulators.get(i);
+            // move regulators on the left
+            if (regulator.getPosition().getCenterX() < centerX) {
+                final double minX = i == regulators.size() - 1
+                        ? layout.getReaction().getPosition().getCenterX() - regulator.getPosition().getWidth() * 0.5
+                        : regulators.get(i + 1).getPosition().getX() - 16;
+                final double x = Math.min(minX, getCompartmentMaxX(regulator.getCompartment()));
+                Transformer.move(regulator, x - regulator.getPosition().getMaxX(), 0);
+            }
+        }
+    }
+
+    private double getCompartmentX(CompartmentGlyph compartment) {
+        return compartment.getContainedGlyphs().stream()
+                .map(Transformer::getBounds)
+                .mapToDouble(Position::getX)
+                .min().orElse(0.0);
+    }
+
+    private double getCompartmentMaxX(CompartmentGlyph compartment) {
+        return compartment.getContainedGlyphs().stream()
+                .map(Transformer::getBounds)
+                .mapToDouble(Position::getMaxX)
+                .max().orElse(0.0);
     }
 
     private Div[][] getDivs(Grid<Div> grid) {
@@ -417,7 +465,7 @@ public class BoxAlgorithm {
         }
     }
 
-    private void layoutCompartments(Layout layout) {
+    private void layoutCompartments() {
         layoutCompartment(layout.getCompartmentRoot());
     }
 
@@ -473,11 +521,11 @@ public class BoxAlgorithm {
     /**
      * This operation should be called in the last steps, to avoid being exported to a Diagram object.
      */
-    private void removeExtracellular(Layout layout) {
+    private void removeExtracellular() {
         layout.getCompartments().remove(layout.getCompartmentRoot());
     }
 
-    private void computeDimension(Layout layout) {
+    private void computeDimension() {
         Position position = null;
         for (CompartmentGlyph compartment : layout.getCompartments()) {
             if (position == null) position = new Position(compartment.getPosition());
@@ -501,7 +549,7 @@ public class BoxAlgorithm {
         layout.getPosition().set(position);
     }
 
-    private void moveToOrigin(Layout layout) {
+    private void moveToOrigin() {
         final double dx = -layout.getPosition().getX();
         final double dy = -layout.getPosition().getY();
         final Coordinate delta = new CoordinateImpl(dx, dy);
