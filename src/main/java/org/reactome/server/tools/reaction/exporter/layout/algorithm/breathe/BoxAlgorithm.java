@@ -98,7 +98,8 @@ public class BoxAlgorithm {
 
         // // Me no like regulators on the same row as inputs, so me move them down
         reactionPosition = getReactionPosition(grid);
-        forceDiagonal(grid, reactionPosition);
+        forceDiagonalTopDown(grid, reactionPosition);
+        forceDiagonalLeftRight(grid, reactionPosition);
 
         // Div[][] divs = grid.getGrid();
         // // size every square
@@ -322,7 +323,7 @@ public class BoxAlgorithm {
     /**
      * Avoid having catalysts in the same row as inputs or outputs
      */
-    private void forceDiagonal(Grid<Div> grid, Point reactionPosition) {
+    private void forceDiagonalTopDown(Grid<Div> grid, Point reactionPosition) {
         // top/dows
         int r = 0;
         while (r < reactionPosition.getRow()) {
@@ -362,6 +363,49 @@ public class BoxAlgorithm {
                 }
             }
             r++;
+        }
+    }
+
+    private void forceDiagonalLeftRight(Grid<Div> grid, Point reactionPosition) {
+        // left/right
+        int c = 0;
+        while (c < reactionPosition.getCol()) {
+            boolean hasVertical = false;
+            boolean hasHorizontal = false;
+            for (int r = 0; r < grid.getRows(); r++) {
+                if (grid.get(r, c) instanceof VerticalLayout) hasVertical = true;
+                if (grid.get(r, c) instanceof HorizontalLayout) hasHorizontal = true;
+            }
+            if (hasHorizontal && hasVertical) {
+                grid.insertColumns(c, 1);
+                reactionPosition.setCol(reactionPosition.getCol() + 1);
+                for (int r = 0; r < grid.getRows(); r++) {
+                    if (grid.get(r, c + 1) instanceof VerticalLayout) {
+                        grid.set(r, c, grid.get(r, c + 1));
+                        grid.set(r , c + 1, null);
+                    }
+                }
+            }
+            c++;
+        }
+        c = reactionPosition.getCol() + 1;
+        while (c < grid.getColumns()) {
+            boolean hasVertical = false;
+            boolean hasHorizontal = false;
+            for (int r = 0; r < grid.getRows(); r++) {
+                if (grid.get(r, c) instanceof VerticalLayout) hasVertical = true;
+                if (grid.get(r, c) instanceof HorizontalLayout) hasHorizontal = true;
+            }
+            if (hasHorizontal && hasVertical) {
+                grid.insertColumns(c + 1, 1);
+                for (int r = 0; r < grid.getRows(); r++) {
+                    if (grid.get(r, c) instanceof VerticalLayout) {
+                        grid.set(r, c + 1, grid.get(r, c));
+                        grid.set(r, c, null);
+                    }
+                }
+            }
+            c++;
         }
     }
 
