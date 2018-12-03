@@ -100,6 +100,7 @@ public class BoxAlgorithm {
         reactionPosition = getReactionPosition(grid);
         forceDiagonalTopDown(grid, reactionPosition);
         forceDiagonalLeftRight(grid, reactionPosition);
+        expandSameRoleSameColumn(grid, reactionPosition);
 
         // Div[][] divs = grid.getGrid();
         // // size every square
@@ -108,18 +109,6 @@ public class BoxAlgorithm {
         // final int cols = divs[0].length;
         final double widths[] = new double[grid.getColumns()];
         size(layout.getCompartmentRoot(), grid, heights, widths);
-        // for (int row = 0; row < rows; row++) {
-        //     for (int col = 0; col < cols; col++) {
-        //         final Div div = divs[row][col];
-        //         if (div == null) continue;
-        //         final Position bounds = div.getBounds();
-        //         if (bounds.getWidth() > widths[col]) widths[col] = bounds.getWidth();
-        //         if (bounds.getHeight() > heights[row]) heights[row] = bounds.getHeight();
-        //     }
-        // }
-        // // add space for compartment padding and extra large compartments (long text)
-        // expandCompartment(layout.getCompartmentRoot(), divs, widths, heights);
-        //
         // get centers by row and column
         final double cy[] = new double[grid.getRows()];
         cy[0] = 0.5 * heights[0];
@@ -152,7 +141,7 @@ public class BoxAlgorithm {
     }
 
     private void compactLeft(Grid<Div> grid, Point reactionPosition) {
-        for(int c = 0; c < reactionPosition.getCol(); c++) {
+        for (int c = 0; c < reactionPosition.getCol(); c++) {
             for (int r = 0; r < grid.getRows(); r++) {
                 final Div div = grid.get(r, c);
                 if (div == null) continue;
@@ -160,8 +149,10 @@ public class BoxAlgorithm {
                 // Don't allow inputs to reach reaction column
                 if (roles.contains(INPUT) && c + 1 == reactionPosition.getCol()) continue;
                 // Don't allow catalysts or regulators to overlap
-                if (roles.contains(CATALYST) && containsRole(grid.getColumn(c + 1), Collections.singletonList(CATALYST))) continue;
-                if (roles.contains(NEGATIVE_REGULATOR) && containsRole(grid.getColumn(c + 1), Collections.singletonList(NEGATIVE_REGULATOR))) continue;
+                if (roles.contains(CATALYST) && containsRole(grid.getColumn(c + 1), Collections.singletonList(CATALYST)))
+                    continue;
+                if (roles.contains(NEGATIVE_REGULATOR) && containsRole(grid.getColumn(c + 1), Collections.singletonList(NEGATIVE_REGULATOR)))
+                    continue;
                 if (canMove(grid, new Point(r, c), new Point(r, c + 1))) {
                     grid.set(r, c + 1, div);
                     grid.set(r, c, null);
@@ -180,8 +171,10 @@ public class BoxAlgorithm {
                 // Don't allow outputs to reach reaction column
                 if (roles.contains(OUTPUT) && c - 1 == reactionPosition.getCol()) continue;
                 // Don't allow catalysts or regulators to overlap
-                if (roles.contains(CATALYST) && containsRole(grid.getColumn(c - 1), Collections.singletonList(CATALYST))) continue;
-                if (roles.contains(NEGATIVE_REGULATOR) && containsRole(grid.getColumn(c - 1), Collections.singletonList(NEGATIVE_REGULATOR))) continue;
+                if (roles.contains(CATALYST) && containsRole(grid.getColumn(c - 1), Collections.singletonList(CATALYST)))
+                    continue;
+                if (roles.contains(NEGATIVE_REGULATOR) && containsRole(grid.getColumn(c - 1), Collections.singletonList(NEGATIVE_REGULATOR)))
+                    continue;
                 if (canMove(grid, new Point(r, c), new Point(r, c - 1))) {
                     grid.set(r, c - 1, div);
                     grid.set(r, c, null);
@@ -192,7 +185,7 @@ public class BoxAlgorithm {
     }
 
     private void compactTop(Grid<Div> grid, Point reactionPosition) {
-        for(int r = reactionPosition.getRow() - 1; r >= 0; r --) {
+        for (int r = reactionPosition.getRow() - 1; r >= 0; r--) {
             for (int c = 0; c < grid.getColumns(); c++) {
                 final Div div = grid.get(r, c);
                 if (div == null) continue;
@@ -213,7 +206,7 @@ public class BoxAlgorithm {
     }
 
     private void compactBottom(Grid<Div> grid, Point reactionPosition) {
-        for(int r = reactionPosition.getRow() + 1; r <  grid.getRows(); r++) {
+        for (int r = reactionPosition.getRow() + 1; r < grid.getRows(); r++) {
             for (int c = 0; c < grid.getColumns(); c++) {
                 final Div div = grid.get(r, c);
                 if (div == null) continue;
@@ -382,7 +375,7 @@ public class BoxAlgorithm {
                 for (int r = 0; r < grid.getRows(); r++) {
                     if (grid.get(r, c + 1) instanceof VerticalLayout) {
                         grid.set(r, c, grid.get(r, c + 1));
-                        grid.set(r , c + 1, null);
+                        grid.set(r, c + 1, null);
                     }
                 }
             }
@@ -454,58 +447,6 @@ public class BoxAlgorithm {
         return null;
     }
 
-    /**
-     * Adds extra space in widths and heights for compartments.
-     *
-     * @param compartment which compartment to expand
-     * @param divs        the grid
-     * @param widths      the array with widths
-     * @param heights     the array with heights
-     */
-    private void expandCompartment(CompartmentGlyph compartment, Div[][] divs, double[] widths, double[] heights) {
-        for (final CompartmentGlyph child : compartment.getChildren()) {
-            expandCompartment(child, divs, widths, heights);
-        }
-        int minCol = widths.length - 1;
-        int maxCol = 0;
-        int minRow = heights.length - 1;
-        int maxRow = 0;
-        for (int r = 0; r < divs.length; r++) {
-            for (int c = 0; c < divs[0].length; c++) {
-                final Div div = divs[r][c];
-                if (div == null) continue;
-                if (compartment == div.getCompartment() || GlyphUtils.isAncestor(compartment, div.getCompartment())) {
-                    minCol = Math.min(minCol, c);
-                    maxCol = Math.max(maxCol, c);
-                    minRow = Math.min(minRow, r);
-                    maxRow = Math.max(maxRow, r);
-                }
-            }
-        }
-        double width = 0;
-        for (int i = minCol; i <= maxCol; i++) {
-            width += widths[i];
-        }
-        final double minWidth = 2 * COMPARTMENT_PADDING + FontProperties.getTextWidth(compartment.getName());
-        if (width < minWidth) {
-            final double factor = minWidth / width;
-            for (int i = minCol; i <= maxCol; i++) {
-                widths[i] *= factor;
-            }
-        } else {
-            widths[minCol] += COMPARTMENT_PADDING;
-            widths[maxCol] += COMPARTMENT_PADDING;
-        }
-        heights[minRow] += COMPARTMENT_PADDING;
-        heights[maxRow] += COMPARTMENT_PADDING;
-        if (compartment.getContainedGlyphs().stream()
-                .filter(EntityGlyph.class::isInstance)
-                .anyMatch(glyph -> hasRole((EntityGlyph) glyph, INPUT, CATALYST))) {
-            heights[minRow] += 50; // TODO: 29/11/18 find a better approach
-        }
-
-    }
-
     private void size(CompartmentGlyph compartment, Grid<Div> grid, double[] heights, double[] widths) {
         for (final CompartmentGlyph child : compartment.getChildren()) {
             size(child, grid, heights, widths);
@@ -564,6 +505,36 @@ public class BoxAlgorithm {
                 divs.removeColumns(c, 1);
             } else c++;
         }
+    }
+
+    private void expandSameRoleSameColumn(Grid<Div> grid, Point reactionPosition) {
+        // this is something that happens in the reaction column
+        // When the compartment of the reaction has children with regulators, more than one regulator appear in this
+        // column (R-HSA-425661)
+        Div[] column = grid.getColumn(reactionPosition.getCol());
+        int regulators = countRegulators(reactionPosition, column);
+        while (regulators > 1) {
+            grid.insertColumns(reactionPosition.getCol() + 1, 1);
+            // move the closest to the bottom
+            for (int r = grid.getRows() - 1; r > reactionPosition.getRow(); r--) {
+                if (column[r] != null && PlacePositioner.simplify(column[r].getContainedRoles()).contains(NEGATIVE_REGULATOR)) {
+                    grid.set(r, reactionPosition.getCol() + 1, column[r]);
+                    grid.set(r, reactionPosition.getCol(), null);
+                    break;
+                }
+            }
+            column = grid.getColumn(reactionPosition.getCol());
+            regulators = countRegulators(reactionPosition, column);
+        }
+    }
+
+    private int countRegulators(Point reactionPosition, Div[] column) {
+        int regulators = 0;
+        for (int r = reactionPosition.getRow() + 1; r < column.length; r++) {
+            if (column[r] != null && PlacePositioner.simplify(column[r].getContainedRoles()).contains(NEGATIVE_REGULATOR))
+                regulators++;
+        }
+        return regulators;
     }
 
     private void layoutCompartments() {

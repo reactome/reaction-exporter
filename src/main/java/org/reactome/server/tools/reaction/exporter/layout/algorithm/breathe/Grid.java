@@ -77,6 +77,11 @@ public class Grid<T> {
         grid = rtn;
     }
 
+    /**
+     * Inserts n columns just before the column index
+     * @param index position where to insert columns
+     * @param n number of columns to insert
+     */
     void insertColumns(int index, int n) {
         if (n <= 0) return;
         final T[][] rtn = createGrid(rows, columns + n);
