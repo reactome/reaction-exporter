@@ -20,7 +20,7 @@ public abstract class GlyphsLayout implements Div {
     private double separation = 5;
     private Position bounds;
 
-    public GlyphsLayout(List<? extends Glyph> glyphs) {
+    GlyphsLayout(List<? extends Glyph> glyphs) {
         this.glyphs = glyphs;
     }
 
@@ -84,39 +84,47 @@ public abstract class GlyphsLayout implements Div {
     }
 
 
-    protected double getSeparation() {
+    double getSeparation() {
         return separation;
     }
 
-    protected double getBottomPadding() {
+    @Override
+    public double getBottomPadding() {
         return bottomPadding;
     }
 
-    protected double getLeftPadding() {
+    @Override
+    public double getLeftPadding() {
         return leftPadding;
     }
 
-    protected double getRightPadding() {
+    @Override
+    public double getRightPadding() {
         return rightPadding;
     }
 
-    protected double getTopPadding() {
+    @Override
+    public double getTopPadding() {
         return topPadding;
     }
 
-    protected void setBottomPadding(double bottomPadding) {
+    @Override
+    public void setBottomPadding(double bottomPadding) {
         this.bottomPadding = bottomPadding;
     }
 
-    protected void setLeftPadding(double leftPadding) {
+    @Override
+    public void setLeftPadding(double leftPadding) {
         this.leftPadding = leftPadding;
     }
 
-    protected void setRightPadding(double rightPadding) {
+    @Override
+    public void setRightPadding(double rightPadding) {
         this.rightPadding = rightPadding;
     }
 
-    protected void setTopPadding(double topPadding) {
+    @Override
+    public void setTopPadding(double topPadding) {
         this.topPadding = topPadding;
     }
 

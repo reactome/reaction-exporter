@@ -93,50 +93,55 @@ public class BoxAlgorithm {
         compactTop(grid, reactionPosition);
         compactBottom(grid, reactionPosition);
 
-        // Me no like regulators on the same row as inputs, so me move them down
+        removeEmptyRows(grid);
+        removeEmptyCols(grid);
+
+        // // Me no like regulators on the same row as inputs, so me move them down
+        reactionPosition = getReactionPosition(grid);
         forceDiagonal(grid, reactionPosition);
 
-        Div[][] divs = grid.getGrid();
-        // size every square
-        final int rows = divs.length;
-        final double heights[] = new double[rows];
-        final int cols = divs[0].length;
-        final double widths[] = new double[cols];
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                final Div div = divs[row][col];
-                if (div == null) continue;
-                final Position bounds = div.getBounds();
-                if (bounds.getWidth() > widths[col]) widths[col] = bounds.getWidth();
-                if (bounds.getHeight() > heights[row]) heights[row] = bounds.getHeight();
-            }
-        }
-        // add space for compartment padding and extra large compartments (long text)
-        expandCompartment(layout.getCompartmentRoot(), divs, widths, heights);
-
+        // Div[][] divs = grid.getGrid();
+        // // size every square
+        // final int rows = divs.length;
+        final double heights[] = new double[grid.getRows()];
+        // final int cols = divs[0].length;
+        final double widths[] = new double[grid.getColumns()];
+        size(layout.getCompartmentRoot(), grid, heights, widths);
+        // for (int row = 0; row < rows; row++) {
+        //     for (int col = 0; col < cols; col++) {
+        //         final Div div = divs[row][col];
+        //         if (div == null) continue;
+        //         final Position bounds = div.getBounds();
+        //         if (bounds.getWidth() > widths[col]) widths[col] = bounds.getWidth();
+        //         if (bounds.getHeight() > heights[row]) heights[row] = bounds.getHeight();
+        //     }
+        // }
+        // // add space for compartment padding and extra large compartments (long text)
+        // expandCompartment(layout.getCompartmentRoot(), divs, widths, heights);
+        //
         // get centers by row and column
-        final double cy[] = new double[rows];
+        final double cy[] = new double[grid.getRows()];
         cy[0] = 0.5 * heights[0];
-        for (int i = 1; i < rows; i++) {
+        for (int i = 1; i < grid.getRows(); i++) {
             cy[i] = cy[i - 1] + 0.5 * heights[i - 1] + 0.5 * heights[i];
         }
-        final double cx[] = new double[cols];
+        final double cx[] = new double[grid.getColumns()];
         cx[0] = 0.5 * widths[0];
-        for (int i = 1; i < cols; i++) {
+        for (int i = 1; i < grid.getColumns(); i++) {
             cx[i] = cx[i - 1] + 0.5 * widths[i - 1] + 0.5 * widths[i];
         }
 
         // place things (wheeeee!!)
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                final Div div = divs[row][col];
+        for (int row = 0; row < grid.getRows(); row++) {
+            for (int col = 0; col < grid.getColumns(); col++) {
+                final Div div = grid.get(row, col);
                 if (div == null) continue;
                 div.center(cx[col], cy[row]);
             }
         }
 
         // usually, regulators are too widespread, let's compact them
-        compactRegulators();
+        // compactRegulators();
 
         ConnectorFactory.addConnectors(layout, index);
         layoutCompartments();
@@ -318,7 +323,6 @@ public class BoxAlgorithm {
      * Avoid having catalysts in the same row as inputs or outputs
      */
     private void forceDiagonal(Grid<Div> grid, Point reactionPosition) {
-        // TODO: 30/11/18 this would look nicer using the Grid
         // top/dows
         int r = 0;
         while (r < reactionPosition.getRow()) {
@@ -390,13 +394,13 @@ public class BoxAlgorithm {
     }
 
     /**
-     * Calculates the absolute position of the reaction in the divs
+     * Calculates the absolute position of the reaction in the grid
      */
-    private Point getReactionPosition(Grid<Div> divs) {
-        for (int r = 0; r < divs.getRows(); r++) {
-            for (int c = 0; c < divs.getColumns(); c++) {
-                if (divs.get(r, c) instanceof GlyphsLayout) {
-                    final GlyphsLayout layout = (GlyphsLayout) divs.get(r, c);
+    private Point getReactionPosition(Grid<Div> grid) {
+        for (int r = 0; r < grid.getRows(); r++) {
+            for (int c = 0; c < grid.getColumns(); c++) {
+                if (grid.get(r, c) instanceof GlyphsLayout) {
+                    final GlyphsLayout layout = (GlyphsLayout) grid.get(r, c);
                     if (layout.getGlyphs().iterator().next() instanceof ReactionGlyph) {
                         return new Point(r, c);
                     }
@@ -456,6 +460,48 @@ public class BoxAlgorithm {
             heights[minRow] += 50; // TODO: 29/11/18 find a better approach
         }
 
+    }
+
+    private void size(CompartmentGlyph compartment, Grid<Div> grid, double[] heights, double[] widths) {
+        for (final CompartmentGlyph child : compartment.getChildren()) {
+            size(child, grid, heights, widths);
+        }
+        int minCol = Integer.MAX_VALUE;
+        int maxCol = 0;
+        int minRow = Integer.MAX_VALUE;
+        int maxRow = 0;
+        for (int r = 0; r < grid.getRows(); r++) {
+            for (int c = 0; c < grid.getColumns(); c++) {
+                final Div div = grid.get(r, c);
+                if (div == null) continue;
+                if (compartment == div.getCompartment() || GlyphUtils.isAncestor(compartment, div.getCompartment())) {
+                    minCol = Math.min(minCol, c);
+                    maxCol = Math.max(maxCol, c);
+                    minRow = Math.min(minRow, r);
+                    maxRow = Math.max(maxRow, r);
+                    if (compartment == div.getCompartment()) {
+                        final Position bounds = div.getBounds();
+                        widths[c] = Math.max(widths[c], bounds.getWidth());
+                        heights[r] = Math.max(heights[r], bounds.getHeight());
+                    }
+                }
+            }
+        }
+        double width = 0;
+        for (int i = minCol; i <= maxCol; i++) {
+            width += widths[i];
+        }
+        final double minWidth = FontProperties.getTextWidth(compartment.getName());
+        if (width < minWidth) {
+            final double factor = minWidth / width;
+            for (int i = minCol; i <= maxCol; i++) {
+                widths[i] *= factor;
+            }
+        }
+        widths[minCol] += 2 * COMPARTMENT_PADDING;
+        widths[maxCol] += 2 * COMPARTMENT_PADDING;
+        heights[minRow] += 2 * COMPARTMENT_PADDING;
+        heights[maxRow] += 2 * COMPARTMENT_PADDING;
     }
 
     private void removeEmptyRows(Grid<Div> divs) {

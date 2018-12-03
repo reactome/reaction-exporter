@@ -30,6 +30,14 @@ public class DiagramTest {
         this.first = true;
         notInCompartment();
         crossingSegments();
+        manyChildren();
+    }
+
+    private void manyChildren() {
+        for (final Compartment compartment : diagram.getCompartments()) {
+            final long count = compartment.getComponentIds().stream().filter(compartmentIndex::containsKey).count();
+            if (count > 3) log(Level.INFO, String.format("%s compartment in reaction %s (%s) has more than 3 children", compartment.getDisplayName(), diagram.getEdges().get(0).getId(), diagram.getEdges().get(0).getDisplayName()));
+        }
     }
 
     private void notInCompartment() {
@@ -174,5 +182,5 @@ public class DiagramTest {
     }
 
 
-    public enum Level {PASSED, WARNING, ERROR;}
+    public enum Level {INFO, PASSED, WARNING, ERROR}
 }

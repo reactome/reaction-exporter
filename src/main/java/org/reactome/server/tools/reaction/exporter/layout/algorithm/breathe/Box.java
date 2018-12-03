@@ -363,6 +363,46 @@ public class Box implements Div {
     }
 
     @Override
+    public double getLeftPadding() {
+        return 0;
+    }
+
+    @Override
+    public void setLeftPadding(double padding) {
+
+    }
+
+    @Override
+    public double getRightPadding() {
+        return 0;
+    }
+
+    @Override
+    public void setRightPadding(double padding) {
+
+    }
+
+    @Override
+    public double getTopPadding() {
+        return 0;
+    }
+
+    @Override
+    public void setTopPadding(double padding) {
+
+    }
+
+    @Override
+    public double getBottomPadding() {
+        return 0;
+    }
+
+    @Override
+    public void setBottomPadding(double padding) {
+
+    }
+
+    @Override
     public void center(double x, double y) {
 
     }

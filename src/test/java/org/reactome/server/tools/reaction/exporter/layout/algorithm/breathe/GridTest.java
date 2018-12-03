@@ -6,7 +6,7 @@ public class GridTest {
 
     @Test
     public void testGrid() {
-        final Grid<String> grid = new Grid<>();
+        final Grid<String> grid = new Grid<>(String.class);
         grid.set(5, 5, "A");
         grid.set(2, 3, "B");
         grid.set(0, 2, "B");

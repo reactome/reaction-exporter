@@ -16,6 +16,22 @@ public interface Div {
 
     void setVerticalPadding(double padding);
 
+    double getLeftPadding();
+
+    void setLeftPadding(double padding);
+
+    double getRightPadding();
+
+    void setRightPadding(double padding);
+
+    double getTopPadding();
+
+    void setTopPadding(double padding);
+
+    double getBottomPadding();
+
+    void setBottomPadding(double padding);
+
     void center(double x, double y);
 
     void move(double dx, double dy);
