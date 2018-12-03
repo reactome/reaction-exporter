@@ -60,15 +60,13 @@ public class PlacePositioner {
         a = simplify(a);
         b = simplify(b);
         final List<Place> preferences = getPreferences(a, PREFERENCES);
-        final List<Place> allowed = getPreferences(b, ALLOWED);
-        // general case
+        final List<Place> allowed = b.isEmpty() ? Arrays.asList(Place.values()) : getPreferences(b, ALLOWED);
+        if (allowed.isEmpty()) return null;
+        // general case, take the first allowed preference
         for (final Place preference : preferences) {
             if (allowed.contains(preference)) return preference;
         }
-        if (preferences.isEmpty() && allowed.isEmpty()) return LEFT;  // could be random
-        else if (preferences.isEmpty()) return allowed.get(0);
-        else if (allowed.isEmpty()) return preferences.get(0);
-            // mismatch between both lists
+        if (preferences.isEmpty()) return allowed.get(0);
         else return preferences.get(0);
     }
 
@@ -84,11 +82,20 @@ public class PlacePositioner {
         return preferences;
     }
 
-    private static Collection<EntityRole> simplify(Collection<EntityRole> b) {
-        b = new ArrayList<>(b);
-        if (b.contains(POSITIVE_REGULATOR)) b.add(NEGATIVE_REGULATOR);
-        b.remove(POSITIVE_REGULATOR);
-        return b;
+    /**
+     * Collapses both regulators roles into NEGATIVE_REGULATOR.
+     * @param roles a list of roles
+     * @return the list of roles replacing any POSITIVE_REGULATOR
+     */
+    static Collection<EntityRole> simplify(Collection<EntityRole> roles) {
+        if (roles.isEmpty()) return Collections.emptyList();
+        roles = EnumSet.copyOf(roles);
+        if (roles.contains(POSITIVE_REGULATOR)) roles.add(NEGATIVE_REGULATOR);
+        roles.remove(POSITIVE_REGULATOR);
+        return roles;
     }
 
+    public static Collection<Place> getAllowed(Collection<EntityRole> roles) {
+        return getPreferences(roles, ALLOWED);
+    }
 }

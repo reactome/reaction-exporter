@@ -24,4 +24,8 @@ public class Point {
     public void setRow(int row) {
         this.row = row;
     }
+
+    Point add(Point point) {
+        return new Point(row + point.row, col + point.col);
+    }
 }

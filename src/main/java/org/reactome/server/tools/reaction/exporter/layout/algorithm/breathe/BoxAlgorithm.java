@@ -7,6 +7,7 @@ import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Dedup
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.FontProperties;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
+import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
@@ -15,9 +16,9 @@ import java.util.*;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.getBounds;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.move;
-import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
-import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
+import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.*;
 import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils.hasRole;
+import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils.isAncestor;
 
 /**
  * This is the crown jewel of the algorithms. Though it is still under high development, its results outperform any
@@ -81,21 +82,21 @@ public class BoxAlgorithm {
         removeEmptyRows(grid);
         removeEmptyCols(grid);
 
-        Div[][] divs = grid.getGrid();
         // Get the parallel grid with the compartment of each position
-        final CompartmentGlyph[][] comps = new CompartmentGlyph[divs.length][divs[0].length];
-        computeCompartment(layout.getCompartmentRoot(), divs, comps);
+        final Grid<CompartmentGlyph> compartmentGrid = new Grid<>(CompartmentGlyph.class, grid.getRows(), grid.getColumns());
+        computeCompartment(layout.getCompartmentRoot(), grid, compartmentGrid);
 
         // Compaction
-        reactionPosition = getReactionPosition(divs);
-        compactLeft(divs, reactionPosition, comps);
-        compactRight(divs, reactionPosition, comps);
-        // compactTop(divs, reactionPosition, comps);
-        // compactBottom(divs, reactionPosition, comps);
+        reactionPosition = getReactionPosition(grid);
+        compactLeft(grid, reactionPosition);
+        compactRight(grid, reactionPosition);
+        compactTop(grid, reactionPosition);
+        compactBottom(grid, reactionPosition);
 
         // Me no like regulators on the same row as inputs, so me move them down
-        divs = forceDiagonal(divs, reactionPosition);
+        forceDiagonal(grid, reactionPosition);
 
+        Div[][] divs = grid.getGrid();
         // size every square
         final int rows = divs.length;
         final double heights[] = new double[rows];
@@ -142,6 +143,123 @@ public class BoxAlgorithm {
         removeExtracellular();
         computeDimension();
         moveToOrigin();
+    }
+
+    private void compactLeft(Grid<Div> grid, Point reactionPosition) {
+        for(int c = 0; c < reactionPosition.getCol(); c++) {
+            for (int r = 0; r < grid.getRows(); r++) {
+                final Div div = grid.get(r, c);
+                if (div == null) continue;
+                final Collection<EntityRole> roles = PlacePositioner.simplify(div.getContainedRoles());
+                // Don't allow inputs to reach reaction column
+                if (roles.contains(INPUT) && c + 1 == reactionPosition.getCol()) continue;
+                // Don't allow catalysts or regulators to overlap
+                if (roles.contains(CATALYST) && containsRole(grid.getColumn(c + 1), Collections.singletonList(CATALYST))) continue;
+                if (roles.contains(NEGATIVE_REGULATOR) && containsRole(grid.getColumn(c + 1), Collections.singletonList(NEGATIVE_REGULATOR))) continue;
+                if (canMove(grid, new Point(r, c), new Point(r, c + 1))) {
+                    grid.set(r, c + 1, div);
+                    grid.set(r, c, null);
+                }
+            }
+        }
+    }
+
+    private void compactRight(Grid<Div> grid, Point reactionPosition) {
+        int c = grid.getColumns() - 1;
+        while (c > reactionPosition.getCol()) {
+            for (int r = 0; r < grid.getRows(); r++) {
+                final Div div = grid.get(r, c);
+                if (div == null) continue;
+                final Collection<EntityRole> roles = PlacePositioner.simplify(div.getContainedRoles());
+                // Don't allow outputs to reach reaction column
+                if (roles.contains(OUTPUT) && c - 1 == reactionPosition.getCol()) continue;
+                // Don't allow catalysts or regulators to overlap
+                if (roles.contains(CATALYST) && containsRole(grid.getColumn(c - 1), Collections.singletonList(CATALYST))) continue;
+                if (roles.contains(NEGATIVE_REGULATOR) && containsRole(grid.getColumn(c - 1), Collections.singletonList(NEGATIVE_REGULATOR))) continue;
+                if (canMove(grid, new Point(r, c), new Point(r, c - 1))) {
+                    grid.set(r, c - 1, div);
+                    grid.set(r, c, null);
+                }
+            }
+            c--;
+        }
+    }
+
+    private void compactTop(Grid<Div> grid, Point reactionPosition) {
+        for(int r = reactionPosition.getRow() - 1; r >= 0; r --) {
+            for (int c = 0; c < grid.getColumns(); c++) {
+                final Div div = grid.get(r, c);
+                if (div == null) continue;
+                Collection<EntityRole> roles = div.getContainedRoles();
+                // Don't allow inputs to reach reaction column
+                if (roles.contains(CATALYST) && r + 1 == reactionPosition.getRow()) continue;
+                // Don't allow inputs or outputs to occupy the same row
+                roles = PlacePositioner.simplify(roles);
+                if ((roles.contains(INPUT) || roles.contains(OUTPUT)) && containsRole(grid.getRow(r + 1), roles))
+                    continue;
+                if (canMove(grid, new Point(r, c), new Point(r + 1, c))) {
+                    grid.set(r + 1, c, div);
+                    grid.set(r, c, null);
+                }
+
+            }
+        }
+    }
+
+    private void compactBottom(Grid<Div> grid, Point reactionPosition) {
+        for(int r = reactionPosition.getRow() + 1; r <  grid.getRows(); r++) {
+            for (int c = 0; c < grid.getColumns(); c++) {
+                final Div div = grid.get(r, c);
+                if (div == null) continue;
+                final Collection<EntityRole> roles = PlacePositioner.simplify(div.getContainedRoles());
+                // Don't allow regulators to reach reaction row
+                if (roles.contains(NEGATIVE_REGULATOR) && r - 1 == reactionPosition.getRow()) continue;
+                // Don't allow inputs or outputs to occupy the same row
+                if ((roles.contains(INPUT) || roles.contains(OUTPUT)) && containsRole(grid.getRow(r - 1), roles))
+                    continue;
+                if (canMove(grid, new Point(r, c), new Point(r - 1, c))) {
+                    grid.set(r - 1, c, div);
+                    grid.set(r, c, null);
+                }
+
+            }
+        }
+    }
+
+    private boolean canMove(Grid<Div> grid, Point source, Point target) {
+        if (grid.get(target.getRow(), target.getCol()) != null) return false;
+        final Grid<Div> gridCopy = new Grid<>(grid);
+        gridCopy.set(target.getRow(), target.getCol(), grid.get(source.getRow(), source.getCol()));
+        gridCopy.set(source.getRow(), source.getCol(), null);
+        final Grid<CompartmentGlyph> compartmentGridCopy = new Grid<>(CompartmentGlyph.class, grid.getRows(), grid.getColumns());
+        try {
+            computeCompartment(layout.getCompartmentRoot(), gridCopy, compartmentGridCopy);
+        } catch (RuntimeException e) {
+            return false;
+        }
+        for (int r = 0; r < gridCopy.getRows(); r++) {
+            for (int c = 0; c < gridCopy.getColumns(); c++) {
+                final Div div = gridCopy.get(r, c);
+                if (div != null) {
+                    final CompartmentGlyph compartment = div.getCompartment();
+                    final CompartmentGlyph compartmentGlyph = compartmentGridCopy.get(r, c);
+                    if (compartment != compartmentGlyph) return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean containsRole(Div[] divs, Collection<EntityRole> roles) {
+        for (final Div div : divs) {
+            if (div != null) {
+                final Collection<EntityRole> containedRoles = PlacePositioner.simplify(div.getContainedRoles());
+                for (final EntityRole role : roles) {
+                    if (containedRoles.contains(role)) return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -199,70 +317,61 @@ public class BoxAlgorithm {
     /**
      * Avoid having catalysts in the same row as inputs or outputs
      */
-    private Div[][] forceDiagonal(Div[][] divs, Point reactionPosition) {
+    private void forceDiagonal(Grid<Div> grid, Point reactionPosition) {
         // TODO: 30/11/18 this would look nicer using the Grid
         // top/dows
         int r = 0;
         while (r < reactionPosition.getRow()) {
             boolean hasVertical = false;
             boolean hasHorizontal = false;
-            for (int c = 0; c < divs[r].length; c++) {
-                if (divs[r][c] instanceof VerticalLayout) hasVertical = true;
-                if (divs[r][c] instanceof HorizontalLayout) hasHorizontal = true;
+            for (int c = 0; c < grid.getColumns(); c++) {
+                if (grid.get(r, c) instanceof VerticalLayout) hasVertical = true;
+                if (grid.get(r, c) instanceof HorizontalLayout) hasHorizontal = true;
             }
             if (hasHorizontal && hasVertical) {
-                divs = addRow(divs, r);
+                grid.insertRows(r, 1);
                 reactionPosition.setRow(reactionPosition.getRow() + 1);
-                for (int c = 0; c < divs[r].length; c++) {
-                    if (divs[r + 1][c] instanceof HorizontalLayout) {
-                        divs[r][c] = divs[r + 1][c];
-                        divs[r + 1][c] = null;
+                for (int c = 0; c < grid.getColumns(); c++) {
+                    if (grid.get(r + 1, c) instanceof HorizontalLayout) {
+                        grid.set(r, c, grid.get(r + 1, c));
+                        grid.set(r + 1, c, null);
                     }
                 }
             }
             r++;
         }
         r = reactionPosition.getRow() + 1;
-        while (r < divs.length) {
+        while (r < grid.getRows()) {
             boolean hasVertical = false;
             boolean hasHorizontal = false;
-            for (int c = 0; c < divs[r].length; c++) {
-                if (divs[r][c] instanceof VerticalLayout) hasVertical = true;
-                if (divs[r][c] instanceof HorizontalLayout) hasHorizontal = true;
+            for (int c = 0; c < grid.getColumns(); c++) {
+                if (grid.get(r, c) instanceof VerticalLayout) hasVertical = true;
+                if (grid.get(r, c) instanceof HorizontalLayout) hasHorizontal = true;
             }
             if (hasHorizontal && hasVertical) {
-                divs = addRow(divs, r + 1);
-                for (int c = 0; c < divs[r].length; c++) {
-                    if (divs[r][c] instanceof HorizontalLayout) {
-                        divs[r + 1][c] = divs[r][c];
-                        divs[r][c] = null;
+                grid.insertRows(r + 1, 1);
+                for (int c = 0; c < grid.getColumns(); c++) {
+                    if (grid.get(r, c) instanceof HorizontalLayout) {
+                        grid.set(r + 1, c, grid.get(r, c));
+                        grid.set(r, c, null);
                     }
                 }
             }
             r++;
         }
-        return divs;
     }
 
-    private Div[][] addRow(Div[][] divs, int row) {
-        final Div[][] rtn = new Div[divs.length + 1][divs[0].length];
-        if (row >= 0) System.arraycopy(divs, 0, rtn, 0, row);
-        if (divs.length - row >= 0) System.arraycopy(divs, row, rtn, row + 1, divs.length - row);
-        return rtn;
-
-    }
-
-    private void computeCompartment(CompartmentGlyph compartment, Div[][] divs, CompartmentGlyph[][] comps) {
+    private void computeCompartment(CompartmentGlyph compartment, Grid<Div> grid, Grid<CompartmentGlyph> comps) {
         for (final CompartmentGlyph child : compartment.getChildren()) {
-            computeCompartment(child, divs, comps);
+            computeCompartment(child, grid, comps);
         }
         int minCol = Integer.MAX_VALUE;
         int maxCol = 0;
         int minRow = Integer.MAX_VALUE;
         int maxRow = 0;
-        for (int r = 0; r < divs.length; r++) {
-            for (int c = 0; c < divs[0].length; c++) {
-                final Div div = divs[r][c];
+        for (int r = 0; r < grid.getRows(); r++) {
+            for (int c = 0; c < grid.getColumns(); c++) {
+                final Div div = grid.get(r, c);
                 if (div == null) continue;
                 if (compartment == div.getCompartment() || GlyphUtils.isAncestor(compartment, div.getCompartment())) {
                     minCol = Math.min(minCol, c);
@@ -274,142 +383,8 @@ public class BoxAlgorithm {
         }
         for (int r = minRow; r <= maxRow; r++) {
             for (int c = minCol; c <= maxCol; c++) {
-                if (comps[r][c] == null) comps[r][c] = compartment;
-            }
-        }
-    }
-
-    private void compactLeft(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
-        for (int row = 0; row < divs.length; row++) {
-            for (int col = 0; col < reactionPosition.getCol() - 1; col++) {
-                // inputs
-                if (divs[row][col] instanceof VerticalLayout) {
-                    if (divs[row][col].getContainedRoles().contains(CATALYST)) continue;
-                    final CompartmentGlyph compartment = comps[row][col];
-                    for (int c = reactionPosition.getCol() - 1; c >= col + 1; c--) {
-                        if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
-                            divs[row][c] = divs[row][col];
-                            divs[row][col] = null;
-                            break;
-                        }
-                    }
-                    // only one VerticalLayout expected
-                    break;
-                    // catalyst/regulators
-                } else if (divs[row][col] instanceof HorizontalLayout) {
-                    final CompartmentGlyph compartment = comps[row][col];
-                    for (int c = reactionPosition.getCol(); c >= col + 1; c--) {
-                        if ((comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment))) {
-                            boolean busy = false;
-                            for (int r = reactionPosition.getRow(); r < row; r++) {
-                                if (divs[r][c] != null) {
-                                    busy = true;
-                                    break;
-                                }
-                            }
-                            if (!busy) {
-                                divs[row][c] = divs[row][col];
-                                divs[row][col] = null;
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    private void compactRight(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
-        for (int row = 0; row < divs.length; row++) {
-            for (int col = reactionPosition.getCol() + 1; col <= divs[0].length - 1; col++) {
-                // 1 move outputs closer to reaction
-                if (divs[row][col] instanceof VerticalLayout) {
-                    final CompartmentGlyph compartment = comps[row][col];
-                    for (int c = reactionPosition.getCol() + 1; c <= col - 1; c++) {
-                        if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
-                            divs[row][c] = divs[row][col];
-                            divs[row][col] = null;
-                        }
-                    }
-                    break;
-                } else if (divs[row][col] instanceof HorizontalLayout) {
-                    final CompartmentGlyph compartment = comps[row][col];
-                    for (int c = reactionPosition.getCol(); c < col; c++) {
-                        if (comps[row][c] == compartment || GlyphUtils.isAncestor(comps[row][c], compartment)) {
-                            boolean busy = false;
-                            for (int r = reactionPosition.getRow(); r < row; r++) {
-                                if (divs[r][c] != null) {
-                                    busy = true;
-                                    break;
-                                }
-                            }
-                            if (!busy) {
-                                divs[row][c] = divs[row][col];
-                                divs[row][col] = null;
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    private void compactTop(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
-        for (int row = reactionPosition.getRow() - 2; row >= 0; row--) {
-            for (int col = 0; col < divs[0].length; col++) {
-                if (divs[row][col] instanceof VerticalLayout) {
-                    final CompartmentGlyph compartment = comps[row][col];
-                    for (int r = reactionPosition.getRow() - 1; r >= row + 1; r--) {
-                        if (divs[r][col] != null) continue;
-                        if (comps[r][col] == compartment || GlyphUtils.isAncestor(comps[r][col], compartment)) {
-                            boolean busy = false;
-                            for (int c = reactionPosition.getCol(); c < col; c++) {
-                                if (divs[r][c] != null) {
-                                    busy = true;
-                                    break;
-                                }
-                            }
-                            if (!busy) {
-                                divs[r][col] = divs[row][col];
-                                divs[row][col] = null;
-                                break;
-                            }
-                        }
-                    }
-                    // only one VerticalLayout expected
-                    break;
-                }
-            }
-        }
-    }
-
-    private void compactBottom(Div[][] divs, Point reactionPosition, CompartmentGlyph[][] comps) {
-        for (int row = reactionPosition.getRow() + 2; row < divs.length; row++) {
-            for (int col = 0; col < divs[0].length; col++) {
-                if (divs[row][col] instanceof VerticalLayout) {
-                    final CompartmentGlyph compartment = comps[row][col];
-                    for (int r = reactionPosition.getRow() + 1; r < divs.length; r++) {
-                        if (comps[r][col] == compartment || GlyphUtils.isAncestor(comps[r][col], compartment)) {
-                            boolean busy = false;
-                            for (int c = reactionPosition.getCol(); c < col; c++) {
-                                if (divs[r][c] != null) {
-                                    busy = true;
-                                    break;
-                                }
-                            }
-                            if (!busy) {
-                                divs[r][col] = divs[row][col];
-                                divs[row][col] = null;
-                                break;
-                            }
-                        }
-                    }
-                    // only one VerticalLayout expected
-                    break;
-                }
+                if (comps.get(r, c) == null) comps.set(r, c, compartment);
+                else if (!isAncestor(compartment, comps.get(r, c))) throw new RuntimeException();
             }
         }
     }
@@ -417,16 +392,13 @@ public class BoxAlgorithm {
     /**
      * Calculates the absolute position of the reaction in the divs
      */
-    private Point getReactionPosition(Div[][] divs) {
-        for (int r = 0; r < divs.length; r++) {
-            for (int c = 0; c < divs[0].length; c++) {
-                if (divs[r] != null && divs[r][c] != null) {
-                    final Div div = divs[r][c];
-                    if (div instanceof GlyphsLayout) {
-                        final GlyphsLayout layout = (GlyphsLayout) div;
-                        if (layout.getGlyphs().iterator().next() instanceof ReactionGlyph) {
-                            return new Point(r, c);
-                        }
+    private Point getReactionPosition(Grid<Div> divs) {
+        for (int r = 0; r < divs.getRows(); r++) {
+            for (int c = 0; c < divs.getColumns(); c++) {
+                if (divs.get(r, c) instanceof GlyphsLayout) {
+                    final GlyphsLayout layout = (GlyphsLayout) divs.get(r, c);
+                    if (layout.getGlyphs().iterator().next() instanceof ReactionGlyph) {
+                        return new Point(r, c);
                     }
                 }
             }
@@ -436,10 +408,11 @@ public class BoxAlgorithm {
 
     /**
      * Adds extra space in widths and heights for compartments.
+     *
      * @param compartment which compartment to expand
-     * @param divs   the grid
-     * @param widths the array with widths
-     * @param heights the array with heights
+     * @param divs        the grid
+     * @param widths      the array with widths
+     * @param heights     the array with heights
      */
     private void expandCompartment(CompartmentGlyph compartment, Div[][] divs, double[] widths, double[] heights) {
         for (final CompartmentGlyph child : compartment.getChildren()) {

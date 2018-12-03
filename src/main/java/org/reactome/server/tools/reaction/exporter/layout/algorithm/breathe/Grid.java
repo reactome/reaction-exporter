@@ -27,11 +27,21 @@ public class Grid<T> {
         this(clz, 0, 0);
     }
 
-    private Grid(Class<T> clz, int rows, int columns) {
+    Grid(Class<T> clz, int rows, int columns) {
         this.clz = clz;
         this.rows = rows;
         this.columns = columns;
         this.grid = createGrid(rows, columns);
+    }
+
+    public Grid(Grid<T> that) {
+        this.clz = that.clz;
+        this.rows = that.rows;
+        this.columns = that.columns;
+        this.grid = createGrid(rows, columns);
+        for (int r = 0; r < rows; r++) {
+            System.arraycopy(that.grid[r], 0, this.grid[r], 0, columns);
+        }
     }
 
     int getColumns() {
@@ -58,7 +68,7 @@ public class Grid<T> {
         grid[row][column] = element;
     }
 
-    private void insertRows(int index, int n) {
+    void insertRows(int index, int n) {
         if (n <= 0) return;
         final T[][] rtn = createGrid(rows + n, columns);
         if (index >= 0) System.arraycopy(grid, 0, rtn, 0, index);
@@ -67,7 +77,7 @@ public class Grid<T> {
         grid = rtn;
     }
 
-    private void insertColumns(int index, int n) {
+    void insertColumns(int index, int n) {
         if (n <= 0) return;
         final T[][] rtn = createGrid(rows, columns + n);
         for (int r = 0; r < rows; r++) {
