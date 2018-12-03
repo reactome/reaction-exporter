@@ -165,10 +165,10 @@ public class Box implements Div {
             }
         } else if (boxes.size() > 2) {
             // Top down
-            children.sort(Comparator
-                    .comparing((CompartmentGlyph c) -> hasRole(c, CATALYST), TRUE_FIRST)
-                    .thenComparing(c -> hasRole(c, NEGATIVE_REGULATOR), FALSE_FIRST)
-                    .thenComparing(c -> hasRole(c, POSITIVE_REGULATOR), FALSE_FIRST));
+            boxes.sort(Comparator
+                    .comparing((Box c) -> c.getContainedRoles().contains(CATALYST), TRUE_FIRST)
+                    .thenComparing(c -> c.getContainedRoles().contains(NEGATIVE_REGULATOR), FALSE_FIRST)
+                    .thenComparing(c -> c.getContainedRoles().contains(POSITIVE_REGULATOR), FALSE_FIRST));
             int mc = 0;
             int mr = 0;
             for (final Box box : boxes) {
@@ -271,7 +271,7 @@ public class Box implements Div {
                     .orElseThrow(RuntimeException::new);
             compartment.getContainedGlyphs().remove(reaction);
             children.get(0).getCompartment().getContainedGlyphs().add(reaction);
-            System.err.println("Moving reaction to: " + children.get(0).getCompartment().getName());
+            System.err.printf("Moving reaction to: %s (%s)%n", children.get(0).getCompartment().getName(), reaction.getStId());
             reaction.setCompartment(compartment);
             return null;
         }
@@ -287,10 +287,10 @@ public class Box implements Div {
                 final Collection<Place> allowed = PlacePositioner.getAllowed(div.getContainedRoles());
                 if (allowed.isEmpty()) {
                     // TODO: 03/12/18 add a warning log
-                    System.err.println("Moving reaction to: " + box.getCompartment().getName());
                     final ReactionGlyph reaction = (ReactionGlyph) compartment.getContainedGlyphs().stream()
                             .filter(ReactionGlyph.class::isInstance).findAny()
                             .orElseThrow(RuntimeException::new);
+                    System.err.printf("Moving reaction to: %s (%s)%n", children.get(0).getCompartment().getName(), reaction.getStId());
                     compartment.getContainedGlyphs().remove(reaction);
                     children.get(0).getCompartment().getContainedGlyphs().add(reaction);
                     reaction.setCompartment(compartment);
