@@ -149,7 +149,7 @@ public class Box implements Div {
                 // place is null, boxes.get(1) has all roles
                 place = PlacePositioner.haggle(boxes.get(0).getContainedRoles(), EnumSet.noneOf(EntityRole.class));
             }
-            if(place == null) {
+            if (place == null) {
                 // we are doomed, both children have the 4 roles
                 System.err.println("Incompatible siblings: " + compartment.getName());
                 place = Place.LEFT;
@@ -232,7 +232,7 @@ public class Box implements Div {
                 if (reactionPosition == null) break;
                 final Div reactionDiv = new HorizontalLayout(Collections.singletonList(glyph));
                 reactionDiv.setHorizontalPadding(100);
-                reactionDiv.setVerticalPadding(60);
+                reactionDiv.setVerticalPadding(40);
                 set(reactionPosition, reactionDiv);
                 return reactionPosition;
             }
@@ -297,7 +297,7 @@ public class Box implements Div {
                     reaction.setCompartment(compartment);
                     maxCol.set(-1);
                 }
-                if (!allowed.contains(Place.LEFT)) minCol.set( Math.max(minCol.get(), point.getCol()));
+                if (!allowed.contains(Place.LEFT)) minCol.set(Math.max(minCol.get(), point.getCol()));
                 if (!allowed.contains(Place.RIGHT)) maxCol.set(Math.min(maxCol.get(), point.getCol() + box.columns));
                 if (!allowed.contains(Place.TOP)) minRow.set(Math.max(minRow.get(), point.getRow()));
                 if (!allowed.contains(Place.BOTTOM)) maxRow.set(Math.min(maxRow.get(), point.getRow() + box.rows));
@@ -482,13 +482,19 @@ public class Box implements Div {
             set(row, 0, layout);
         }
         if (outputs.size() > 0) {
+            final boolean catalystInInputs = index.getInputs().stream().anyMatch(entityGlyph -> hasRole(entityGlyph, CATALYST));
             int row;
             if (getChildren().size() > 0 && reactionPosition.getCol() < columns / 2) {
                 final Set<EntityRole> roles = getChildren().stream().map(Div::getContainedRoles).map(PlacePositioner::simplify).flatMap(Collection::stream).collect(Collectors.toSet());
                 if (!roles.contains(NEGATIVE_REGULATOR)) row = rows - 1;
                 else if (!roles.contains(CATALYST)) row = 0;
+                else if (catalystInInputs)
+                    row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.getRow(), false, true);
                 else row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.getRow(), false, false);
+            } else if (catalystInInputs) {
+                row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.getRow(), false, true);
             } else row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.getRow(), false, false);
+
 
             final VerticalLayout layout = new VerticalLayout(outputs);
             layout.setRightPadding(30); // space for compartment

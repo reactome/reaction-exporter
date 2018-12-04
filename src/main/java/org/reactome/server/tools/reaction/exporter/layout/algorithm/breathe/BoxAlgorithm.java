@@ -12,7 +12,10 @@ import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
 
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.getBounds;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer.move;
@@ -102,23 +105,40 @@ public class BoxAlgorithm {
         forceDiagonalLeftRight(grid, reactionPosition);
         expandSameRoleSameColumn(grid, reactionPosition);
 
-        // Div[][] divs = grid.getGrid();
         // // size every square
-        // final int rows = divs.length;
-        final double heights[] = new double[grid.getRows()];
-        // final int cols = divs[0].length;
-        final double widths[] = new double[grid.getColumns()];
-        size(layout.getCompartmentRoot(), grid, heights, widths);
-        // get centers by row and column
-        final double cy[] = new double[grid.getRows()];
-        cy[0] = 0.5 * heights[0];
-        for (int i = 1; i < grid.getRows(); i++) {
-            cy[i] = cy[i - 1] + 0.5 * heights[i - 1] + 0.5 * heights[i];
+        final double[] heights = new double[grid.getRows()];
+        final double[] verPads = new double[grid.getRows()];
+        final double[] widths = new double[grid.getColumns()];
+        final double[] horPads = new double[grid.getColumns()];
+        size(layout.getCompartmentRoot(), grid, heights, widths, horPads, verPads);
+
+        // Add extra spacing for catalysts and regulators
+        // Add extra spacing for catalysts and regulators
+        for (int r = 0; r < grid.getRows(); r++) {
+            if (containsRole(grid.getRow(r), Arrays.asList(CATALYST))) {
+                heights[r] += 40;
+                verPads[r] -= 40;
+                break;
+            }
         }
-        final double cx[] = new double[grid.getColumns()];
-        cx[0] = 0.5 * widths[0];
-        for (int i = 1; i < grid.getColumns(); i++) {
-            cx[i] = cx[i - 1] + 0.5 * widths[i - 1] + 0.5 * widths[i];
+        for (int r = 0; r < grid.getRows(); r++) {
+            if (containsRole(grid.getRow(r), Arrays.asList(NEGATIVE_REGULATOR, POSITIVE_REGULATOR))) {
+                heights[r] += 40;
+                verPads[r] += 40;
+                break;
+            }
+        }
+        // get centers by row and column
+        final double[] cy = new double[grid.getRows()];
+        for (int i = 0; i < heights.length; i++) {
+            for (int j = 0; j < i; j++) cy[i] += heights[j];
+            cy[i] += 0.5 * (verPads[i] + heights[i]);
+        }
+
+        final double[] cx = new double[grid.getColumns()];
+        for (int i = 0; i < widths.length; i++) {
+            for (int j = 0; j < i; j++) cx[i] += widths[j];
+            cx[i] += 0.5 * (horPads[i] + widths[i]);
         }
 
         // place things (wheeeee!!)
@@ -129,9 +149,6 @@ public class BoxAlgorithm {
                 div.center(cx[col], cy[row]);
             }
         }
-
-        // usually, regulators are too widespread, let's compact them
-        // compactRegulators();
 
         ConnectorFactory.addConnectors(layout, index);
         layoutCompartments();
@@ -259,58 +276,6 @@ public class BoxAlgorithm {
             }
         }
         return false;
-    }
-
-    /**
-     * Usually, regulators are too separated. This methods tries to close them a little bit, not only to get a more
-     * compact view, but to avoid unnecessary segment crossings.
-     */
-    private void compactRegulators() {
-        final List<EntityGlyph> regulators = new ArrayList<>(index.getRegulators());
-        regulators.sort(Comparator.comparing(r -> r.getPosition().getCenterX()));
-        final double centerX = layout.getReaction().getPosition().getCenterX();
-        for (int i = 0; i < regulators.size(); i++) {
-            final EntityGlyph regulator = regulators.get(i);
-            // move regulators on the right
-            if (regulator.getPosition().getCenterX() > centerX) {
-                final double maxX = i == 0
-                        ? layout.getReaction().getPosition().getCenterX() - regulator.getPosition().getWidth() * .5
-                        : regulators.get(i - 1).getPosition().getMaxX() + 16;
-                final double x = Math.max(maxX, getCompartmentX(regulator.getCompartment()));
-                Transformer.move(regulator, x - regulator.getPosition().getX(), 0);
-            }
-        }
-        for (int i = regulators.size() - 1; i >= 0; i--) {
-            final EntityGlyph regulator = regulators.get(i);
-            // move regulators on the left
-            if (regulator.getPosition().getCenterX() < centerX) {
-                final double minX = i == regulators.size() - 1
-                        ? layout.getReaction().getPosition().getCenterX() - regulator.getPosition().getWidth() * 0.5
-                        : regulators.get(i + 1).getPosition().getX() - 16;
-                final double x = Math.min(minX, getCompartmentMaxX(regulator.getCompartment()));
-                Transformer.move(regulator, x - regulator.getPosition().getMaxX(), 0);
-            }
-        }
-    }
-
-    /**
-     * At this point, compartment sizes are not computed yet.
-     */
-    private double getCompartmentX(CompartmentGlyph compartment) {
-        return compartment.getContainedGlyphs().stream()
-                .map(Transformer::getBounds)
-                .mapToDouble(Position::getX)
-                .min().orElse(0.0);
-    }
-
-    /**
-     * At this point, compartment sizes are not computed yet.
-     */
-    private double getCompartmentMaxX(CompartmentGlyph compartment) {
-        return compartment.getContainedGlyphs().stream()
-                .map(Transformer::getBounds)
-                .mapToDouble(Position::getMaxX)
-                .max().orElse(0.0);
     }
 
     /**
@@ -447,9 +412,9 @@ public class BoxAlgorithm {
         return null;
     }
 
-    private void size(CompartmentGlyph compartment, Grid<Div> grid, double[] heights, double[] widths) {
+    private void size(CompartmentGlyph compartment, Grid<Div> grid, double[] heights, double[] widths, double[] horPad, double[] verPad) {
         for (final CompartmentGlyph child : compartment.getChildren()) {
-            size(child, grid, heights, widths);
+            size(child, grid, heights, widths, horPad, verPad);
         }
         int minCol = Integer.MAX_VALUE;
         int maxCol = 0;
@@ -483,10 +448,14 @@ public class BoxAlgorithm {
                 widths[i] *= factor;
             }
         }
-        widths[minCol] += 2 * COMPARTMENT_PADDING;
-        widths[maxCol] += 2 * COMPARTMENT_PADDING;
-        heights[minRow] += 2 * COMPARTMENT_PADDING;
-        heights[maxRow] += 2 * COMPARTMENT_PADDING;
+        widths[minCol] += COMPARTMENT_PADDING;
+        horPad[minCol] += COMPARTMENT_PADDING;
+        widths[maxCol] += COMPARTMENT_PADDING;
+        horPad[maxCol] -= COMPARTMENT_PADDING;
+        heights[minRow] += COMPARTMENT_PADDING;
+        verPad[minRow]  += COMPARTMENT_PADDING;
+        heights[maxRow] += COMPARTMENT_PADDING;
+        verPad[maxRow] -= COMPARTMENT_PADDING;
     }
 
     private void removeEmptyRows(Grid<Div> divs) {
