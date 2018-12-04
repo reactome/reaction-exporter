@@ -70,9 +70,9 @@ public class LayoutIndex {
         inputs.sort(Comparator
                 // input/catalysts first
                 .comparing((EntityGlyph e) -> e.getRoles().size()).reversed()
-                .thenComparing(EntityGlyph::isDashed, TRUE_FIRST)
-                .thenComparing(EntityGlyph::isDisease, TRUE_FIRST)
-                .thenComparing(EntityGlyph::isFadeOut, FALSE_FIRST)
+                // .thenComparing(EntityGlyph::isDashed, TRUE_FIRST)
+                // .thenComparing(EntityGlyph::isDisease, TRUE_FIRST)
+                // .thenComparing(EntityGlyph::isFadeOut, FALSE_FIRST)
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 // and sorted by RenderableClass
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
@@ -81,18 +81,18 @@ public class LayoutIndex {
 
         outputs.sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
-                .thenComparing(EntityGlyph::isDashed, TRUE_FIRST)
-                .thenComparing(EntityGlyph::isDisease, TRUE_FIRST)
-                .thenComparing(EntityGlyph::isFadeOut, FALSE_FIRST)
+                // .thenComparing(EntityGlyph::isDashed, TRUE_FIRST)
+                // .thenComparing(EntityGlyph::isDisease, TRUE_FIRST)
+                // .thenComparing(EntityGlyph::isFadeOut, FALSE_FIRST)
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
                 .thenComparing(EntityGlyph::getName));
 
         catalysts.sort(Comparator
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
-                .thenComparing(EntityGlyph::isDashed, TRUE_FIRST)
-                .thenComparing(EntityGlyph::isDisease, TRUE_FIRST)
-                .thenComparing(EntityGlyph::isFadeOut, FALSE_FIRST)
+                // .thenComparing(EntityGlyph::isDashed, TRUE_FIRST)
+                // .thenComparing(EntityGlyph::isDisease, TRUE_FIRST)
+                // .thenComparing(EntityGlyph::isFadeOut, FALSE_FIRST)
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
                 .thenComparing(EntityGlyph::getName));
@@ -101,9 +101,9 @@ public class LayoutIndex {
                 .comparingInt((EntityGlyph e) -> e.getRoles().size()).reversed()
                 // negatives first
                 .thenComparing(e -> e.getRoles().stream().anyMatch(role -> role.getType() == EntityRole.NEGATIVE_REGULATOR), TRUE_FIRST)
-                .thenComparing(EntityGlyph::isDashed, TRUE_FIRST)
-                .thenComparing(EntityGlyph::isDisease, TRUE_FIRST)
-                .thenComparing(EntityGlyph::isFadeOut, FALSE_FIRST)
+                // .thenComparing(EntityGlyph::isDashed, TRUE_FIRST)
+                // .thenComparing(EntityGlyph::isDisease, TRUE_FIRST)
+                // .thenComparing(EntityGlyph::isFadeOut, FALSE_FIRST)
                 .thenComparing(EntityGlyph::isTrivial, FALSE_FIRST)
                 .thenComparingInt(e -> CLASS_ORDER.indexOf(e.getRenderableClass()))
                 .thenComparing(EntityGlyph::getName));
