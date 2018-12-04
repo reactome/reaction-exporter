@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 public abstract class GlyphsLayout implements Div {
 
     private List<? extends Glyph> glyphs;
-    private double leftPadding = 5;
-    private double rightPadding = 5;
-    private double topPadding = 5;
-    private double bottomPadding = 5;
+    private double leftPadding = 10;
+    private double rightPadding = 10;
+    private double topPadding = 10;
+    private double bottomPadding = 10;
     private double separation = 5;
     private Position bounds;
 

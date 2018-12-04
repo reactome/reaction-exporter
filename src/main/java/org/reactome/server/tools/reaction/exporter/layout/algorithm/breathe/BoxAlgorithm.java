@@ -113,21 +113,36 @@ public class BoxAlgorithm {
         size(layout.getCompartmentRoot(), grid, heights, widths, horPads, verPads);
 
         // Add extra spacing for catalysts and regulators
-        // Add extra spacing for catalysts and regulators
-        for (int r = 0; r < grid.getRows(); r++) {
-            if (containsRole(grid.getRow(r), Arrays.asList(CATALYST))) {
+        reactionPosition = getReactionPosition(grid);
+        for (int r = reactionPosition.getRow() - 1; r >= 0; r--) {
+            if (containsRole(grid.getRow(r), Collections.singletonList(CATALYST))) {
                 heights[r] += 40;
                 verPads[r] -= 40;
                 break;
             }
         }
-        for (int r = 0; r < grid.getRows(); r++) {
+        for (int r = reactionPosition.getRow() + 1; r < grid.getRows(); r++) {
             if (containsRole(grid.getRow(r), Arrays.asList(NEGATIVE_REGULATOR, POSITIVE_REGULATOR))) {
                 heights[r] += 40;
                 verPads[r] += 40;
                 break;
             }
         }
+        for (int c = reactionPosition.getCol() - 1; c >= 0; c--) {
+            if (containsRole(grid.getColumn(c), Collections.singletonList(INPUT))) {
+                widths[c] += 40;
+                horPads[c] -= 40;
+                break;
+            }
+        }
+        for (int c = reactionPosition.getCol() + 1; c < grid.getColumns(); c++) {
+            if (containsRole(grid.getColumn(c), Collections.singletonList(OUTPUT))) {
+                widths[c] += 40;
+                horPads[c] += 40;
+                break;
+            }
+        }
+
         // get centers by row and column
         final double[] cy = new double[grid.getRows()];
         for (int i = 0; i < heights.length; i++) {
@@ -522,7 +537,7 @@ public class BoxAlgorithm {
         }
         for (Glyph glyph : compartment.getContainedGlyphs()) {
             final Position bounds = glyph instanceof ReactionGlyph
-                    ? Transformer.padd(getBounds(glyph), 80, 40)
+                    ? Transformer.padd(getBounds(glyph), 60, 40)
                     : getBounds(glyph);
             if (position == null) position = new Position(bounds);
             else position.union(bounds);

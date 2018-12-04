@@ -34,7 +34,7 @@ class ConnectorFactory {
     /**
      * Minimum length of segments departing participants.
      */
-    private static final int MIN_SEGMENT = 35;
+    private static final int MIN_SEGMENT = 50;
     private static final double ARROW_SIZE = 8;
     private static final double GENE_SEGMENT_LENGTH = 20;
 
@@ -83,7 +83,7 @@ class ConnectorFactory {
             }
             if (biRole) {
                 // Add catalyst segments
-                final double top = min(position.getY(), reactionPosition.getY()) - 50;
+                final double top = min(position.getY() - 10, reactionPosition.getY() - 50);
                 final double catalystPosition = reactionPosition.getCenterX() - 20;
                 segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), top));
                 segments.add(new SegmentImpl(position.getCenterX(), top, catalystPosition, top));

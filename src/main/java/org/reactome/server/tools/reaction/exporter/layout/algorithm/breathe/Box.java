@@ -231,7 +231,7 @@ public class Box implements Div {
                 // this will happen if reaction must placed inside an inner compartment
                 if (reactionPosition == null) break;
                 final Div reactionDiv = new HorizontalLayout(Collections.singletonList(glyph));
-                reactionDiv.setHorizontalPadding(100);
+                reactionDiv.setHorizontalPadding(60);
                 reactionDiv.setVerticalPadding(40);
                 set(reactionPosition, reactionDiv);
                 return reactionPosition;
