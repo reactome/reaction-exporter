@@ -139,10 +139,9 @@ public class GoTerm implements Comparable<GoTerm> {
 
     public Set<GoTerm> getChildren(){
         Set<GoTerm> children = new HashSet<>();
-        children.addAll(getRelationships(Directionality.INCOMING, RelationshipType.is_a));
-        children.addAll(getRelationships(Directionality.INCOMING, RelationshipType.surrounded_by));
-        children.addAll(getRelationships(Directionality.INCOMING, RelationshipType.part_of));
-        children.addAll(getRelationships(Directionality.INCOMING, RelationshipType.component_of));
+        for (final RelationshipType type : RelationshipType.values()) {
+            children.addAll(getRelationships(Directionality.INCOMING, type));
+        }
         return children;
     }
 
@@ -156,7 +155,7 @@ public class GoTerm implements Comparable<GoTerm> {
         getChildren().forEach(term -> term.print(level + 1));
     }
 
-    enum Directionality {
+    public enum Directionality {
         OUTGOING, INCOMING;
 
         public String symbol() {

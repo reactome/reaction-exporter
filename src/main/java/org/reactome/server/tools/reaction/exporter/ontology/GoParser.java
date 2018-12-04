@@ -23,7 +23,7 @@ import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipT
  *
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
-class GoParser {
+public class GoParser {
 
 	private final static Pattern ID_PATTERN = Pattern.compile("id:\\s+(GO:\\d+).*");
 	private final static Pattern IS_A = Pattern.compile("is_a:\\s+(GO:\\d+).*");
@@ -33,7 +33,7 @@ class GoParser {
 
 	private GoParser() {}
 
-	static Map<String, GoTerm> readGo() {
+	public static Map<String, GoTerm> readGo() {
 		final InputStream resource = GoParser.class.getResourceAsStream("go-basic.obo");
 		final Map<String, GoTerm> nodes = new TreeMap<>();
 		final AtomicReference<GoTerm> current = new AtomicReference<>();
