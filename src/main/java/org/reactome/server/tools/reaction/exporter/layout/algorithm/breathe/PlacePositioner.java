@@ -59,8 +59,8 @@ public class PlacePositioner {
     public static Place haggle(Collection<EntityRole> a, Collection<EntityRole> b) {
         a = simplify(a);
         b = simplify(b);
-        final List<Place> preferences = getPreferences(a, PREFERENCES);
-        final List<Place> allowed = b.isEmpty() ? Arrays.asList(Place.values()) : getPreferences(b, ALLOWED);
+        final List<Place> preferences = createList(a, PREFERENCES);
+        final List<Place> allowed = b.isEmpty() ? Arrays.asList(Place.values()) : createList(b, ALLOWED);
         if (allowed.isEmpty()) return null;
         // general case, take the first allowed preference
         for (final Place preference : preferences) {
@@ -70,7 +70,7 @@ public class PlacePositioner {
         else return preferences.get(0);
     }
 
-    private static List<Place> getPreferences(Collection<EntityRole> a, Map<EntityRole, List<Place>> takeFrom) {
+    private static List<Place> createList(Collection<EntityRole> a, Map<EntityRole, List<Place>> takeFrom) {
         final List<Place> preferences = new ArrayList<>();
         for (final EntityRole role : a) {
             if (preferences.isEmpty()) preferences.addAll(takeFrom.get(role));
@@ -96,6 +96,6 @@ public class PlacePositioner {
     }
 
     public static Collection<Place> getAllowed(Collection<EntityRole> roles) {
-        return getPreferences(roles, ALLOWED);
+        return createList(roles, ALLOWED);
     }
 }

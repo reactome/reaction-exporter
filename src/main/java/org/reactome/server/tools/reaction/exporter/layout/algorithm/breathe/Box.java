@@ -164,6 +164,7 @@ public class Box implements Div {
                 placeVertical(boxes.get(1), boxes.get(0));
             }
         } else if (boxes.size() > 2) {
+            // TODO: 04/12/18 go for the smart way, use a grid, you coward
             // Top down
             boxes.sort(Comparator
                     .comparing((Box c) -> c.getContainedRoles().contains(CATALYST), TRUE_FIRST)
