@@ -465,26 +465,31 @@ public class Box implements Div {
             final boolean catalystInInputs = index.getInputs().stream().anyMatch(entityGlyph -> hasRole(entityGlyph, CATALYST));
             int row;
             if (hasCatalyst) row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.getRow(), true, false);
-            else if (catalystInInputs)
-                row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.getRow(), false, true);
-            else row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.getRow(), false, false);
-            if (getChildren().size() > 0 && reactionPosition.getCol() > columns / 2) {
+            else if (getChildren().size() > 0 && reactionPosition.getCol() > columns / 2) {
                 // This inputs will probably cause their segments to cross a child, so let's move to the bottom
                 final Set<EntityRole> roles = getChildren().stream().map(Div::getContainedRoles).map(PlacePositioner::simplify).flatMap(Collection::stream).collect(Collectors.toSet());
                 if (!roles.contains(NEGATIVE_REGULATOR)) row = rows - 1;
                 else if (!roles.contains(CATALYST)) row = 0;
-            }
+                else if (catalystInInputs)
+                    row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.getRow(), false, true);
+                else row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.getRow(), false, false);
+            } else if (catalystInInputs)
+                row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.getRow(), false, true);
+            else row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.getRow(), false, false);
+
             final VerticalLayout layout = new VerticalLayout(inputs);
             layout.setLeftPadding(30);
             set(row, 0, layout);
         }
         if (outputs.size() > 0) {
-            int row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.getRow(), false, false);
+            int row;
             if (getChildren().size() > 0 && reactionPosition.getCol() < columns / 2) {
                 final Set<EntityRole> roles = getChildren().stream().map(Div::getContainedRoles).map(PlacePositioner::simplify).flatMap(Collection::stream).collect(Collectors.toSet());
                 if (!roles.contains(NEGATIVE_REGULATOR)) row = rows - 1;
                 else if (!roles.contains(CATALYST)) row = 0;
-            }
+                else row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.getRow(), false, false);
+            } else row = getFreeRow(divs, EnumSet.of(OUTPUT), reactionPosition.getRow(), false, false);
+
             final VerticalLayout layout = new VerticalLayout(outputs);
             layout.setRightPadding(30); // space for compartment
             set(row, columns - 1, layout);
