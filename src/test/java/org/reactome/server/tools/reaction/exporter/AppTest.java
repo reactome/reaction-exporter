@@ -73,29 +73,139 @@ public class AppTest extends BaseTest {
 
     @Test
     public void testOne() {
-        convert("R-HSA-1799335");
+        convert("R-HSA-210430");
     }
 
     @Test
-    public void testAllReactome() {
+    public void testHomoSapiens() {
         Collection<String> identifiers = new ArrayList<>();
         try {
-            identifiers = ads.getCustomQueryResults(String.class, "MATCH (rle:ReactionLikeEvent{speciesName:\"Homo sapiens\"}) RETURN rle.stId");
+            // MATCH (rle:ReactionLikeEvent)-[:species]->(:Species{displayName:"Homo sapiens"}) RETURN count(rle) AS reactions 12047
+            identifiers = ads.getCustomQueryResults(String.class, "MATCH (rle:ReactionLikeEvent)-[:species]->(:Species{displayName:\"Homo sapiens\"}) RETURN rle.stId");
         } catch (CustomQueryException e) {
             e.printStackTrace();
         }
-        System.out.println(identifiers.size() + " reactions");
-        final long start = System.nanoTime();
-        for (String stId : identifiers) convert(stId);
-        final long elapsed = System.nanoTime() - start;
-        System.out.println();
-        System.out.println(formatTime(elapsed));
-        System.out.println(formatTime(elapsed / identifiers.size()));
-        System.out.println("Total errors = " + total);
+        test(identifiers);
     }
 
     @Test
     public void testAll() {
+        Collection<String> identifiers = new ArrayList<>();
+        try {
+            // MATCH (rle:ReactionLikeEvent)-[:species]->(:Species{displayName:"Homo sapiens"}) RETURN count(rle) AS reactions 12047
+            identifiers = ads.getCustomQueryResults(String.class, "MATCH (rle:ReactionLikeEvent) RETURN rle.stId");
+        } catch (CustomQueryException e) {
+            e.printStackTrace();
+        }
+        test(new LinkedHashSet<>(identifiers));
+    }
+
+    @Test
+    public void testFailedReactions() {
+        test(new LinkedHashSet<>(Arrays.asList(
+                "R-HSA-1225956", "R-HSA-2206299", "R-HSA-2220967", "R-HSA-2220978", "R-HSA-2262743", "R-HSA-2263444",
+                "R-HSA-2263490", "R-HSA-2263492", "R-HSA-2263495", "R-HSA-2263496", "R-HSA-2265534", "R-HSA-2282889",
+                "R-HSA-2317387", "R-HSA-2318373", "R-HSA-2318585", "R-HSA-2453818", "R-HSA-2466706", "R-HSA-2466710",
+                "R-HSA-2466802", "R-HSA-2466822", "R-HSA-2466828", "R-HSA-2466832", "R-HSA-2466834", "R-HSA-2466861",
+                "R-HSA-2471641", "R-HSA-2471660", "R-HSA-2471670", "R-HSA-2660815", "R-HSA-2660816", "R-HSA-2660819",
+                "R-HSA-2660822", "R-HSA-3229118", "R-HSA-3274540", "R-HSA-3282876", "R-HSA-3296462", "R-HSA-3296477",
+                "R-HSA-3299657", "R-HSA-3304394", "R-HSA-3311014", "R-HSA-3315437", "R-HSA-3315455", "R-HSA-3315483",
+                "R-HSA-3318563", "R-HSA-3318571", "R-HSA-3318576", "R-HSA-3318590", "R-HSA-3321918", "R-HSA-3322125",
+                "R-HSA-3322135", "R-HSA-3322140", "R-HSA-3322971", "R-HSA-3323184", "R-HSA-3325540", "R-HSA-3325546",
+                "R-HSA-3560785", "R-HSA-3560789", "R-HSA-3560794", "R-HSA-3560802", "R-HSA-3560804", "R-HSA-3595175",
+                "R-HSA-3595176", "R-HSA-3595178", "R-HSA-3636919", "R-HSA-3642203", "R-HSA-3645780", "R-HSA-3656230",
+                "R-HSA-3656254", "R-HSA-3656257", "R-HSA-3656258", "R-HSA-3656259", "R-HSA-3656261", "R-HSA-3656267",
+                "R-HSA-3656269", "R-HSA-3656382", "R-HSA-3656523", "R-HSA-3662344", "R-HSA-3781832", "R-HSA-3781926",
+                "R-HSA-3791349", "R-HSA-3797226", "R-HSA-3814838", "R-HSA-3828061", "R-HSA-3858506", "R-HSA-3878762",
+                "R-HSA-4085027", "R-HSA-4088322", "R-HSA-4088338", "R-HSA-4225086", "R-HSA-4341669", "R-HSA-4420365",
+                "R-HSA-4549334", "R-HSA-4549368", "R-HSA-4549382", "R-HSA-4551297", "R-HSA-4570573", "R-HSA-4686998",
+                "R-HSA-4717406", "R-HSA-4719354", "R-HSA-4719375", "R-HSA-4720473", "R-HSA-4720478", "R-HSA-4720497",
+                "R-HSA-4724291", "R-HSA-4724330", "R-HSA-4755545", "R-HSA-4755572", "R-HSA-4755600", "R-HSA-4791278",
+                "R-HSA-4793947", "R-HSA-4793949", "R-HSA-4793955", "R-HSA-4793956", "R-HSA-4827388", "R-HSA-4839634",
+                "R-HSA-4839635", "R-HSA-4839638", "R-HSA-4839734", "R-HSA-4839746", "R-HSA-5096532", "R-HSA-5096537",
+                "R-HSA-5096538", "R-HSA-5228811", "R-HSA-5228840", "R-HSA-5246696", "R-HSA-5251559", "R-HSA-5251562",
+                "R-HSA-5262921", "R-HSA-5334052", "R-HSA-5339711", "R-HSA-5339713", "R-HSA-5340587", "R-HSA-5358460",
+                "R-HSA-5483229", "R-HSA-5545484", "R-HSA-5577244", "R-HSA-5577259", "R-HSA-5578663", "R-HSA-5579081",
+                "R-HSA-5579084", "R-HSA-5580269", "R-HSA-5580292", "R-HSA-5600598", "R-HSA-5601843", "R-HSA-5601849",
+                "R-HSA-5601976", "R-HSA-5602004", "R-HSA-5602050", "R-HSA-5602063", "R-HSA-5602147", "R-HSA-5602170",
+                "R-HSA-5602186", "R-HSA-5602242", "R-HSA-5602272", "R-HSA-5602316", "R-HSA-5602353", "R-HSA-5602383",
+                "R-HSA-5602472", "R-HSA-5602549", "R-HSA-5602603", "R-HSA-5602606", "R-HSA-5602624", "R-HSA-5602672",
+                "R-HSA-5602712", "R-HSA-5602885", "R-HSA-5602892", "R-HSA-5602901", "R-HSA-5602966", "R-HSA-5602984",
+                "R-HSA-5603087", "R-HSA-5603108", "R-HSA-5603208", "R-HSA-5603251", "R-HSA-5603275", "R-HSA-5603297",
+                "R-HSA-5603379", "R-HSA-5604954", "R-HSA-5604975", "R-HSA-5605147", "R-HSA-5607838", "R-HSA-5609939",
+                "R-HSA-5610026", "R-HSA-5610036", "R-HSA-5610038", "R-HSA-5615556", "R-HSA-5615604", "R-HSA-5617096",
+                "R-HSA-5621402", "R-HSA-5621425", "R-HSA-5621888", "R-HSA-5621918", "R-HSA-5623051", "R-HSA-5623558",
+                "R-HSA-5623588", "R-HSA-5623705", "R-HSA-5623806", "R-HSA-5624211", "R-HSA-5624239", "R-HSA-5624256",
+                "R-HSA-5625015", "R-HSA-5625029", "R-HSA-5625123", "R-HSA-5625210", "R-HSA-5625574", "R-HSA-5625674",
+                "R-HSA-5625841", "R-HSA-5626270", "R-HSA-5626356", "R-HSA-5627737", "R-HSA-5627870", "R-HSA-5627891",
+                "R-HSA-5628807", "R-HSA-5632804", "R-HSA-5632871", "R-HSA-5632958", "R-HSA-5632970", "R-HSA-5633241",
+                "R-HSA-5637794", "R-HSA-5638209", "R-HSA-5638222", "R-HSA-5649483", "R-HSA-5649742", "R-HSA-5651685",
+                "R-HSA-5651697", "R-HSA-5651942", "R-HSA-5651971", "R-HSA-5652099", "R-HSA-5653596", "R-HSA-5653622",
+                "R-HSA-5653850", "R-HSA-5654125", "R-HSA-5655702", "R-HSA-5655733", "R-HSA-5655760", "R-HSA-5656219",
+                "R-HSA-5656248", "R-HSA-5656356", "R-HSA-5656438", "R-HSA-5656459", "R-HSA-5658001", "R-HSA-5658163",
+                "R-HSA-5658195", "R-HSA-5658483", "R-HSA-5659674", "R-HSA-5659734", "R-HSA-5659755", "R-HSA-5659764",
+                "R-HSA-5659879", "R-HSA-5659899", "R-HSA-5659922", "R-HSA-5659926", "R-HSA-5659989", "R-HSA-5659998",
+                "R-HSA-5660013", "R-HSA-5660015", "R-HSA-5660694", "R-HSA-5660706", "R-HSA-5660840", "R-HSA-5660890",
+                "R-HSA-5660910", "R-HSA-5661039", "R-HSA-5661086", "R-HSA-5661184", "R-HSA-5661188", "R-HSA-5661195",
+                "R-HSA-5661198", "R-HSA-5661474", "R-HSA-5662851", "R-HSA-5678418", "R-HSA-5678517", "R-HSA-5678749",
+                "R-HSA-5678822", "R-HSA-5679031", "R-HSA-5679101", "R-HSA-5679145", "R-HSA-5682111", "R-HSA-5682311",
+                "R-HSA-5683113", "R-HSA-5683325", "R-HSA-5683355", "R-HSA-5683672", "R-HSA-5684043", "R-HSA-5687585",
+                "R-HSA-5687875", "R-HSA-5688025", "R-HSA-5688377", "R-HSA-5688397", "R-HSA-5688884", "R-HSA-5688899",
+                "R-HSA-5690340", "R-HSA-6785244", "R-HSA-6785245", "R-HSA-6785524", "R-HSA-6785565", "R-HSA-6785668",
+                "R-HSA-6802834", "R-HSA-6802837", "R-HSA-9005561", "R-HSA-9005585", "R-HSA-9022462", "R-HSA-9022465",
+                "R-HSA-9023461", "R-HSA-9035514", "R-HSA-9035517", "R-HSA-9035949", "R-HSA-9035950", "R-HSA-9035954",
+                "R-HSA-9035956", "R-HSA-9035960", "R-HSA-9035966", "R-HSA-9035976", "R-HSA-9035978", "R-HSA-9035982",
+                "R-HSA-9035983", "R-HSA-9035987", "R-HSA-9035988", "R-HSA-9035990", "R-HSA-9036008", "R-HSA-9036011",
+                "R-HSA-9036012", "R-HSA-9036020", "R-HSA-9036021", "R-HSA-9036025", "R-HSA-9036037", "R-HSA-9036041",
+                "R-HSA-9036046", "R-HSA-9036050", "R-HSA-9036052", "R-HSA-9036056", "R-HSA-9036061", "R-HSA-9036065",
+                "R-HSA-9036068", "R-HSA-9036070", "R-HSA-9036077", "R-HSA-9036102", "R-HSA-9036104", "R-HSA-9036283",
+                "R-HSA-9036285", "R-HSA-9036289", "R-HSA-9036290", "R-HSA-9036729", "R-HSA-9605313", "R-HSA-9608288",
+                "R-NUL-9005752", "R-NUL-9606338")));
+    }
+    @Test
+    public void testGoF() {
+        test(new LinkedHashSet<>(Arrays.asList(
+                "R-HSA-6803233", "R-HSA-6802922", "R-HSA-6802926", "R-HSA-6802925", "R-HSA-6802924", "R-HSA-6802908",
+                "R-HSA-6803240", "R-HSA-6802930", "R-HSA-6802912", "R-HSA-6802911", "R-HSA-6802910", "R-HSA-6803227",
+                "R-HSA-6802938", "R-HSA-6802919", "R-HSA-6802914", "R-HSA-6802916", "R-HSA-6802915", "R-HSA-6803230",
+                "R-HSA-6802921", "R-HSA-8936676", "R-HSA-6802918", "R-HSA-8936731", "R-HSA-6802937", "R-HSA-6803234",
+                "R-HSA-6802943", "R-HSA-6802942", "R-HSA-6802941", "R-HSA-6802935", "R-HSA-6802933", "R-HSA-6802934",
+                "R-HSA-6802927", "R-HSA-6802932", "R-HSA-3215391", "R-HSA-1839100", "R-HSA-1839098", "R-HSA-1839094",
+                "R-HSA-1839065", "R-HSA-1839031", "R-HSA-5655269", "R-HSA-5655266", "R-HSA-5655278", "R-HSA-1839102",
+                "R-HSA-1839114", "R-HSA-1839110", "R-HSA-1839095", "R-HSA-1839067", "R-HSA-1839039", "R-HSA-1839091",
+                "R-HSA-1839080", "R-HSA-1839078", "R-HSA-1839112", "R-HSA-1888198", "R-HSA-1839107", "R-HSA-5654544",
+                "R-HSA-5654545", "R-HSA-2023462", "R-HSA-1982065", "R-HSA-1982066", "R-HSA-2023455", "R-HSA-2023451",
+                "R-HSA-2023460", "R-HSA-2023456", "R-HSA-8853325", "R-HSA-8853322", "R-HSA-5655326", "R-HSA-5655263",
+                "R-HSA-5655240", "R-HSA-5655290", "R-HSA-8853317", "R-HSA-8853316", "R-HSA-8853315", "R-HSA-8853310",
+                "R-HSA-8853309", "R-HSA-8853314", "R-HSA-8853308", "R-HSA-8853307", "R-HSA-8853323", "R-HSA-5655270",
+                "R-HSA-5655285", "R-HSA-2077420", "R-HSA-2038387", "R-HSA-2038386", "R-HSA-2033485", "R-HSA-2033476",
+                "R-HSA-2012074", "R-HSA-2012073", "R-HSA-2012084", "R-HSA-2012082", "R-HSA-5655315", "R-HSA-5655262",
+                "R-HSA-5655295", "R-HSA-5655247", "R-HSA-5655243", "R-HSA-5655244", "R-HSA-5655277", "R-HSA-5655289",
+                "R-HSA-5655268", "R-HSA-5655301", "R-HSA-5655233", "R-HSA-5655343", "R-HSA-2029983", "R-HSA-2033486",
+                "R-HSA-2033472", "R-HSA-2033479", "R-HSA-2033474", "R-HSA-2033490", "R-HSA-2029984", "R-HSA-2033488",
+                "R-HSA-2077424", "R-HSA-8853319", "R-HSA-8853313", "R-HSA-2029992", "R-HSA-2029988", "R-HSA-2029989",
+                "R-HSA-2067713", "R-HSA-8851710", "R-MMU-8851711", "R-HSA-8853320", "R-HSA-5654748", "R-HSA-5655245",
+                "R-HSA-5655339", "R-HSA-5655323", "R-HSA-5655320", "R-HSA-5655241", "R-HSA-5655351", "R-HSA-5655284",
+                "R-HSA-5655348", "R-HSA-5655252", "R-HSA-2046363", "R-HSA-2038946", "R-HSA-2012086", "R-HSA-2012087",
+                "R-HSA-2038944", "R-HSA-5655347", "R-HSA-5655235", "R-HSA-5655248", "R-HSA-5655313", "R-HSA-5655341",
+                "R-HSA-5655336", "R-HSA-2666278", "R-HSA-2769000", "R-HSA-2769007", "R-HSA-2220964", "R-HSA-2220982",
+                "R-HSA-2769015", "R-HSA-2220988", "R-HSA-2220971", "R-HSA-2220957", "R-HSA-2220966", "R-HSA-4396393",
+                "R-HSA-2768993", "R-HSA-4396392", "R-HSA-2768999", "R-HSA-2220944", "R-HSA-4396402", "R-HSA-2220979",
+                "R-HSA-4396401", "R-HSA-2220981", "R-HSA-2220985", "R-HSA-2769008", "R-HSA-2900748", "R-HSA-2900743",
+                "R-HSA-2900756", "R-HSA-2691211", "R-HSA-2691226", "R-HSA-2691214", "R-HSA-2691219", "R-HSA-1218833",
+                "R-HSA-1225947", "R-HSA-1169421", "R-HSA-1220614", "R-HSA-1220613", "R-HSA-1220612", "R-HSA-1248655",
+                "R-HSA-1225950", "R-HSA-1226014", "R-HSA-1226012", "R-HSA-1226016", "R-HSA-1225951", "R-HSA-1225949",
+                "R-HSA-1247842", "R-HSA-1247844", "R-HSA-1247841", "R-HSA-1225952", "R-HSA-1225960", "R-HSA-1225957",
+                "R-HSA-1225961", "R-HSA-5637796", "R-HSA-5638137", "R-HSA-5637766", "R-HSA-5637764", "R-HSA-5637792",
+                "R-HSA-5637770", "R-HSA-5637801", "R-HSA-2243938", "R-HSA-2219536", "R-HSA-2399941", "R-HSA-2243942",
+                "R-HSA-2243937", "R-HSA-2399969", "R-HSA-2400001", "R-HSA-2399981", "R-HSA-2399982", "R-HSA-2399977",
+                "R-HSA-2399988", "R-HSA-2399997", "R-HSA-2399985", "R-HSA-2399996", "R-HSA-2399966", "R-HSA-2399999",
+                "R-HSA-2399992", "R-HSA-2394007", "R-HSA-5387392", "R-HSA-5387389", "R-HSA-5483238", "R-HSA-5387386",
+                "R-HSA-5362450", "R-HSA-3645786", "R-HSA-3645778", "R-HSA-3656517", "R-HSA-3656484", "R-HSA-3713560",
+                "R-HSA-3702184", "R-HSA-3702153", "R-HSA-3702186", "R-HSA-5683209")));
+    }
+    @Test
+    public void testMostDifficult() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
                 "R-HSA-68947", "R-HSA-69144", "R-HSA-70634", "R-HSA-71670", "R-HSA-72107", "R-HSA-74885",
                 "R-HSA-74986", "R-HSA-75097", "R-HSA-75849",
@@ -176,6 +286,11 @@ public class AppTest extends BaseTest {
                 "R-MMU-8851711", "R-MMU-9005872",
                 "R-NUL-9005752", "R-NUL-9606338"
         ));
+        test(identifiers);
+        // TODO: 21/10/18 add resource
+    }
+
+    private void test(Collection<String> identifiers) {
         System.out.println(identifiers.size() + " reactions");
         final long start = System.nanoTime();
         for (String stId : identifiers) convert(stId);
@@ -184,7 +299,6 @@ public class AppTest extends BaseTest {
         System.out.println(formatTime(elapsed));
         System.out.println(formatTime(elapsed / identifiers.size()));
         System.out.println("Total errors = " + total);
-        // TODO: 21/10/18 add resource
     }
 
     private void convert(String stId) {
