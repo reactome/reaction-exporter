@@ -3,10 +3,7 @@ package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
 import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.diagram.data.layout.Segment;
 import org.reactome.server.tools.diagram.data.layout.impl.CoordinateImpl;
-import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Dedup;
-import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.FontProperties;
-import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
-import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.*;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
@@ -30,12 +27,12 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUti
  * <b>1. Matrix generation</b>
  * <p>
  * This part is performed by the {@link Box} class itself. A box is created by each compartment. A box can contain other
- * boxes (representing subcompartments) and glyphs. Boxes are designed to have enough space to layout all of its
+ * boxes (representing sub compartments) and glyphs. Boxes are designed to have enough space to layout all of its
  * content. A description of how it works can be found inside {@link Box} class.
  * <p><p>
  * <b>2. Compaction</b>
  * This step is performed by a dozen of short methods that remove empty columns and rows in the matrix, and move
- * elements in short steps so that they do not break any rule and represent a more compact view.
+ * elements in short steps closer to the reaction so that they do not break any rule and represent a more compact view.
  * <p><p>
  * <b>3. Positioning</b>
  * Finally, we transform rows and columns into 'x's and 'y's, by computing columns and rows max widths and height and
@@ -43,8 +40,6 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUti
  * enlargement of widths when their name is too long.
  */
 public class BoxAlgorithm {
-
-    private static final double COMPARTMENT_PADDING = 20;
 
     private final Layout layout;
     private final LayoutIndex index;
@@ -85,10 +80,6 @@ public class BoxAlgorithm {
         removeEmptyRows(grid);
         removeEmptyCols(grid);
 
-        // Get the parallel grid with the compartment of each position
-        final Grid<CompartmentGlyph> compartmentGrid = new Grid<>(CompartmentGlyph.class, grid.getRows(), grid.getColumns());
-        computeCompartment(layout.getCompartmentRoot(), grid, compartmentGrid);
-
         // Compaction
         reactionPosition = getReactionPosition(grid);
         compactLeft(grid, reactionPosition);
@@ -99,7 +90,7 @@ public class BoxAlgorithm {
         removeEmptyRows(grid);
         removeEmptyCols(grid);
 
-        // // Me no like regulators on the same row as inputs, so me move them down
+        // Expansion for better visualization
         reactionPosition = getReactionPosition(grid);
         forceDiagonalTopDown(grid, reactionPosition);
         forceDiagonalLeftRight(grid, reactionPosition);
@@ -116,45 +107,35 @@ public class BoxAlgorithm {
         reactionPosition = getReactionPosition(grid);
         for (int r = reactionPosition.getRow() - 1; r >= 0; r--) {
             if (containsRole(grid.getRow(r), Collections.singletonList(CATALYST))) {
-                heights[r] += 40;
-                verPads[r] -= 40;
+                heights[r] += Constants.VERTICAL_PADDING;
+                verPads[r] -= Constants.VERTICAL_PADDING;
                 break;
             }
         }
         for (int r = reactionPosition.getRow() + 1; r < grid.getRows(); r++) {
             if (containsRole(grid.getRow(r), Arrays.asList(NEGATIVE_REGULATOR, POSITIVE_REGULATOR))) {
-                heights[r] += 40;
-                verPads[r] += 40;
+                heights[r] += Constants.VERTICAL_PADDING;
+                verPads[r] += Constants.VERTICAL_PADDING;
                 break;
             }
         }
         for (int c = reactionPosition.getCol() - 1; c >= 0; c--) {
             if (containsRole(grid.getColumn(c), Collections.singletonList(INPUT))) {
-                widths[c] += 40;
-                horPads[c] -= 40;
+                widths[c] += Constants.HORIZONTAL_PADDING;
+                horPads[c] -= Constants.HORIZONTAL_PADDING;
                 break;
             }
         }
         for (int c = reactionPosition.getCol() + 1; c < grid.getColumns(); c++) {
             if (containsRole(grid.getColumn(c), Collections.singletonList(OUTPUT))) {
-                widths[c] += 40;
-                horPads[c] += 40;
+                widths[c] += Constants.HORIZONTAL_PADDING;
+                horPads[c] += Constants.HORIZONTAL_PADDING;
                 break;
             }
         }
 
-        // get centers by row and column
-        final double[] cy = new double[grid.getRows()];
-        for (int i = 0; i < heights.length; i++) {
-            for (int j = 0; j < i; j++) cy[i] += heights[j];
-            cy[i] += 0.5 * (verPads[i] + heights[i]);
-        }
-
-        final double[] cx = new double[grid.getColumns()];
-        for (int i = 0; i < widths.length; i++) {
-            for (int j = 0; j < i; j++) cx[i] += widths[j];
-            cx[i] += 0.5 * (horPads[i] + widths[i]);
-        }
+        final double[] cy = getCenters(heights, verPads);
+        final double[] cx = getCenters(widths, horPads);
 
         // place things (wheeeee!!)
         for (int row = 0; row < grid.getRows(); row++) {
@@ -170,6 +151,15 @@ public class BoxAlgorithm {
         removeExtracellular();
         computeDimension();
         moveToOrigin();
+    }
+
+    private double[] getCenters(double[] heights, double[] verPads) {
+        final double[] cy = new double[heights.length];
+        for (int i = 0; i < heights.length; i++) {
+            for (int j = 0; j < i; j++) cy[i] += heights[j];
+            cy[i] += 0.5 * (verPads[i] + heights[i]);
+        }
+        return cy;
     }
 
     private void compactLeft(Grid<Div> grid, Point reactionPosition) {
@@ -463,14 +453,14 @@ public class BoxAlgorithm {
                 widths[i] *= factor;
             }
         }
-        widths[minCol] += COMPARTMENT_PADDING;
-        horPad[minCol] += COMPARTMENT_PADDING;
-        widths[maxCol] += COMPARTMENT_PADDING;
-        horPad[maxCol] -= COMPARTMENT_PADDING;
-        heights[minRow] += COMPARTMENT_PADDING;
-        verPad[minRow]  += COMPARTMENT_PADDING;
-        heights[maxRow] += COMPARTMENT_PADDING;
-        verPad[maxRow] -= COMPARTMENT_PADDING;
+        widths[minCol] += Constants.COMPARTMENT_PADDING;
+        horPad[minCol] += Constants.COMPARTMENT_PADDING;
+        widths[maxCol] += Constants.COMPARTMENT_PADDING;
+        horPad[maxCol] -= Constants.COMPARTMENT_PADDING;
+        heights[minRow] += Constants.COMPARTMENT_PADDING;
+        verPad[minRow]  += Constants.COMPARTMENT_PADDING;
+        heights[maxRow] += Constants.COMPARTMENT_PADDING;
+        verPad[maxRow] -= Constants.COMPARTMENT_PADDING;
     }
 
     private void removeEmptyRows(Grid<Div> divs) {
@@ -552,10 +542,10 @@ public class BoxAlgorithm {
                 }
             }
         }
-        position.setX(position.getX() - COMPARTMENT_PADDING);
-        position.setY(position.getY() - COMPARTMENT_PADDING);
-        position.setWidth(position.getWidth() + 2 * COMPARTMENT_PADDING);
-        position.setHeight(position.getHeight() + 2 * COMPARTMENT_PADDING);
+        position.setX(position.getX() - Constants.COMPARTMENT_PADDING);
+        position.setY(position.getY() - Constants.COMPARTMENT_PADDING);
+        position.setWidth(position.getWidth() + 2 * Constants.COMPARTMENT_PADDING);
+        position.setHeight(position.getHeight() + 2 * Constants.COMPARTMENT_PADDING);
 
         final double textWidth = FontProperties.getTextWidth(compartment.getName());
         final double textHeight = FontProperties.getTextHeight();
@@ -569,7 +559,7 @@ public class BoxAlgorithm {
         // Puts text in the bottom right corner of the compartment
         final Coordinate coordinate = new CoordinateImpl(
                 position.getMaxX() - textWidth - 15,
-                position.getMaxY() + 0.5 * textHeight - COMPARTMENT_PADDING);
+                position.getMaxY() + 0.5 * textHeight - Constants.COMPARTMENT_PADDING);
         compartment.setLabelPosition(coordinate);
         compartment.setPosition(position);
     }
