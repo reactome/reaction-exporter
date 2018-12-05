@@ -462,7 +462,6 @@ public class Box implements Div {
             else row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.getRow(), false, false);
 
             final VerticalLayout layout = new VerticalLayout(inputs);
-            // layout.setLeftPadding(30);
             set(row, 0, layout);
         }
         if (outputs.size() > 0) {
@@ -481,19 +480,16 @@ public class Box implements Div {
 
 
             final VerticalLayout layout = new VerticalLayout(outputs);
-            // layout.setRightPadding(30); // space for compartment
             set(row, columns - 1, layout);
         }
         if (catalysts.size() > 0) {
             final int column = getFreeColumn(divs, EnumSet.of(CATALYST), reactionPosition.getCol());
             final HorizontalLayout layout = new HorizontalLayout(catalysts);
-            // layout.setTopPadding(30);
             set(0, column, layout);
         }
         if (regulators.size() > 0) {
             final int column = getFreeColumn(divs, EnumSet.of(NEGATIVE_REGULATOR, POSITIVE_REGULATOR), reactionPosition.getCol());
             final HorizontalLayout layout = new HorizontalLayout(regulators);
-            // layout.setBottomPadding(30);
             set(rows - 1, column, layout);
         }
     }
@@ -504,7 +500,7 @@ public class Box implements Div {
             // reaction is on top of this compartment
         else if (reactionRow < 0) return 1;
         else if (reactionRow < rows) {
-            if (!rowIsBusy(divs[reactionRow], roles)) return reactionRow;
+            if (rowIsFree(divs[reactionRow], roles)) return reactionRow;
         }
         // reaction is at the top of this compartment
         else if (reactionRow == 1) return 1;
@@ -520,38 +516,26 @@ public class Box implements Div {
 
     private int getFreeRowUp(Div[][] divs, Collection<EntityRole> roles, int start) {
         for (int i = start; i > 1; i--) {
-            if (!rowIsBusy(divs[i], roles)) return i;
+            if (rowIsFree(divs[i], roles)) return i;
         }
         return 1;
     }
 
     private int getFreeRowDown(Div[][] divs, Collection<EntityRole> roles, int start) {
         for (int i = start; i < rows - 1; i++) {
-            if (!rowIsBusy(divs[i], roles)) return i;
+            if (rowIsFree(divs[i], roles)) return i;
         }
         return rows - 1;
     }
 
-    private int getFreeRow(Div[][] divs, Collection<EntityRole> roles, int reactionRow) {
-        int row = rows / 2; // by default, center
-        for (int i = 0; i < rows - 2; i++) {
-            final boolean up = i % 2 == 1;  // first try down
-            final int h = i / 2;
-            row = up ? rows / 2 - h : rows / 2 + h;
-            boolean busy = rowIsBusy(divs[row], roles);
-            if (!busy) return row;
-        }
-        return row;
-    }
-
-    private boolean rowIsBusy(Div[] divs, Collection<EntityRole> roles) {
+    private boolean rowIsFree(Div[] divs, Collection<EntityRole> roles) {
         for (int col = 0; col < columns; col++) {
             final Div div = divs[col];
             if (div != null && div.getContainedRoles().stream().anyMatch(roles::contains)) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private int getFreeColumn(Div[][] divs, Collection<EntityRole> roles, int reactionColumn) {
