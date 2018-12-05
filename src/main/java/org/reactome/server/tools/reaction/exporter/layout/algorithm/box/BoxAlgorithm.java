@@ -98,44 +98,44 @@ public class BoxAlgorithm {
 
         // // size every square
         final double[] heights = new double[grid.getRows()];
-        final double[] verPads = new double[grid.getRows()];
+        final double[] verticalPadding = new double[grid.getRows()];
         final double[] widths = new double[grid.getColumns()];
-        final double[] horPads = new double[grid.getColumns()];
-        size(layout.getCompartmentRoot(), grid, heights, widths, horPads, verPads);
+        final double[] horizontalPadding = new double[grid.getColumns()];
+        size(layout.getCompartmentRoot(), grid, heights, widths, horizontalPadding, verticalPadding);
 
         // Add extra spacing for catalysts and regulators
         reactionPosition = getReactionPosition(grid);
         for (int r = reactionPosition.getRow() - 1; r >= 0; r--) {
             if (containsRole(grid.getRow(r), Collections.singletonList(CATALYST))) {
                 heights[r] += Constants.VERTICAL_PADDING;
-                verPads[r] -= Constants.VERTICAL_PADDING;
+                verticalPadding[r] -= Constants.VERTICAL_PADDING;
                 break;
             }
         }
         for (int r = reactionPosition.getRow() + 1; r < grid.getRows(); r++) {
             if (containsRole(grid.getRow(r), Arrays.asList(NEGATIVE_REGULATOR, POSITIVE_REGULATOR))) {
                 heights[r] += Constants.VERTICAL_PADDING;
-                verPads[r] += Constants.VERTICAL_PADDING;
+                verticalPadding[r] += Constants.VERTICAL_PADDING;
                 break;
             }
         }
         for (int c = reactionPosition.getCol() - 1; c >= 0; c--) {
             if (containsRole(grid.getColumn(c), Collections.singletonList(INPUT))) {
                 widths[c] += Constants.HORIZONTAL_PADDING;
-                horPads[c] -= Constants.HORIZONTAL_PADDING;
+                horizontalPadding[c] -= Constants.HORIZONTAL_PADDING;
                 break;
             }
         }
         for (int c = reactionPosition.getCol() + 1; c < grid.getColumns(); c++) {
             if (containsRole(grid.getColumn(c), Collections.singletonList(OUTPUT))) {
                 widths[c] += Constants.HORIZONTAL_PADDING;
-                horPads[c] += Constants.HORIZONTAL_PADDING;
+                horizontalPadding[c] += Constants.HORIZONTAL_PADDING;
                 break;
             }
         }
 
-        final double[] cy = getCenters(heights, verPads);
-        final double[] cx = getCenters(widths, horPads);
+        final double[] cy = getCenters(heights, verticalPadding);
+        final double[] cx = getCenters(widths, horizontalPadding);
 
         // place things (wheeeee!!)
         for (int row = 0; row < grid.getRows(); row++) {
@@ -146,7 +146,10 @@ public class BoxAlgorithm {
             }
         }
 
+        // This is the old strategy, that regulators and catalysts keep using
         ConnectorFactory.addConnectors(layout, index);
+        // This is the new strategy, that benefits from the grid
+        ConnectorFactory.addConnectors(reactionPosition, grid, widths, heights, layout, index);
         layoutCompartments();
         removeExtracellular();
         computeDimension();

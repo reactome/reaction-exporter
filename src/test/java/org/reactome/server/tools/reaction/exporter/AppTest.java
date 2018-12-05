@@ -73,7 +73,7 @@ public class AppTest extends BaseTest {
 
     @Test
     public void testOne() {
-        convert("R-HSA-210430");
+        convert("R-HSA-452392");
     }
 
     @Test
