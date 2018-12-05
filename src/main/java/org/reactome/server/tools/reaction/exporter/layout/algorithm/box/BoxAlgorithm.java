@@ -146,7 +146,7 @@ public class BoxAlgorithm {
             }
         }
 
-        // This is the old strategy, that regulators and catalysts keep using
+        // This is the old strategy, that regulators keep using
         ConnectorFactory.addConnectors(layout, index);
         // This is the new strategy, that benefits from the grid
         ConnectorFactory.addConnectors(reactionPosition, grid, widths, heights, layout, index);

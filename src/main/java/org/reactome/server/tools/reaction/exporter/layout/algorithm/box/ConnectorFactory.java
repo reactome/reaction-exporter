@@ -28,7 +28,7 @@ class ConnectorFactory {
     }
 
     static void addConnectors(Layout layout, LayoutIndex index) {
-        catalystConnectors(layout, index);
+        // catalystConnectors(layout, index);
         regulatorConnectors(layout, index);
     }
 
@@ -178,7 +178,7 @@ class ConnectorFactory {
          */
         inputs(index, x1, rx1, cy, cx);
         outputs(index, x2, rx2, cy);
-        // catalysts(index, grid, reactionPosition, x1, x2, cx, y1, cy);
+        catalysts(index, grid, reactionPosition, cx, y1, cy);
         // regulators(index, grid, reactionPosition, x1, x2, cx, y2, cy);
     }
 
@@ -202,12 +202,8 @@ class ConnectorFactory {
                         new CoordinateImpl(x, position.getCenterY()),
                         new CoordinateImpl(rx, cy)));
             } else {
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getMaxX(), position.getCenterY()),
-                        new CoordinateImpl(x, position.getCenterY())));
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(x, position.getCenterY()),
-                        new CoordinateImpl(rx, cy)));
+                segments.add(new SegmentImpl(position.getMaxX(), position.getCenterY(), x, position.getCenterY()));
+                segments.add(new SegmentImpl(x, position.getCenterY(), rx, cy));
             }
             if (entity.getRoles().size() > 1) {
                 // Add catalyst segments
@@ -234,12 +230,8 @@ class ConnectorFactory {
             final Position position = Transformer.getBounds(entity);
             final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
-            segments.add(new SegmentImpl(
-                    new CoordinateImpl(position.getX() - 4, position.getCenterY()),
-                    new CoordinateImpl(x2, position.getCenterY())));
-            segments.add(new SegmentImpl(
-                    new CoordinateImpl(x2, position.getCenterY()),
-                    new CoordinateImpl(rx2, cy)));
+            segments.add(new SegmentImpl(position.getX() - 4, position.getCenterY(), x2, position.getCenterY()));
+            segments.add(new SegmentImpl(x2, position.getCenterY(),rx2, cy));
             // only one role expected: OUTPUT
             for (Role role : entity.getRoles()) {
                 connector.setPointer(getConnectorType(role.getType()));
@@ -248,7 +240,7 @@ class ConnectorFactory {
         }
     }
 
-    private static void catalysts(LayoutIndex index, Grid<Div> grid, Point reactionPosition, double x1, double x2, double cx, double y1, double cy) {
+    private static void catalysts(LayoutIndex index, Grid<Div> grid, Point reactionPosition, double cx, double y1, double cy) {
         for (int c = 0; c < grid.getColumns(); c++) {
             for (int r = 0; r < reactionPosition.getRow(); r++) {
                 final Div div = grid.get(r, c);
@@ -260,12 +252,8 @@ class ConnectorFactory {
                             final Position position = Transformer.getBounds(entity);
                             final ConnectorImpl connector = createConnector(entity);
                             final List<Segment> segments = connector.getSegments();
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(position.getCenterX(), position.getMaxY()),
-                                    new CoordinateImpl(position.getCenterX(), y1)));
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(position.getCenterX(), y1),
-                                    new CoordinateImpl(cx, cy)));
+                            segments.add(new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), y1));
+                            segments.add(new SegmentImpl(position.getCenterX(), y1, cx, cy));
                             // only one role expected: CATALYST
                             for (Role role : entity.getRoles()) {
                                 connector.setStoichiometry(getStoichiometry(segments, role));
@@ -279,12 +267,9 @@ class ConnectorFactory {
                             final Position position = Transformer.getBounds(entity);
                             final ConnectorImpl connector = createConnector(entity);
                             final List<Segment> segments = connector.getSegments();
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(position.getMaxX(), position.getCenterY()),
-                                    new CoordinateImpl(x1, position.getCenterY())));
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(x1, position.getCenterY()),
-                                    new CoordinateImpl(cx, cy)));
+                            final double x1 = position.getMaxX() + MIN_SEGMENT;
+                            segments.add(new SegmentImpl(position.getMaxX(), position.getCenterY(), x1, position.getCenterY()));
+                            segments.add(new SegmentImpl(x1, position.getCenterY(), cx, cy));
                             // only one role expected: CATALYST
                             for (Role role : entity.getRoles()) {
                                 connector.setStoichiometry(getStoichiometry(segments, role));
@@ -298,12 +283,9 @@ class ConnectorFactory {
                             final Position position = Transformer.getBounds(entity);
                             final ConnectorImpl connector = createConnector(entity);
                             final List<Segment> segments = connector.getSegments();
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(position.getX(), position.getCenterY()),
-                                    new CoordinateImpl(x2, position.getCenterY())));
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(x2, position.getCenterY()),
-                                    new CoordinateImpl(cx, cy)));
+                            final double x2 = position.getX() - MIN_SEGMENT;
+                            segments.add(new SegmentImpl(position.getX(), position.getCenterY(),x2, position.getCenterY()));
+                            segments.add(new SegmentImpl(x2, position.getCenterY(), cx, cy));
                             // only one role expected: CATALYST
                             for (Role role : entity.getRoles()) {
                                 connector.setStoichiometry(getStoichiometry(segments, role));
