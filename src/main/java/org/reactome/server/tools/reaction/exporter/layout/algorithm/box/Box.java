@@ -145,26 +145,30 @@ public class Box implements Div {
             rows = 4 + box.rows;
             set(2, 2, box);
         } else if (boxes.size() == 2) {
-            // This method will give us the relative position of the 2 boxes.
-            Place place = PlacePositioner.haggle(boxes.get(0).getContainedRoles(), boxes.get(1).getContainedRoles());
+
+            final Box a;
+            final Box b;
+            if (hasReaction(boxes.get(0).getCompartment())) {
+                a = boxes.get(1);
+                b = boxes.get(0);
+            } else {
+                a = boxes.get(0);
+                b = boxes.get(1);
+            }
+            Place place = PlacePositioner.haggle(a.getContainedRoles(), b.getContainedRoles());
             if (place == null) {
-                // place is null, boxes.get(1) has all roles
-                place = PlacePositioner.haggle(boxes.get(0).getContainedRoles(), EnumSet.noneOf(EntityRole.class));
+                // place is null, b has all roles
+                place = PlacePositioner.haggle(a.getContainedRoles(), EnumSet.noneOf(EntityRole.class));
             }
             if (place == null) {
                 // we are doomed, both children have the 4 roles
                 System.err.println("Incompatible siblings: " + compartment.getName());
                 place = Place.LEFT;
             }
-            if (place == Place.LEFT) {
-                placeHorizontal(boxes.get(0), boxes.get(1));
-            } else if (place == Place.RIGHT) {
-                placeHorizontal(boxes.get(1), boxes.get(0));
-            } else if (place == Place.TOP) {
-                placeVertical(boxes.get(0), boxes.get(1));
-            } else if (place == Place.BOTTOM) {
-                placeVertical(boxes.get(1), boxes.get(0));
-            }
+            if (place == Place.LEFT) placeHorizontal(a, b);
+            else if (place == Place.RIGHT) placeHorizontal(b, a);
+            else if (place == Place.TOP) placeVertical(a, b);
+            else if (place == Place.BOTTOM) placeVertical(b, a);
         } else if (boxes.size() > 2) {
             // TODO: 04/12/18 go for the smart way, use a grid, you coward
             // Top down
@@ -191,6 +195,15 @@ public class Box implements Div {
             rows = 3;
         }
 
+    }
+
+    private boolean hasReaction(CompartmentGlyph compartment) {
+        final boolean hasReaction = compartment.getContainedGlyphs().stream().anyMatch(ReactionGlyph.class::isInstance);
+        if (hasReaction) return true;
+        for (final CompartmentGlyph child : compartment.getChildren()) {
+            if (hasReaction(child)) return true;
+        }
+        return false;
     }
 
     private void placeHorizontal(Box left, Box right) {
@@ -414,6 +427,7 @@ public class Box implements Div {
     private Collection<Div> getChildren() {
         return divs.values().stream()
                 .flatMap(map -> map.values().stream())
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

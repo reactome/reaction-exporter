@@ -125,7 +125,8 @@ public class DiagramTest {
             for (int j = i + 1; j < lines.size(); j++) {
                 final Line2D a = lines.get(i);
                 final Line2D b = lines.get(j);
-                if (CoordinateUtils.intersects(a, b)) intersections++;
+                if (CoordinateUtils.intersects(a, b))
+                    intersections++;
             }
         }
         if (intersections > 0) {

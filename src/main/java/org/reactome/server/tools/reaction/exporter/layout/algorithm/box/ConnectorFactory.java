@@ -69,18 +69,18 @@ class ConnectorFactory {
         );
     }
 
-    public static void addConnectors(Point reactionPosition, Grid<Div> grid, double[] widths, double[] heights, Layout layout, LayoutIndex index) {
+    static void addConnectors(Point reactionPosition, Grid<Div> grid, double[] widths, double[] heights, Layout layout, LayoutIndex index) {
         // Points of interest
         double x1 = 0;
         double y1 = 0;
-        int i = 0;
-        while (i < reactionPosition.getCol() && hasRole(grid.getColumn(i), INPUT)) {
-            x1 += widths[i++];
-        }
-        i = 0;
-        while (i < reactionPosition.getRow() && hasRole(grid.getRow(i), CATALYST)) {
-            y1 += heights[i++];
-        }
+        int i = reactionPosition.getCol() - 1;
+        while (i >= 0 && !hasRole(grid.getColumn(i), INPUT)) i--;
+        for (int j = 0; j <= i; j++) x1 += widths[j];
+
+        i = reactionPosition.getRow() - 1;
+        while (i>= 0 && !hasRole(grid.getRow(i), CATALYST)) i--;
+        for (int j = 0; j <= i; j++) y1 += heights[j];
+
         double x2 = 0;
         i = 0;
         while (i < grid.getColumns() && !(hasRole(grid.getColumn(i), OUTPUT))) {
@@ -212,7 +212,7 @@ class ConnectorFactory {
                             final ConnectorImpl connector = createConnector(entity);
                             final List<Segment> segments = connector.getSegments();
                             final double x2 = position.getX() - MIN_SEGMENT;
-                            segments.add(new SegmentImpl(position.getX(), position.getCenterY(),x2, position.getCenterY()));
+                            segments.add(new SegmentImpl(position.getX(), position.getCenterY(), x2, position.getCenterY()));
                             segments.add(new SegmentImpl(x2, position.getCenterY(), cx, cy));
                             // only one role expected: CATALYST
                             for (Role role : entity.getRoles()) {
