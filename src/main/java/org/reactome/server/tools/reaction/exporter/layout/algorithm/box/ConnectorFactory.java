@@ -11,10 +11,7 @@ import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Trans
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
-import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
-import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
-import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
-import org.reactome.server.tools.reaction.exporter.layout.model.Role;
+import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import java.util.*;
 
@@ -25,75 +22,6 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRo
 class ConnectorFactory {
 
     private ConnectorFactory() {
-    }
-
-    static void addConnectors(Layout layout, LayoutIndex index) {
-        // catalystConnectors(layout, index);
-        regulatorConnectors(layout, index);
-    }
-
-    private static void catalystConnectors(Layout layout, LayoutIndex index) {
-        final Position reactionPosition = layout.getReaction().getPosition();
-        final double port = reactionPosition.getCenterY();
-        double my = index.getCatalysts().stream().map(Transformer::getBounds).mapToDouble(Position::getMaxY).max().orElse(0);
-        final double hRule = my + MIN_SEGMENT;
-        for (EntityGlyph entity : index.getCatalysts()) {
-            final ConnectorImpl connector = createConnector(entity);
-            final List<Segment> segments = connector.getSegments();
-            final Position position = Transformer.getBounds(entity);
-            segments.add(new SegmentImpl(
-                    new CoordinateImpl(position.getCenterX(), position.getMaxY()),
-                    new CoordinateImpl(position.getCenterX(), hRule)));
-            segments.add(new SegmentImpl(
-                    new CoordinateImpl(position.getCenterX(), hRule),
-                    new CoordinateImpl(reactionPosition.getCenterX(), port)));
-            // only one role expected: CATALYST
-            for (Role role : entity.getRoles()) {
-                connector.setStoichiometry(getStoichiometry(segments, role));
-                connector.setType(role.getType().name());
-                connector.setPointer(getConnectorType(role.getType()));
-            }
-        }
-    }
-
-    private static void regulatorConnectors(Layout layout, LayoutIndex index) {
-        final Position reactionPosition = layout.getReaction().getPosition();
-        double my = index.getRegulators().stream().map(Transformer::getBounds).mapToDouble(Position::getY).min().orElse(0);
-        final double hRule = my - MIN_SEGMENT;
-        // we want to fit all catalysts in a semi-circumference, not using the corners
-        final int sectors = index.getRegulators().size() + 1;
-        // the semi-circumference is centered into the reaction, and its length (PI*radius) should be enough to fit all
-        // the shapes without touching each other
-        int i = 1;
-        final ArrayList<EntityGlyph> regulators = new ArrayList<>(index.getRegulators());
-        regulators.sort(Comparator.comparingDouble(v -> v.getPosition().getCenterX()));
-        final boolean left = regulators.stream().noneMatch(e -> e.getPosition().getMaxX() > reactionPosition.getX());
-        final boolean right = regulators.stream().noneMatch(e -> e.getPosition().getX() < reactionPosition.getMaxX());
-        double startAngle = 0;
-        double totalAngle = PI;
-        if (left) {
-            totalAngle = 0.5 * PI;
-        }
-        if (right) {
-            startAngle = 0.5 * PI;
-            totalAngle = 0.5 * PI;
-        }
-        double radius = reactionPosition.getHeight() / 2 + Constants.REGULATOR_SIZE * sectors / totalAngle;
-        for (EntityGlyph entity : regulators) {
-            final ConnectorImpl connector = createConnector(entity);
-            final List<Segment> segments = connector.getSegments();
-            final Position position = Transformer.getBounds(entity);
-            segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), hRule));
-            final double x = reactionPosition.getCenterX() - radius * cos((startAngle + totalAngle) * i / sectors);
-            final double y = reactionPosition.getCenterY() + radius * sin((startAngle + totalAngle) * i / sectors);
-            segments.add(new SegmentImpl(position.getCenterX(), hRule, x, y));
-            // Only one role expected (negative or positive)
-            for (Role role : entity.getRoles()) {
-                connector.setStoichiometry(getStoichiometry(segments, role));
-                connector.setPointer(getConnectorType(role.getType()));
-            }
-            i++;
-        }
     }
 
     private static ConnectorImpl createConnector(EntityGlyph entity) {
@@ -179,7 +107,7 @@ class ConnectorFactory {
         inputs(index, x1, rx1, cy, cx);
         outputs(index, x2, rx2, cy);
         catalysts(index, grid, reactionPosition, cx, y1, cy);
-        // regulators(index, grid, reactionPosition, x1, x2, cx, y2, cy);
+        regulators(index, grid, reactionPosition, x1, x2, cx, y2, cy);
     }
 
     private static boolean hasRole(Div[] divs, EntityRole role) {
@@ -298,64 +226,55 @@ class ConnectorFactory {
         }
     }
 
-    private static void regulators(LayoutIndex index, Grid<Div> grid, Point reactionPosition, double x1, double x2, double cx, double y2, double cy) {
+    private static void regulators(LayoutIndex index, Grid<Div> grid, Point reactBox, double x1, double x2, double cx, double y2, double cy) {
+        // this is following the previous approach
+        final List<EntityGlyph> regulators = new ArrayList<>();
         for (int c = 0; c < grid.getColumns(); c++) {
-            for (int r = reactionPosition.getRow() + 1; r < grid.getRows(); r++) {
+            for (int r = reactBox.getRow() + 1; r < grid.getRows(); r++) {
                 final Div div = grid.get(r, c);
                 if (div instanceof HorizontalLayout) {
-                    final HorizontalLayout box = (HorizontalLayout) div;
-                    if (c == reactionPosition.getCol()) {
-                        for (final Glyph glyph : box.getGlyphs()) {
-                            final EntityGlyph entity = (EntityGlyph) glyph;
-                            final Position position = Transformer.getBounds(entity);
-                            final ConnectorImpl connector = createConnector(entity);
-                            final List<Segment> segments = connector.getSegments();
-                            segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), y2));
-                            segments.add(new SegmentImpl(position.getCenterX(), y2, cx, cy));
-                            for (Role role : entity.getRoles()) {
-                                connector.setStoichiometry(getStoichiometry(segments, role));
-                                connector.setPointer(getConnectorType(role.getType()));
-                            }
-                        }
-                    } else if (c < reactionPosition.getCol()) {
-                        // Behaviour as inputs
-                        for (final Glyph glyph : box.getGlyphs()) {
-                            final EntityGlyph entity = (EntityGlyph) glyph;
-                            final Position position = Transformer.getBounds(entity);
-                            final ConnectorImpl connector = createConnector(entity);
-                            final List<Segment> segments = connector.getSegments();
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(position.getMaxX(), position.getCenterY()),
-                                    new CoordinateImpl(x1, position.getCenterY())));
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(x1, position.getCenterY()),
-                                    new CoordinateImpl(cx, cy)));
-                            for (Role role : entity.getRoles()) {
-                                connector.setStoichiometry(getStoichiometry(segments, role));
-                                connector.setPointer(getConnectorType(role.getType()));
-                            }
-                        }
-                    } else {
-                        // As outputs
-                        for (final Glyph glyph : box.getGlyphs()) {
-                            final EntityGlyph entity = (EntityGlyph) glyph;
-                            final Position position = Transformer.getBounds(entity);
-                            final ConnectorImpl connector = createConnector(entity);
-                            final List<Segment> segments = connector.getSegments();
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(position.getX() - 4, position.getCenterY()),
-                                    new CoordinateImpl(x2, position.getCenterY())));
-                            segments.add(new SegmentImpl(
-                                    new CoordinateImpl(x2, position.getCenterY()),
-                                    new CoordinateImpl(cx, cy)));
-                            for (Role role : entity.getRoles()) {
-                                connector.setStoichiometry(getStoichiometry(segments, role));
-                                connector.setPointer(getConnectorType(role.getType()));
-                            }
-                        }
-                    }
+                    final HorizontalLayout horizontalLayout = (HorizontalLayout) div;
+                    regulators.addAll((Collection<EntityGlyph>) horizontalLayout.getGlyphs());
                 }
             }
+        }
+        final HorizontalLayout layout = (HorizontalLayout) grid.get(reactBox.getRow(), reactBox.getCol());
+        final ReactionGlyph reactionGlyph = (ReactionGlyph) layout.getGlyphs().iterator().next();
+        final Position reactionPosition = reactionGlyph.getPosition();
+        double my = index.getRegulators().stream().map(Transformer::getBounds).mapToDouble(Position::getY).min().orElse(0);
+        final double hRule = my - MIN_SEGMENT;
+        // we want to fit all catalysts in a semi-circumference, not using the corners
+        final int sectors = index.getRegulators().size() + 1;
+        // the semi-circumference is centered into the reaction, and its length (PI*radius) should be enough to fit all
+        // the shapes without touching each other
+        int i = 1;
+        regulators.sort(Comparator.comparingDouble(v -> v.getPosition().getCenterX()));
+        final boolean left = regulators.stream().noneMatch(e -> e.getPosition().getMaxX() > reactionPosition.getX());
+        final boolean right = regulators.stream().noneMatch(e -> e.getPosition().getX() < reactionPosition.getMaxX());
+        double startAngle = 0;
+        double totalAngle = PI;
+        if (left) {
+            totalAngle = 0.5 * PI;
+        }
+        if (right) {
+            startAngle = 0.5 * PI;
+            totalAngle = 0.5 * PI;
+        }
+        double radius = reactionPosition.getHeight() / 2 + Constants.REGULATOR_SIZE * sectors / totalAngle;
+        for (EntityGlyph entity : regulators) {
+            final ConnectorImpl connector = createConnector(entity);
+            final List<Segment> segments = connector.getSegments();
+            final Position position = Transformer.getBounds(entity);
+            segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), hRule));
+            final double x = reactionPosition.getCenterX() - radius * cos((startAngle + totalAngle) * i / sectors);
+            final double y = reactionPosition.getCenterY() + radius * sin((startAngle + totalAngle) * i / sectors);
+            segments.add(new SegmentImpl(position.getCenterX(), hRule, x, y));
+            // Only one role expected (negative or positive)
+            for (Role role : entity.getRoles()) {
+                connector.setStoichiometry(getStoichiometry(segments, role));
+                connector.setPointer(getConnectorType(role.getType()));
+            }
+            i++;
         }
     }
 }

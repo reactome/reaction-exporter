@@ -146,9 +146,6 @@ public class BoxAlgorithm {
             }
         }
 
-        // This is the old strategy, that regulators keep using
-        ConnectorFactory.addConnectors(layout, index);
-        // This is the new strategy, that benefits from the grid
         ConnectorFactory.addConnectors(reactionPosition, grid, widths, heights, layout, index);
         layoutCompartments();
         removeExtracellular();
@@ -166,7 +163,7 @@ public class BoxAlgorithm {
     }
 
     private void compactLeft(Grid<Div> grid, Point reactionPosition) {
-        for (int c = 0; c < reactionPosition.getCol(); c++) {
+        for (int c = reactionPosition.getCol() - 1; c >= 0; c--) {
             for (int r = 0; r < grid.getRows(); r++) {
                 final Div div = grid.get(r, c);
                 if (div == null) continue;
