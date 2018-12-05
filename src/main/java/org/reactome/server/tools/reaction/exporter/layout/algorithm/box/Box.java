@@ -1,4 +1,4 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.box;
 
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Constants;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;

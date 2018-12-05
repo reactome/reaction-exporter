@@ -1,10 +1,10 @@
-package org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe;
+package org.reactome.server.tools.reaction.exporter.layout.algorithm.box;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 
 import java.util.*;
 
-import static org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.Place.*;
+import static org.reactome.server.tools.reaction.exporter.layout.algorithm.box.Place.*;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.*;
 
 public class PlacePositioner {

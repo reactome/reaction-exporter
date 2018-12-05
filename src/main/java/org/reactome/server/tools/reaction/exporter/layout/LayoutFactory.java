@@ -3,7 +3,7 @@ package org.reactome.server.tools.reaction.exporter.layout;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
-import org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BoxAlgorithm;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.box.BoxAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.breathe.BreatheAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.dynamic.DynamicAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.grid.GridAlgorithm;
