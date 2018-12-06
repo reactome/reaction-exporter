@@ -74,7 +74,7 @@ public class Main {
         final ReactionLikeEvent rle = dos.findById(stId);
         final AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         final LayoutFactory layoutFactory = new LayoutFactory(ads);
-        final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BREATHE);
+        final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);
         printJson(layout);
         final ReactionGraphFactory graphFactory = new ReactionGraphFactory(ads);
         final Graph graph = graphFactory.getGraph(rle, layout);
