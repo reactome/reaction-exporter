@@ -13,11 +13,11 @@ public class PlacePositioner {
      */
     private final static Map<EntityRole, List<Place>> PREFERENCES = new HashMap<EntityRole, List<Place>>() {
         {
-            put(INPUT, Arrays.asList(LEFT, TOP, BOTTOM));
-            put(OUTPUT, Arrays.asList(RIGHT, TOP, BOTTOM));
-            put(CATALYST, Arrays.asList(TOP, LEFT, RIGHT));
-            put(POSITIVE_REGULATOR, Arrays.asList(BOTTOM, LEFT, RIGHT));
-            put(NEGATIVE_REGULATOR, Arrays.asList(BOTTOM, LEFT, RIGHT));
+            put(INPUT, Arrays.asList(LEFT, BOTTOM, TOP));
+            put(OUTPUT, Arrays.asList(RIGHT, BOTTOM, TOP));
+            put(CATALYST, Arrays.asList(TOP, RIGHT, LEFT));
+            put(POSITIVE_REGULATOR, Arrays.asList(BOTTOM, RIGHT, LEFT));
+            put(NEGATIVE_REGULATOR, Arrays.asList(BOTTOM, RIGHT, LEFT));
         }
     };
 
