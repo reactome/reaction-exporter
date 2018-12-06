@@ -32,10 +32,7 @@ import org.sbgn.bindings.Sbgn;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.bind.JAXBException;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -73,7 +70,11 @@ public class AppTest extends BaseTest {
 
     @Test
     public void testOne() {
-        convert("R-HSA-452392");
+        try {
+            convert("R-HSA-1678920", new BufferedWriter(new FileWriter("data.tsv")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -86,18 +87,6 @@ public class AppTest extends BaseTest {
             e.printStackTrace();
         }
         test(identifiers);
-    }
-
-    @Test
-    public void testAll() {
-        Collection<String> identifiers = new ArrayList<>();
-        try {
-            // MATCH (rle:ReactionLikeEvent)-[:species]->(:Species{displayName:"Homo sapiens"}) RETURN count(rle) AS reactions 12047
-            identifiers = ads.getCustomQueryResults(String.class, "MATCH (rle:ReactionLikeEvent) RETURN rle.stId");
-        } catch (CustomQueryException e) {
-            e.printStackTrace();
-        }
-        test(new LinkedHashSet<>(identifiers));
     }
 
     @Test
@@ -291,21 +280,27 @@ public class AppTest extends BaseTest {
     }
 
     private void test(Collection<String> identifiers) {
-        System.out.println(identifiers.size() + " reactions");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("data.tsv"))){
+            System.out.println(identifiers.size() + " reactions");
+            writer.write("Layout\tTest\tImage");
+            writer.newLine();
+            long elapsed = 0;
+            for (String stId : identifiers) elapsed += convert(stId, writer);
+            System.out.println();
+            System.out.println(formatTime(elapsed));
+            System.out.println(formatTime(elapsed / identifiers.size()));
+            System.out.println("Total errors = " + total);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private long convert(String stId, BufferedWriter writer) {
+        return convert(stId, writer, true, true, false, false, false);
+    }
+
+    private long convert(String stId, BufferedWriter writer, boolean test, boolean svg, boolean json, boolean pptx, boolean sbgn) {
         final long start = System.nanoTime();
-        for (String stId : identifiers) convert(stId);
-        final long elapsed = System.nanoTime() - start;
-        System.out.println();
-        System.out.println(formatTime(elapsed));
-        System.out.println(formatTime(elapsed / identifiers.size()));
-        System.out.println("Total errors = " + total);
-    }
-
-    private void convert(String stId) {
-        convert(stId, true, true, false, false, false);
-    }
-
-    private void convert(String stId, boolean test, boolean svg, boolean json, boolean pptx, boolean sbgn) {
         try {
             ReactionLikeEvent rle = databaseObjectService.findById(stId);
             final String pStId = rle.getEventOf().isEmpty() ? stId : rle.getEventOf().get(0).getStId();
@@ -315,16 +310,26 @@ public class AppTest extends BaseTest {
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
             final Graph graph = new ReactionGraphFactory(ads).getGraph(rle, layout);
+            final long a = System.nanoTime();
 
             if (test) runTest(diagram, stId);
+            final long b = System.nanoTime();
             if (json) printJsons(diagram, graph, layout);
             if (svg) saveSvg(stId, pStId, diagram, graph);
             if (sbgn) saveSbgn(stId, diagram);
             if (pptx) savePptx(diagram);
+            final long c = System.nanoTime();
+            final long l = a - start;
+            final long t = b - a;
+            final long image = c - b;
+            writer.write(String.format("%d\t%d\t%d\t", l, t, image));
+            writer.newLine();
+            return c - start;
         } catch (Exception ex) {
             ex.printStackTrace();
             System.err.println(stId);
         }
+        return System.nanoTime() - start;
     }
 
     private void saveSvg(String stId, String pStId, Diagram diagram, Graph graph) {
@@ -340,7 +345,7 @@ public class AppTest extends BaseTest {
 
     private void runTest(Diagram diagram, String stId) {
         final DiagramTest test = new DiagramTest(diagram);
-        test.runTests(stId, DiagramTest.Level.ERROR);
+        test.runTests(stId);
         total += test.getLogs().getOrDefault(DiagramTest.Level.ERROR, Collections.emptyList()).size();
         // test.printResults(DiagramTest.Level.WARNING);
     }
