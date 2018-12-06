@@ -20,8 +20,8 @@ public abstract class BaseTest {
 
     static final Logger logger = LoggerFactory.getLogger("testLogger");
 
-    static Boolean checkedOnce = false;
-    static Boolean isFit = false;
+    private static Boolean checkedOnce = false;
+    private static Boolean isFit = false;
 
     @Autowired
     protected GeneralService generalService;
@@ -31,17 +31,15 @@ public abstract class BaseTest {
 
     @AfterClass
     public static void tearDownClass() {
-        logger.info("\n\n");
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         if (!checkedOnce) {
             isFit = generalService.fitForService();
             checkedOnce = true;
         }
         assumeTrue(isFit);
-        //DatabaseObjectFactory.clearCache();
     }
 
 
