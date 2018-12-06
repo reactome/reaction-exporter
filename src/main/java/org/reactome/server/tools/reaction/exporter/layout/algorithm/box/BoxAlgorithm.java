@@ -531,6 +531,8 @@ public class BoxAlgorithm {
                     : getBounds(glyph);
             if (position == null) position = new Position(bounds);
             else position.union(bounds);
+            // If there is an input that is a catalyst, it will have a connector on top of it. That will be part of the
+            // compartment
             if (glyph instanceof EntityGlyph) {
                 final EntityGlyph entityGlyph = (EntityGlyph) glyph;
                 if (hasRole(entityGlyph, CATALYST, INPUT)) {
@@ -557,9 +559,17 @@ public class BoxAlgorithm {
             position.setX(position.getX() - 0.5 * diff);
         }
         // Puts text in the bottom right corner of the compartment
-        final Coordinate coordinate = new CoordinateImpl(
-                position.getMaxX() - textWidth - 15,
-                position.getMaxY() + 0.5 * textHeight - Constants.COMPARTMENT_PADDING);
+        final Coordinate coordinate;
+        final Collection<EntityRole> roles = GlyphUtils.getContainedRoles(compartment);
+        if (roles.contains(CATALYST)) {
+            coordinate = new CoordinateImpl(
+                    position.getMaxX() - textWidth - 15,
+                    position.getY() + 0.5 * textHeight);
+        } else  {
+            coordinate = new CoordinateImpl(
+                    position.getMaxX() - textWidth - 15,
+                    position.getMaxY() + 0.5 * textHeight - Constants.COMPARTMENT_PADDING);
+        }
         compartment.setLabelPosition(coordinate);
         compartment.setPosition(position);
     }

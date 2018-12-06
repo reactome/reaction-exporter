@@ -56,7 +56,7 @@ public class AppTest extends BaseTest {
     private AdvancedDatabaseObjectService ads;
 
     private RasterExporter rasterExporter = new RasterExporter();
-    private int total;
+    private static int total;
 
     @BeforeClass
     public static void setUpClass() {
@@ -67,6 +67,9 @@ public class AppTest extends BaseTest {
 
     @AfterClass
     public static void afterClass() {
+        if (total > 0) {
+            logger.error(String.format("Found %d errors", total));
+        }
         try {
             FileUtils.cleanDirectory(TEST_IMAGES);
         } catch (IOException e) {
