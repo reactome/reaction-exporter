@@ -2,6 +2,8 @@ package org.reactome.server.tools.reaction.exporter.layout;
 
 import org.reactome.server.tools.diagram.data.layout.*;
 import org.reactome.server.tools.reaction.exporter.layout.common.CoordinateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -10,12 +12,11 @@ import java.util.stream.Collectors;
 
 public class DiagramTest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger("reaction-converter-test");
     private final Map<Level, List<String>> logs = new EnumMap<>(Level.class);
     private final HashMap<Long, Compartment> compartmentIndex;
     private final Diagram diagram;
-    private Level minLevel = Level.PASSED;
     private String name;
-    private boolean first;
 
     public DiagramTest(Diagram diagram) {
         this.diagram = diagram;
@@ -24,10 +25,8 @@ public class DiagramTest {
             compartmentIndex.put(compartment.getId(), compartment);
     }
 
-    public void runTests(String name, Level minLevel) {
+    public void runTests(String name) {
         this.name = name;
-        this.minLevel = minLevel;
-        this.first = true;
         notInCompartment();
         crossingSegments();
         manyChildren();
@@ -148,34 +147,22 @@ public class DiagramTest {
     }
 
     private void log(Level level, String message) {
-        if (level.ordinal() >= minLevel.ordinal()) {
-            if (first) {
-                System.out.println(name);
-                first = false;
-            }
-            System.out.printf("[%s] %s%n", level, message);
+        message = "(" + name + ") " + message;
+        switch (level) {
+            case INFO:
+                LOGGER.info(message);
+                break;
+            case PASSED:
+                LOGGER.trace(message);
+                break;
+            case WARNING:
+                LOGGER.warn(message);
+                break;
+            case ERROR:
+                LOGGER.error(message);
+                break;
         }
         logs.computeIfAbsent(level, l -> new ArrayList<>()).add(message);
-    }
-
-    public void printResults() {
-        printResults(Level.PASSED);
-    }
-
-    public void printResults(Level minLevel) {
-        final int totalTests = logs.values().stream().mapToInt(List::size).sum();
-        final long toPrint = logs.keySet().stream()
-                .filter(level -> level.ordinal() >= minLevel.ordinal())
-                .map(logs::get)
-                .mapToInt(List::size)
-                .count();
-        if (toPrint > 0) {
-            System.out.printf(" - %d tests run%n", totalTests);
-        }
-        logs.forEach((level, messages) -> {
-            if (level.ordinal() >= minLevel.ordinal())
-                System.out.printf(" - [%s] %d%n", level, messages.size());
-        });
     }
 
     public Map<Level, List<String>> getLogs() {

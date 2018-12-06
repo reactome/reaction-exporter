@@ -23,10 +23,10 @@
     <logger name="importLogger" level="INFO" additivity="false">
         <appender-ref ref="importFileAppender"/>
     </logger>
-    <logger name="reaction-converter" level="ERROR" additivity="false">
+    <logger name="reaction-converter" level="INFO" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
-    <logger name="reaction-converter-test" level="ERROR" additivity="false">
+    <logger name="reaction-converter-test" level="INFO" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 

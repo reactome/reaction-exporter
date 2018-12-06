@@ -5,6 +5,8 @@ import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Layou
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -107,6 +109,7 @@ public class Box implements Div {
 
     private final static Comparator<Boolean> TRUE_FIRST = (a, b) -> a == b ? 0 : a ? -1 : 1;
     private final static Comparator<Boolean> FALSE_FIRST = TRUE_FIRST.reversed();
+    private static final Logger LOGGER = LoggerFactory.getLogger("reaction-converter");
 
     private int columns;
     private int rows;
@@ -330,13 +333,12 @@ public class Box implements Div {
     }
 
     private void moveReactionTo(Div div) {
-        // TODO: 03/12/18 add a warning log
         final ReactionGlyph reaction = (ReactionGlyph) compartment.getContainedGlyphs().stream()
                 .filter(ReactionGlyph.class::isInstance).findAny()
                 .orElseThrow(RuntimeException::new);
         compartment.getContainedGlyphs().remove(reaction);
         div.getCompartment().getContainedGlyphs().add(reaction);
-        System.err.printf("Moving reaction to: %s (%s)%n", div.getCompartment().getName(), reaction.getStId());
+        LOGGER.info(String.format("(%s) Moving reaction to: %s", reaction.getStId(), div.getCompartment().getName()));
         reaction.setCompartment(compartment);
     }
 
