@@ -559,17 +559,15 @@ public class BoxAlgorithm {
             position.setX(position.getX() - 0.5 * diff);
         }
         // Puts text in the bottom right corner of the compartment
-        final Coordinate coordinate;
+        boolean center = textWidth > 0.5 * position.getWidth();
         final Collection<EntityRole> roles = GlyphUtils.getContainedRoles(compartment);
-        if (roles.contains(CATALYST)) {
-            coordinate = new CoordinateImpl(
-                    position.getMaxX() - textWidth - 15,
-                    position.getY() + 0.5 * textHeight);
-        } else  {
-            coordinate = new CoordinateImpl(
-                    position.getMaxX() - textWidth - 15,
-                    position.getMaxY() + 0.5 * textHeight - Constants.COMPARTMENT_PADDING);
-        }
+        final double x = center
+                ? position.getCenterX() - 0.5 * textWidth
+                : position.getMaxX() - textWidth - 15;
+        final double y = roles.contains(CATALYST)
+                ? position.getY() + 0.5 * textHeight
+                : position.getMaxY() + 0.5 * textHeight - Constants.COMPARTMENT_PADDING;
+        final Coordinate coordinate = new CoordinateImpl(x, y);
         compartment.setLabelPosition(coordinate);
         compartment.setPosition(position);
     }
