@@ -166,12 +166,13 @@ class ConnectorFactory {
     private static void catalysts(LayoutIndex index, Grid<Div> grid, Point reactionPosition, double cx, double y1, double cy) {
         // Instead of going through catalysts in index, we are going to add connectors to every HorizontalLayout over
         // the reaction
+        final List<EntityGlyph> catalysts = index.getCatalysts();
         for (int c = 0; c < grid.getColumns(); c++) {
             for (int r = 0; r < reactionPosition.getRow(); r++) {
                 final Div div = grid.get(r, c);
                 if (div instanceof HorizontalLayout) {
                     final HorizontalLayout box = (HorizontalLayout) div;
-                    if (c == reactionPosition.getCol()) {
+                    if (c == reactionPosition.getCol() || catalysts.size() > 1) {
                         addConnectorsToCenterCatalysts(cx, y1, cy, box.getGlyphs());
                     } else if (c < reactionPosition.getCol()) {
                         addConnectorToLeftCatalysts(cx, cy, box.getGlyphs());

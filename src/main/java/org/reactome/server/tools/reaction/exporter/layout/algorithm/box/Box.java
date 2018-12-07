@@ -178,7 +178,8 @@ public class Box implements Div {
             boxes.sort(Comparator
                     .comparing((Box c) -> c.getContainedRoles().contains(CATALYST), TRUE_FIRST)
                     .thenComparing(c -> c.getContainedRoles().contains(NEGATIVE_REGULATOR), FALSE_FIRST)
-                    .thenComparing(c -> c.getContainedRoles().contains(POSITIVE_REGULATOR), FALSE_FIRST));
+                    .thenComparing(c -> c.getContainedRoles().contains(POSITIVE_REGULATOR), FALSE_FIRST)
+                    .thenComparingInt(c -> c.getChildren().size()));
             int mc = 0;
             int mr = 0;
             for (final Box box : boxes) {
@@ -426,16 +427,16 @@ public class Box implements Div {
         return roles;
     }
 
+    @Override
+    public CompartmentGlyph getCompartment() {
+        return compartment;
+    }
+
     private Collection<Div> getChildren() {
         return divs.values().stream()
                 .flatMap(map -> map.values().stream())
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public CompartmentGlyph getCompartment() {
-        return compartment;
     }
 
     private void forEach(BiConsumer<Div, Point> function) {
