@@ -93,7 +93,8 @@ public class VisualTest extends BaseTest {
         test(identifiers);
     }
 
-    @Ignore
+    // @Ignore
+    @Test
     public void testFailedReactions() {
         test(new LinkedHashSet<>(Arrays.asList(
                 "R-HSA-1225956", "R-HSA-2206299", "R-HSA-2220967", "R-HSA-2220978", "R-HSA-2262743", "R-HSA-2263444",
@@ -373,7 +374,6 @@ public class VisualTest extends BaseTest {
         System.out.println(mapper.writeValueAsString(graph));
     }
 
-    // https://reactomedev.oicr.on.ca/download/current/reactome.graphdb.tgz
     private static String formatTime(long nanoSeconds) {
         final long hours = nanoSeconds / 3_600_000_000_000L;
         nanoSeconds = nanoSeconds - hours * 3_600_000_000_000L;
@@ -384,7 +384,5 @@ public class VisualTest extends BaseTest {
         final long millis = nanoSeconds / 1_000_000L;
         return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
     }
-
-
 
 }

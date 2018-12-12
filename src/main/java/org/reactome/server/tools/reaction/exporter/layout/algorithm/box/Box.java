@@ -118,7 +118,7 @@ public class Box implements Div {
     private Map<Integer, Map<Integer, Div>> divs = new HashMap<>();
     private double horizontalPadding;
     private double verticalPadding;
-    private ArrayList<Box> boxes;
+    private List<Box> boxes;
 
     Box(CompartmentGlyph compartment, LayoutIndex index) {
         this.compartment = compartment;
@@ -129,11 +129,13 @@ public class Box implements Div {
     private void placeSubCompartments() {
         // Placing sub compartments is a combination problem where we must minimize the number of restriction violation.
         // Restrictions are simple:
-        //  - inputs have to have always an x coordinate (column) lower than the reaction,
+        //  - inputs must have always an x coordinate (column) lower than the reaction,
         //  - outputs an x coordinate greater than the reaction,
         //  - catalysts lower y coordinate and
         //  - regulators greater y coordinates
         // Derived restrictions are that inputs must have lower x than outputs, and catalysts lower y than regulators.
+        // Also, inputs will have lower x than catalysts and regulators, outputs greater x than catalysts and regulator,
+        // catalysts lower y than inputs and outputs and regulators greater y than inputs and outputs.
         // As we don't know where the reaction is, we use the derived restrictions.
         // To minimize the number of violations, we must place sub compartments in a grid.
         // Developing an 'n' compartments strategy is complex (doable, but complex). Instead, as we are going to usually
@@ -142,13 +144,15 @@ public class Box implements Div {
         final List<CompartmentGlyph> children = new ArrayList<>(compartment.getChildren());
         boxes = new ArrayList<>();
         for (final CompartmentGlyph child : children) boxes.add(new Box(child, index));
-        if (boxes.size() == 1) {
+        if (boxes.isEmpty()) {
+            columns = 3;
+            rows = 3;
+        } else if (boxes.size() == 1) {
             final Box box = boxes.get(0);
             columns = 4 + box.columns;
             rows = 4 + box.rows;
             set(2, 2, box);
         } else if (boxes.size() == 2) {
-
             final Box a;
             final Box b;
             if (hasReaction(boxes.get(0).getCompartment())) {
@@ -165,6 +169,8 @@ public class Box implements Div {
             }
             if (place == null) {
                 // we are doomed, both children have the 4 roles
+                LOGGER.error(String.format("(%s) Compartments %s and %s cannot be placed side by side",
+                        index.getReaction().getStId(), a.getCompartment().getName(), b.getCompartment().getName()));
                 System.err.println("Incompatible siblings: " + compartment.getName());
                 place = Place.LEFT;
             }
@@ -172,7 +178,8 @@ public class Box implements Div {
             else if (place == Place.RIGHT) placeHorizontal(b, a);
             else if (place == Place.TOP) placeVertical(a, b);
             else if (place == Place.BOTTOM) placeVertical(b, a);
-        } else if (boxes.size() > 2) {
+        } else {
+            boxes.size();
             // TODO: 04/12/18 go for the smart way, use a grid, you coward
             // Top down
             boxes.sort(Comparator
@@ -194,11 +201,7 @@ public class Box implements Div {
             }
             columns = mc == 0 ? 3 : 4 + mc;
             rows = mr == 0 ? 3 : mr * boxes.size() + (boxes.size() - 1) + 4;
-        } else {
-            columns = 3;
-            rows = 3;
         }
-
     }
 
     private boolean hasReaction(CompartmentGlyph compartment) {
@@ -467,7 +470,7 @@ public class Box implements Div {
             int row;
             if (hasCatalyst) row = getFreeRow(divs, EnumSet.of(INPUT), reactionPosition.getRow(), true, false);
             else if (boxes.size() > 0 && reactionPosition.getCol() > columns / 2) {
-                // This inputs will probably cause their segments to cross a child, so let's move to the bottom
+                // These inputs will probably cause their segments to cross a child, so let's move to the bottom
                 final Set<EntityRole> roles = boxes.stream().map(Box::getContainedRoles).map(PlacePositioner::simplify).flatMap(Collection::stream).collect(Collectors.toSet());
                 if (!roles.contains(NEGATIVE_REGULATOR)) row = rows - 1;
                 else if (!roles.contains(CATALYST)) row = 0;

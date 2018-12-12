@@ -2,10 +2,7 @@ package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
 
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
-import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
-import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
-import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
-import org.reactome.server.tools.reaction.exporter.layout.model.Role;
+import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,8 +36,10 @@ public class LayoutIndex {
     private List<EntityGlyph> outputs = new ArrayList<>();
     private List<EntityGlyph> catalysts = new ArrayList<>();
     private List<EntityGlyph> regulators = new ArrayList<>();
+    private ReactionGlyph reaction;
 
     public LayoutIndex(Layout layout) {
+        reaction = layout.getReaction();
         final List<EntityGlyph> activators = new ArrayList<>();
         final List<EntityGlyph> inhibitors = new ArrayList<>();
         for (EntityGlyph entity : layout.getEntities()) {
@@ -147,5 +146,9 @@ public class LayoutIndex {
         return regulators.stream()
                 .filter(entity -> entity.getCompartment() == compartment)
                 .collect(Collectors.toList());
+    }
+
+    public ReactionGlyph getReaction() {
+        return reaction;
     }
 }
