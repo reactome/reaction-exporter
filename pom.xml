@@ -33,9 +33,9 @@
         <jdk.version>1.8</jdk.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <reactome.graph.core>1.1.16-SNAPSHOT</reactome.graph.core>
+        <reactome.graph.core>1.1.17</reactome.graph.core>
         <diagram.reader>1.1.5</diagram.reader>
-        <diagram.exporter>1.3.10-SNAPSHOT</diagram.exporter>
+        <diagram.exporter>1.3.11</diagram.exporter>
 
         <jasp.version>2.1</jasp.version>
         <spring.test.version>4.3.11.RELEASE</spring.test.version>
