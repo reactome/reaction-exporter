@@ -67,12 +67,8 @@ public class VisualTest extends BaseTest {
         // }
     }
 
-    @Test
-    public void testPass() {
-        // It is necessary to have at least one test
-    }
-
     @Ignore
+    @Test
     public void testOne() {
         try {
             convert("R-HSA-1678920", new BufferedWriter(new FileWriter("data.tsv")));
@@ -82,6 +78,7 @@ public class VisualTest extends BaseTest {
     }
 
     @Ignore
+    @Test
     public void testHomoSapiens() {
         Collection<String> identifiers = new ArrayList<>();
         try {
@@ -93,7 +90,7 @@ public class VisualTest extends BaseTest {
         test(identifiers);
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testFailedReactions() {
         test(new LinkedHashSet<>(Arrays.asList(
@@ -156,7 +153,9 @@ public class VisualTest extends BaseTest {
                 "R-HSA-9036285", "R-HSA-9036289", "R-HSA-9036290", "R-HSA-9036729", "R-HSA-9605313", "R-HSA-9608288",
                 "R-NUL-9005752", "R-NUL-9606338")));
     }
+
     @Ignore
+    @Test
     public void testGoF() {
         test(new LinkedHashSet<>(Arrays.asList(
                 "R-HSA-6803233", "R-HSA-6802922", "R-HSA-6802926", "R-HSA-6802925", "R-HSA-6802924", "R-HSA-6802908",
@@ -200,6 +199,7 @@ public class VisualTest extends BaseTest {
     }
 
     @Ignore
+    @Test
     public void testMostDifficult() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
                 "R-HSA-68947", "R-HSA-69144", "R-HSA-70634", "R-HSA-71670", "R-HSA-72107", "R-HSA-74885",
