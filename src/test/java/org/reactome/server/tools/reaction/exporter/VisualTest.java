@@ -285,6 +285,14 @@ public class VisualTest extends BaseTest {
         // TODO: 21/10/18 add resource
     }
 
+    @Ignore
+    public void testOddities(){
+        Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
+                "R-HSA-4839638", "R-NUL-9606338"
+        ));
+        test(identifiers);
+    }
+
     private void test(Collection<String> identifiers) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("data.tsv"))){
             System.out.println(identifiers.size() + " reactions");
