@@ -62,24 +62,25 @@ public class PlacePositioner {
         final List<Place> preferences = createList(a, PREFERENCES);
         final List<Place> allowed = b.isEmpty() ? Arrays.asList(Place.values()) : createList(b, ALLOWED);
         if (allowed.isEmpty()) return null;
-        // general case, take the first allowed preference
-        for (final Place preference : preferences) {
-            if (allowed.contains(preference)) return preference;
-        }
         if (preferences.isEmpty()) return allowed.get(0);
-        else return preferences.get(0);
+        // general case, take the first allowed preference
+        for (final Place preference : preferences)
+            if (allowed.contains(preference))
+                return preference;
+        // Lists do not contain a common Place
+        return allowed.get(0);
     }
 
     private static List<Place> createList(Collection<EntityRole> a, Map<EntityRole, List<Place>> takeFrom) {
-        final List<Place> preferences = new ArrayList<>();
+        final List<Place> roles = new ArrayList<>();
         for (final EntityRole role : a) {
-            if (preferences.isEmpty()) preferences.addAll(takeFrom.get(role));
+            if (roles.isEmpty())
+                roles.addAll(takeFrom.get(role));
             else {
-                final List<Place> places = takeFrom.get(role);
-                preferences.retainAll(places);
+                roles.retainAll(takeFrom.get(role));
             }
         }
-        return preferences;
+        return roles;
     }
 
     /**

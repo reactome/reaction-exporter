@@ -321,7 +321,7 @@ public class VisualTest extends BaseTest {
             if (test) runTest(diagram, stId);
             final long b = System.nanoTime();
             if (json) printJsons(diagram, graph, layout);
-            if (svg) saveSvg(stId, pStId, diagram, graph);
+            if (svg) saveImage(stId, pStId, diagram, graph, "png");
             if (sbgn) saveSbgn(stId, diagram);
             if (pptx) savePptx(diagram);
             final long c = System.nanoTime();
@@ -338,11 +338,12 @@ public class VisualTest extends BaseTest {
         return System.nanoTime() - start;
     }
 
-    private void saveSvg(String stId, String pStId, Diagram diagram, Graph graph) {
+    private void saveImage(String stId, String pStId, Diagram diagram, Graph graph, String format) {
         try {
-            final File file = new File(TEST_IMAGES, String.format("%s.%s", stId, "svg"));
+            final File file = new File(TEST_IMAGES, String.format("%s.%s", stId, format));
             OutputStream os = new FileOutputStream(file);
-            RasterArgs args = new RasterArgs(pStId, "svg").setQuality(8).setMargin(1);
+            RasterArgs args = new RasterArgs(pStId, format
+            ).setQuality(8).setMargin(1);
             rasterExporter.export(diagram, graph, args, null, os);
         } catch (IOException | AnalysisException | TranscoderException e) {
             e.printStackTrace();
