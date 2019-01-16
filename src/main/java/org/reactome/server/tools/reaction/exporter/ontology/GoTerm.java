@@ -13,13 +13,24 @@ public class GoTerm implements Comparable<GoTerm> {
     private String namespace;
     private String name;
     private boolean obsolete;
-    private List<String> altIds = new LinkedList<>();
-    private List<String> consider = new LinkedList<>();
+    private List<String> altIds = new ArrayList<>();
+    private List<String> consider = new ArrayList<>();
     /* part_of, is_a, surrounded_by, component_of */
     private Map<Directionality, Map<RelationshipType, Set<GoTerm>>> relationships = new EnumMap<>(Directionality.class);
+    private Collection<GoTerm> parents = new ArrayList<>();
+    private Collection<GoTerm> children = new HashSet<>();
 
     public GoTerm(String id) {
         this.id = id;
+    }
+
+    public GoTerm(GoTerm that) {
+        this.id = that.id;
+        this.namespace = that.namespace;
+        this.name = that.name;
+        this.obsolete = that.obsolete;
+        this.altIds = new ArrayList<>(that.altIds);
+        this.consider = new ArrayList<>(that.altIds);
     }
 
     public String getAccession(){
@@ -32,9 +43,26 @@ public class GoTerm implements Comparable<GoTerm> {
 
 
     public Set<GoTerm> getRelationships(Directionality directionality, RelationshipType type) {
-        return relationships
+        final Set<GoTerm> terms = new HashSet<>(relationships
                 .getOrDefault(directionality, Collections.emptyMap())
-                .getOrDefault(type, Collections.emptySet());
+                .getOrDefault(type, Collections.emptySet()));
+        if (directionality == Directionality.OUTGOING) {
+            for (final GoTerm parent : parents) {
+                terms.addAll(parent.getRelationships(directionality, type));
+            }
+        } else {
+            for (final GoTerm child : children) {
+                terms.addAll(child.getRelationships(directionality, type));
+            }
+            int size;
+            do {
+                size = terms.size();
+                for (final GoTerm term : new ArrayList<>(terms)) {
+                    terms.addAll(term.getChildren());
+                }
+            } while (terms.size() > size);
+        }
+        return terms;
     }
 
     public void createRelationship(Directionality directionality, RelationshipType type, GoTerm goTerm) {
@@ -111,18 +139,6 @@ public class GoTerm implements Comparable<GoTerm> {
         this.obsolete = obsolete;
     }
 
-    @Override
-    public String toString() {
-        final String rels = relationships.keySet().stream().map(directionality -> {
-            String val = relationships.get(directionality).keySet().stream().map(type -> {
-                final String terms = relationships.get(directionality).get(type).stream().map(GoTerm::getId).collect(joining(","));
-                return type + "=" + terms;
-            }).collect(joining(", "));
-            return directionality.symbol() + "{" + val + "}";
-        }).collect(joining(", "));
-        return String.format("%s (%s) [%s]", id, name, rels);
-    }
-
 
     /**
      * Gets a copy if this term, with empty relationships
@@ -137,7 +153,19 @@ public class GoTerm implements Comparable<GoTerm> {
         return goTerm;
     }
 
-    public Set<GoTerm> getChildren(){
+    @Override
+    public String toString() {
+        final String rels = relationships.keySet().stream().map(directionality -> {
+            String val = relationships.get(directionality).keySet().stream().map(type -> {
+                final String terms = relationships.get(directionality).get(type).stream().map(GoTerm::getId).collect(joining(","));
+                return type + "=" + terms;
+            }).collect(joining(", "));
+            return directionality.symbol() + "{" + val + "}";
+        }).collect(joining(", "));
+        return String.format("%s (%s) [%s]", id, name, rels);
+    }
+
+    public Set<GoTerm> getKids() {
         Set<GoTerm> children = new HashSet<>();
         for (final RelationshipType type : RelationshipType.values()) {
             children.addAll(getRelationships(Directionality.INCOMING, type));
@@ -145,14 +173,32 @@ public class GoTerm implements Comparable<GoTerm> {
         return children;
     }
 
-    public void print() {
-        print(0);
+    public void removeRelationship(GoTerm term) {
+        for (final Directionality directionality : Directionality.values()) {
+            for (final RelationshipType type : RelationshipType.values()) {
+                relationships
+                        .getOrDefault(directionality, Collections.emptyMap())
+                        .getOrDefault(type, Collections.emptySet())
+                        .remove(term);
+                term.relationships
+                        .getOrDefault(directionality, Collections.emptyMap())
+                        .getOrDefault(type, Collections.emptySet())
+                        .remove(this);
+            }
+        }
     }
 
-    private void print(int level) {
-        for (int i = 0; i < level; i++) System.out.print("\t");
-        System.out.println(id + " " + name);
-        getChildren().forEach(term -> term.print(level + 1));
+    public void addParent(GoTerm parent) {
+        parents.add(parent);
+        parent.children.add(this);
+    }
+
+    public Collection<GoTerm> getParents() {
+        return parents;
+    }
+
+    public Collection<GoTerm> getChildren() {
+        return children;
     }
 
     public enum Directionality {

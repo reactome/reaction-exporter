@@ -1,5 +1,10 @@
 package org.reactome.server.tools.reaction.exporter.ontology;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import org.reactome.server.tools.reaction.exporter.ontology.model.Obo;
+import org.reactome.server.tools.reaction.exporter.ontology.model.Relationship;
+import org.reactome.server.tools.reaction.exporter.ontology.model.Term;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -140,6 +145,44 @@ public class GoParser {
 				.findFirst()
 				.map(elem1 -> elem1.getChildren().get(1).getValue().replace("\"", "").trim())
 				.orElse("");
+	}
+
+	public static Map<String, GoTerm> readCompressed() {
+		try {
+			final InputStream resource = GoParser.class.getResourceAsStream("/ontology/go_daily-termdb.obo-xml");
+			final Obo obo = new XmlMapper().readValue(resource, Obo.class);
+			final Map<String, GoTerm> index = connect(obo);
+			addOcelotTerms(index);
+			return index;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private static Map<String, GoTerm> connect(Obo obo) {
+		final Map<String, GoTerm> index = new HashMap<>();
+		final List<Term> cellularComponents = obo.getTerms().stream()
+				.filter(term -> term.getNamespace().equals("cellular_component"))
+				.collect(toList());
+		// First pass, just create the terms
+		for (final Term term : cellularComponents) {
+			final GoTerm goTerm = new GoTerm(term.getId());
+			goTerm.setName(term.getName());
+			goTerm.setObsolete(term.getObsolete());
+			index.put(term.getId(), goTerm);
+		}
+		// Second pass, add the relationships
+		for (final Term component : cellularComponents) {
+			final GoTerm term = index.get(component.getId());
+			for (final Relationship relationship : component.getRelationships()) {
+				final GoTerm to = index.get(relationship.getTo());
+				final RelationshipType type = valueOf(relationship.getType());
+				term.createRelationship(OUTGOING, type, to);
+			}
+			for (final String isA : component.getIsA()) term.addParent(index.get(isA));
+		}
+		return index;
 	}
 
 }
