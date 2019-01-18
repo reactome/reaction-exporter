@@ -150,7 +150,9 @@ public class LayoutFactory {
     }
 
     public enum Style {
-        BOX(layout -> new BoxAlgorithm(layout).compute());
+        BOX(layout -> new BoxAlgorithm(layout).compute()),
+        BRUTE_FORCE(layout -> new BruteForce(layout).compute());
+
         private Consumer<Layout> consumer;
 
         Style(Consumer<Layout> consumer) {

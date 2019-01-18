@@ -19,7 +19,7 @@ import static java.lang.Math.*;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Constants.MIN_SEGMENT;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.*;
 
-class ConnectorFactory {
+public class ConnectorFactory {
 
     private ConnectorFactory() {
     }
@@ -69,7 +69,7 @@ class ConnectorFactory {
         );
     }
 
-    static void addConnectors(Point reactionPosition, Grid<Div> grid, double[] widths, double[] heights, Layout layout, LayoutIndex index) {
+    public static void addConnectors(Point reactionPosition, Grid<Div> grid, double[] widths, double[] heights, Layout layout, LayoutIndex index) {
         // Points of interest
         double x1 = 0;
         double y1 = 0;

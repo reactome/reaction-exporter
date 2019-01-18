@@ -69,15 +69,15 @@ public class GoTreeFactory {
 
     private static void removeUpperCompartments(List<String> ids, GoTerm root) {
         GoTerm outer = root;
-        while (outer.getKids().size() == 1 && !ids.contains(outer.getId()))
-            outer = outer.getKids().iterator().next();
+        while (outer.getIncomingTerms().size() == 1 && !ids.contains(outer.getId()))
+            outer = outer.getIncomingTerms().iterator().next();
         if (outer == root) return;
         GoTerm r = root;
-        GoTerm c = root.getKids().iterator().next();
+        GoTerm c = root.getIncomingTerms().iterator().next();
         while (c != outer) {
             c.removeRelationship(r);
             r = c;
-            c = c.getKids().iterator().next();
+            c = c.getIncomingTerms().iterator().next();
         }
         outer.createRelationship(OUTGOING, surrounded_by, root);
     }
@@ -95,7 +95,7 @@ public class GoTreeFactory {
             }
             for (final GoTerm term : dispose) term.removeRelationship(root);
         }
-        for (final GoTerm child : root.getKids()) removeLogicalRelationships(child);
+        for (final GoTerm child : root.getIncomingTerms()) removeLogicalRelationships(child);
     }
 
 

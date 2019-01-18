@@ -119,6 +119,7 @@ public class Box implements Div {
     private double horizontalPadding;
     private double verticalPadding;
     private List<Box> boxes;
+    private Box[][] boxOrder;
 
     Box(CompartmentGlyph compartment, LayoutIndex index) {
         this.compartment = compartment;
@@ -147,25 +148,20 @@ public class Box implements Div {
         if (boxes.isEmpty()) {
             columns = 3;
             rows = 3;
+            boxOrder = new Box[0][0];
         } else if (boxes.size() == 1) {
             final Box box = boxes.get(0);
             columns = 4 + box.columns;
             rows = 4 + box.rows;
             set(2, 2, box);
+            boxOrder = new Box[][]{{box}};
         } else if (boxes.size() == 2) {
-            final Box a;
-            final Box b;
-            if (hasReaction(boxes.get(0).getCompartment())) {
-                a = boxes.get(1);
-                b = boxes.get(0);
-            } else {
-                a = boxes.get(0);
-                b = boxes.get(1);
-            }
-            Place place = PlacePositioner.haggle(a.getContainedRoles(), b.getContainedRoles());
+            final Box a = boxes.get(0);
+            final Box b = boxes.get(1);
+            Place place = PlacePositioner.getRelativePosition(a.getBusyPlaces(), b.getBusyPlaces());
             if (place == null) {
                 // place is null, b has all roles
-                place = PlacePositioner.haggle(a.getContainedRoles(), EnumSet.noneOf(EntityRole.class));
+                place = PlacePositioner.getRelativePosition(a.getBusyPlaces(), EnumSet.noneOf(Place.class));
             }
             if (place == null) {
                 // we are doomed, both children have the 4 roles
@@ -179,7 +175,6 @@ public class Box implements Div {
             else if (place == Place.TOP) placeVertical(a, b);
             else if (place == Place.BOTTOM) placeVertical(b, a);
         } else {
-            boxes.size();
             // TODO: 04/12/18 go for the smart way, use a grid, you coward
             // Top down
             boxes.sort(Comparator
@@ -201,34 +196,83 @@ public class Box implements Div {
             }
             columns = mc == 0 ? 3 : 4 + mc;
             rows = mr == 0 ? 3 : mr * boxes.size() + (boxes.size() - 1) + 4;
+            boxOrder = new Box[boxes.size()][1];
+            for (int i = 0; i < boxes.size(); i++) {
+                boxOrder[i] = new Box[]{boxes.get(i)};
+            }
         }
-    }
-
-    private boolean hasReaction(CompartmentGlyph compartment) {
-        final boolean hasReaction = compartment.getContainedGlyphs().stream().anyMatch(ReactionGlyph.class::isInstance);
-        if (hasReaction) return true;
-        for (final CompartmentGlyph child : compartment.getChildren()) {
-            if (hasReaction(child)) return true;
-        }
-        return false;
     }
 
     private void placeHorizontal(Box left, Box right) {
         columns = 5 + left.columns + right.columns;
         final int maxRows = Math.max(left.rows, right.rows);
-        left.rows = right.rows = maxRows;
+        left.setNumberOfRows(maxRows);
+        right.setNumberOfRows(maxRows);
         rows = 4 + maxRows;
         set(2, 2, left);
         set(2, 3 + left.columns, right);
+        boxOrder = new Box[][]{{left, right}};
     }
 
     private void placeVertical(Box top, Box bottom) {
         rows = 5 + top.rows + bottom.rows;
         final int maxCols = Math.max(top.columns, bottom.columns);
-        top.columns = bottom.columns = maxCols;
+        top.setNumberOfColumns(maxCols);
+        bottom.setNumberOfColumns(maxCols);
         columns = 4 + maxCols;
         set(2, 2, top);
         set(3 + top.rows, 2, bottom);
+        boxOrder = new Box[][]{{top}, {bottom}};
+    }
+
+    private void setNumberOfRows(int maxRows) {
+        // If I already have this number of rows, I don't need to rearrange my children
+        if (this.rows == maxRows) return;
+        this.rows = maxRows;
+        if (boxOrder.length == 0) return;
+        final int length = boxOrder.length;
+        final int spaces = length - 1;
+        final int rowsPerBox = (rows - 4 - spaces) / length;
+        assert (rows - 4 - spaces) % length == 0;
+        int start = 2;
+        for (int c = 0; c < boxOrder[0].length; c++) {
+            for (int row = 0; row < length; row++) {
+                int r = start;
+                r += row;
+                r += row * rowsPerBox;
+                set(r, 2, boxOrder[row][c]);
+                boxOrder[row][c].setNumberOfRows(rowsPerBox);
+            }
+        }
+        // TODO: 17/01/19 as down
+    }
+
+    private void setNumberOfColumns(int columns) {
+        if (this.columns == columns) return;
+        this.columns = columns;
+        if (boxOrder.length == 0) return;
+        for (int r = 0; r < boxOrder.length; r++) {
+            final Box[] row = boxOrder[r];
+            // 1 how many horizontally placed children do I have?
+            final int length = row.length;
+            // 2 spaces between boxes
+            final int spaces = length - 1;
+            // 3 columns per element?
+            final int colsPerBox = (columns - 4 - spaces) / length;
+            // this should always be exact
+            assert (columns - 4 - spaces) % length == 0;
+            // resize every sub box
+            int start = 2;
+            for (int i = 0; i < length; i++) {
+                int c = start;
+                c += i; // number of before spaces
+                c += i * colsPerBox;  // size of before boxes
+                set(2, c, row[i]);
+                // TODO: 17/01/19 the row may change in the future
+                row[i].setNumberOfColumns(colsPerBox);
+            }
+        }
+
     }
 
     private void set(int row, int col, Div div) {
@@ -281,7 +325,7 @@ public class Box implements Div {
         }
         // 1 child: 4 available positions
         if (children.size() == 1) {
-            final Place place = PlacePositioner.haggle(EnumSet.noneOf(EntityRole.class), children.get(0).getContainedRoles());
+            final Place place = PlacePositioner.getRelativePosition(EnumSet.noneOf(Place.class), children.get(0).getBusyPlaces());
             if (place == Place.TOP) return new Point(1, columns / 2);
             if (place == Place.BOTTOM) return new Point(rows - 2, columns / 2);
             if (place == Place.LEFT) return new Point(rows / 2, 1);
@@ -300,7 +344,7 @@ public class Box implements Div {
         forEach((div, point) -> {
             if (div instanceof Box) {
                 final Box box = (Box) div;
-                final Collection<Place> allowed = PlacePositioner.getAllowed(div.getContainedRoles());
+                final Collection<Place> allowed = PlacePositioner.getAllowances(div.getBusyPlaces());
                 if (allowed.isEmpty()) {
                     moveReactionTo(children.get(0));
                     maxCol.set(-1);
@@ -428,6 +472,27 @@ public class Box implements Div {
                 .map(Role::getType)
                 .forEach(roles::add);
         return roles;
+    }
+
+    @Override
+    public Collection<Place> getBusyPlaces() {
+        final EnumSet<Place> places = EnumSet.noneOf(Place.class);
+        for (final Glyph glyph : compartment.getContainedGlyphs()) {
+            places.addAll(places(glyph));
+        }
+        for (final Div child : getChildren())
+            places.addAll(child.getBusyPlaces());
+        return places;
+    }
+
+    private Collection<Place> places(Glyph glyph) {
+        if (glyph instanceof ReactionGlyph)
+            return EnumSet.of(Place.CENTER);
+        final EntityGlyph entityGlyph = (EntityGlyph) glyph;
+        return entityGlyph.getRoles().stream()
+                .map(Role::getType)
+                .map(PlacePositioner::getPlace)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -609,5 +674,10 @@ public class Box implements Div {
             }
         });
         return rtn;
+    }
+
+    @Override
+    public Character getInitial() {
+        return compartment.getInitial();
     }
 }

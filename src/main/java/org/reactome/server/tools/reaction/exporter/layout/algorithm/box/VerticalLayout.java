@@ -17,11 +17,6 @@ public class VerticalLayout extends GlyphsLayout {
     }
 
     @Override
-    public String toString() {
-        return String.format("vertical (%d)", getGlyphs().size());
-    }
-
-    @Override
     Position layout() {
         if (getGlyphs().isEmpty()) return new Position(0d, 0d, getLeftPadding() + getRightPadding(), getTopPadding() + getBottomPadding());
         for (final Glyph glyph : getGlyphs()) Transformer.setSize(glyph);
@@ -76,5 +71,13 @@ public class VerticalLayout extends GlyphsLayout {
         return limits;
     }
 
+    @Override
+    public String toString() {
+        return String.format("vertical (%d)", getGlyphs().size());
+    }
 
+    @Override
+    public Character getInitial() {
+        return 'v';
+    }
 }

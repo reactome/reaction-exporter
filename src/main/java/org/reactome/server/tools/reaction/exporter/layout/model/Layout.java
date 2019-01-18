@@ -107,7 +107,7 @@ public class Layout implements HasPosition {
             compartments.add("GO:" + compartment.getAccession());
         }
 
-        GoTerm treeRoot = GoTreeFactory.getTree(compartments);
+        GoTerm treeRoot = GoTreeFactory.getTreeWithIntermediateNodes(compartments);
         compartmentRoot = this.compartments.computeIfAbsent(treeRoot.getAccession(), a -> new CompartmentGlyph(treeRoot));
 
 
@@ -117,7 +117,7 @@ public class Layout implements HasPosition {
     }
 
     private void buildCompartmentHierarchy(CompartmentGlyph cg, GoTerm term) {
-        for (GoTerm goTerm : term.getChildren()) {
+        for (GoTerm goTerm : term.getIncomingTerms()) {
             CompartmentGlyph aux = compartments.computeIfAbsent(goTerm.getAccession(), a -> new CompartmentGlyph(goTerm));
             cg.addChild(aux);
             aux.setParent(cg);

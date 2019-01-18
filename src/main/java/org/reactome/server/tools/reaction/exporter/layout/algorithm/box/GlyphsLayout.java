@@ -6,6 +6,8 @@ import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -83,6 +85,18 @@ public abstract class GlyphsLayout implements Div {
                 .collect(Collectors.toSet());
     }
 
+    @Override
+    public Collection<Place> getBusyPlaces() {
+        final Glyph glyph = glyphs.get(0);
+        if (glyph instanceof ReactionGlyph)
+            return EnumSet.of(Place.CENTER);
+        return glyphs.stream()
+                .map(EntityGlyph.class::cast)
+                .flatMap(entiyt -> entiyt.getRoles().stream())
+                .map(Role::getType)
+                .map(PlacePositioner::getPlace)
+                .collect(Collectors.toSet());
+    }
 
     double getSeparation() {
         return separation;

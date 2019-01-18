@@ -67,17 +67,19 @@ public class VisualTest extends BaseTest {
         // }
     }
 
-    @Ignore
+    // @Ignore
     @Test
     public void testOne() {
         try {
-            convert("R-HSA-1678920", new BufferedWriter(new FileWriter("data.tsv")));
+            // 210430
+            // 917744
+            convert("R-HSA-4655355", new BufferedWriter(new FileWriter("data.tsv")));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @Ignore
+    // @Ignore
     @Test
     public void testHomoSapiens() {
         Collection<String> identifiers = new ArrayList<>();
@@ -198,7 +200,7 @@ public class VisualTest extends BaseTest {
                 "R-HSA-3702184", "R-HSA-3702153", "R-HSA-3702186", "R-HSA-5683209")));
     }
 
-    @Ignore
+    // @Ignore
     @Test
     public void testMostDifficult() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
@@ -248,12 +250,12 @@ public class VisualTest extends BaseTest {
                 "R-HSA-2466710", "R-HSA-2485180", "R-HSA-2514891", "R-HSA-2581474", "R-HSA-2584246", "R-HSA-2666278",
                 "R-HSA-2682349", "R-HSA-2855020", "R-HSA-2872444", "R-HSA-2889070", "R-HSA-2993780", "R-HSA-3000122",
                 "R-HSA-3095901", "R-HSA-3149432", "R-HSA-3215391", "R-HSA-3229118", "R-HSA-3257122", "R-HSA-3274540",
-                "R-HSA-3325546", "R-HSA-3645786", "R-HSA-3656517", "R-HSA-3656523", "R-HSA-3702153", "R-HSA-3702184",
-                "R-HSA-3713560", "R-HSA-3790130", "R-HSA-3790137", "R-HSA-3791349", "R-HSA-3814838", "R-HSA-3828061",
+                "R-HSA-3325546", /*"R-HSA-3645786", "R-HSA-3656517", "R-HSA-3656523", "R-HSA-3702153", "R-HSA-3702184",
+                "R-HSA-3713560", */ "R-HSA-3790130", "R-HSA-3790137", "R-HSA-3791349", "R-HSA-3814838", "R-HSA-3828061",
                 "R-HSA-3858506", "R-HSA-4419979", "R-HSA-4419986", "R-HSA-4549334", "R-HSA-4549368", "R-HSA-4549382",
                 "R-HSA-4551297", "R-HSA-4655355", "R-HSA-4717406", "R-HSA-4719354", "R-HSA-4719375", "R-HSA-4755572",
                 "R-HSA-4755600", "R-HSA-5205661", "R-HSA-5205663", "R-HSA-5205681", "R-HSA-5213462", "R-HSA-5228811",
-                "R-HSA-5250579", "R-HSA-5251989", "R-HSA-5357845", "R-HSA-5358460", "R-HSA-5362450", "R-HSA-5362459",
+                /*"R-HSA-5250579",*/ "R-HSA-5251989", "R-HSA-5357845", "R-HSA-5358460", "R-HSA-5362450", "R-HSA-5362459",
                 "R-HSA-5387386", "R-HSA-5387389", "R-HSA-5387392", "R-HSA-5483229", "R-HSA-5483238", "R-HSA-5578663",
                 "R-HSA-5602383", "R-HSA-5602549", "R-HSA-5602606", "R-HSA-5602885", "R-HSA-5607838", "R-HSA-5610727",
                 "R-HSA-5615556", "R-HSA-5615604", "R-HSA-5617096", "R-HSA-5617820", "R-HSA-5623513", "R-HSA-5623521",
@@ -309,6 +311,60 @@ public class VisualTest extends BaseTest {
         }
     }
 
+    @Test
+    public void testPerformance() {
+        Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
+                "R-HSA-68947", "R-HSA-69144", "R-HSA-70634", "R-HSA-71670", "R-HSA-72107", "R-HSA-74885",
+                "R-HSA-75097", "R-HSA-75849",
+                "R-HSA-111883", "R-HSA-111930", "R-HSA-112381", "R-HSA-139952", "R-HSA-158419", "R-HSA-194083",
+                "R-HSA-194121", "R-HSA-194130", "R-HSA-194153", "R-HSA-194187", "R-HSA-198440", "R-HSA-198513",
+                "R-HSA-200424", "R-HSA-203613", "R-HSA-203946", "R-HSA-203977", "R-HSA-265783", "R-HSA-350769",
+                "R-HSA-352174", "R-HSA-352182", "R-HSA-352347", "R-HSA-352354", "R-HSA-375342", "R-HSA-376149",
+                "R-HSA-376851", "R-HSA-378513", "R-HSA-379415", "R-HSA-379426", "R-HSA-379432", "R-HSA-380869",
+                "R-HSA-380901", "R-HSA-382553", "R-HSA-382560", "R-HSA-383190",
+                "R-HSA-2012073", "R-HSA-2012074", "R-HSA-2012082", "R-HSA-2012084", "R-HSA-2029984", "R-HSA-2029988",
+                "R-HSA-2029989", "R-HSA-2029992", "R-HSA-2033472", "R-HSA-2033474", "R-HSA-2033479", "R-HSA-2033488",
+                "R-HSA-2033490", "R-HSA-2067713", "R-HSA-2077424", "R-HSA-5387386", "R-HSA-5387389", "R-HSA-5387392",
+                "R-HSA-5483229", "R-HSA-5483238", "R-HSA-5578663", "R-HSA-5602383", "R-HSA-5602549", "R-HSA-5602606",
+                "R-HSA-5602885", "R-HSA-5607838", "R-HSA-5610727", "R-HSA-5628807", "R-HSA-5632804", "R-HSA-5632871",
+                "R-HSA-5632958", "R-HSA-5632970", "R-HSA-5633241", "R-HSA-5653850", "R-HSA-5654125", "R-HSA-5654748",
+                "R-HSA-5655289", "R-HSA-5655295", "R-HSA-5655315", "R-HSA-5655702", "R-HSA-5655733", "R-HSA-5655760",
+                "R-HSA-5656219", "R-HSA-5656248", "R-HSA-5656356", "R-HSA-5656438", "R-HSA-5656459", "R-HSA-5658001",
+                "R-HSA-6802921", "R-HSA-6802922", "R-HSA-6802925", "R-HSA-6802926", "R-HSA-6802927", "R-HSA-6802930",
+                "R-HSA-6802932", "R-HSA-6802933", "R-HSA-6802934", "R-HSA-6802935", "R-HSA-6802938", "R-HSA-6802942",
+                "R-HSA-6802943", "R-HSA-8851710", "R-HSA-8853313", "R-HSA-8853315", "R-HSA-8853317", "R-HSA-8853319",
+                "R-HSA-8853320", "R-HSA-8853322", "R-HSA-8853325", "R-HSA-8854908", "R-HSA-8855062", "R-HSA-8856808",
+                "R-HSA-8863101", "R-HSA-8865275", "R-HSA-8865276", "R-HSA-8866856", "R-HSA-8867876", "R-HSA-8869241",
+                "R-HSA-8877620", "R-HSA-8948146", "R-HSA-8948832", "R-HSA-8949609", "R-HSA-8949687", "R-HSA-8949688",
+                "R-HSA-8949703", "R-HSA-8951850", "R-HSA-9036056", "R-HSA-9603534", "R-MMU-8851711", "R-MMU-9005872",
+                "R-NUL-9005752", "R-NUL-9606338"));
+        test(identifiers);
+    }
+
+    @Test
+    public void bruteForce() {
+        String stId = "R-HSA-434650";
+        try {
+            ReactionLikeEvent rle = databaseObjectService.findById(stId);
+            final String pStId = rle.getEventOf().isEmpty() ? stId : rle.getEventOf().get(0).getStId();
+
+            final LayoutFactory layoutFactory = new LayoutFactory(ads);
+            final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BRUTE_FORCE);
+            final Diagram diagram = ReactionDiagramFactory.get(layout);
+
+            final Graph graph = new ReactionGraphFactory(ads).getGraph(rle, layout);
+
+            runTest(diagram, stId);
+            saveImage(stId, pStId, diagram, graph, "svg");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println(stId);
+        }
+
+    }
+
+
+
     private long convert(String stId, BufferedWriter writer) {
         return convert(stId, writer, true, true, false, false, false);
     }
@@ -329,7 +385,7 @@ public class VisualTest extends BaseTest {
             if (test) runTest(diagram, stId);
             final long b = System.nanoTime();
             if (json) printJsons(diagram, graph, layout);
-            if (svg) saveImage(stId, pStId, diagram, graph, "png");
+            if (svg) saveImage(stId, pStId, diagram, graph, "svg");
             if (sbgn) saveSbgn(stId, diagram);
             if (pptx) savePptx(diagram);
             final long c = System.nanoTime();

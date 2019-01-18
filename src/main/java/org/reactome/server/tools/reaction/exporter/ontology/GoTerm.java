@@ -165,8 +165,11 @@ public class GoTerm implements Comparable<GoTerm> {
         return String.format("%s (%s) [%s]", id, name, rels);
     }
 
-    public Set<GoTerm> getKids() {
-        Set<GoTerm> children = new HashSet<>();
+    /**
+     * @return a collection of terms which have an outgoing relationship to this term.
+     */
+    public Collection<GoTerm> getIncomingTerms() {
+        final Set<GoTerm> children = new HashSet<>();
         for (final RelationshipType type : RelationshipType.values()) {
             children.addAll(getRelationships(Directionality.INCOMING, type));
         }

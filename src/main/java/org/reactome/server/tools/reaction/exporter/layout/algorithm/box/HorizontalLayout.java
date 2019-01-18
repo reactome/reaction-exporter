@@ -14,11 +14,6 @@ public class HorizontalLayout extends GlyphsLayout {
     }
 
     @Override
-    public String toString() {
-        return String.format("horizontal (%d)", getGlyphs().size());
-    }
-
-    @Override
     Position layout() {
         if (getGlyphs().isEmpty()) return new Position(0d, 0d, getLeftPadding() + getRightPadding(), getTopPadding() + getBottomPadding());
         for (final Glyph glyph : getGlyphs()) Transformer.setSize(glyph);
@@ -34,4 +29,13 @@ public class HorizontalLayout extends GlyphsLayout {
         return new Position(0d, 0d, x - getSeparation() + getRightPadding(), height + getBottomPadding() + getTopPadding());
     }
 
+    @Override
+    public String toString() {
+        return String.format("horizontal (%d)", getGlyphs().size());
+    }
+
+    @Override
+    public Character getInitial() {
+        return 'h';
+    }
 }

@@ -3,6 +3,7 @@ package org.reactome.server.tools.reaction.exporter.layout.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.Compartment;
 import org.reactome.server.tools.diagram.data.layout.Coordinate;
+import org.reactome.server.tools.reaction.exporter.layout.algorithm.box.HasInitial;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
 
@@ -14,7 +15,7 @@ import java.util.Set;
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
-public class CompartmentGlyph extends AbstractGlyph {
+public class CompartmentGlyph extends AbstractGlyph implements HasInitial {
 
     private Long dbId;
     private String schemaClass;
@@ -119,5 +120,10 @@ public class CompartmentGlyph extends AbstractGlyph {
                 "name='" + name + '\'' +
                 ", accession='" + accession + '\'' +
                 '}';
+    }
+
+    @Override
+    public Character getInitial() {
+        return name.charAt(0);
     }
 }

@@ -6,7 +6,7 @@ import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph
 
 import java.util.Collection;
 
-public interface Div {
+public interface Div extends HasInitial {
 
     Position getBounds();
 
@@ -37,6 +37,8 @@ public interface Div {
     void move(double dx, double dy);
 
     Collection<EntityRole> getContainedRoles();
+
+    Collection<Place> getBusyPlaces();
 
     CompartmentGlyph getCompartment();
 }
