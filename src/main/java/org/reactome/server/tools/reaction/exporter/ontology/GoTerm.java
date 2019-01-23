@@ -176,6 +176,14 @@ public class GoTerm implements Comparable<GoTerm> {
         return children;
     }
 
+    public Collection<GoTerm> getOutgoingTerms() {
+        final Set<GoTerm> children = new HashSet<>();
+        for (final RelationshipType type : RelationshipType.values()) {
+            children.addAll(getRelationships(Directionality.OUTGOING, type));
+        }
+        return children;
+    }
+
     public void removeRelationship(GoTerm term) {
         for (final Directionality directionality : Directionality.values()) {
             for (final RelationshipType type : RelationshipType.values()) {

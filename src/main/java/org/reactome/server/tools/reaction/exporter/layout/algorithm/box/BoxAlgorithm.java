@@ -43,6 +43,9 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUti
 @SuppressWarnings("Duplicates")
 public class BoxAlgorithm {
 
+    private static final String EXTRACELLULAR_REGION_ACC = "0005576";
+
+
     private final Layout layout;
     private final LayoutIndex index;
 
@@ -411,7 +414,6 @@ public class BoxAlgorithm {
      * Avoid having catalysts in the same row as inputs or outputs
      */
     private void forceDiagonalTopDown(Grid<Div> grid, Point reactionPosition) {
-        // top/dows
         int r = 0;
         while (r < reactionPosition.getRow()) {
             boolean hasVertical = false;
@@ -766,7 +768,8 @@ public class BoxAlgorithm {
      * This operation should be called in the last steps, to avoid being exported to a Diagram object.
      */
     private void removeExtracellular() {
-        layout.getCompartments().remove(layout.getCompartmentRoot());
+        if (layout.getCompartmentRoot().getAccession().equals(EXTRACELLULAR_REGION_ACC))
+            layout.getCompartments().remove(layout.getCompartmentRoot());
     }
 
     /**
