@@ -55,7 +55,7 @@ public class BoxAlgorithm {
      */
     public BoxAlgorithm(Layout layout) {
         this.layout = layout;
-        Dedup.addDuplicates(layout);
+        DuplicateManager.addDuplicates(layout);
         index = new LayoutIndex(layout);
         fixReactionWithNoCompartment(layout);
     }

@@ -11,11 +11,15 @@ import java.util.List;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
-public class Dedup {
+public class DuplicateManager {
 
-    private Dedup() {
+    private DuplicateManager() {
     }
 
+    /**
+     * Creates duplicate entities for those entities with more than one role, except those who have INPUT and CATALYST.
+     * @param layout the layout
+     */
     public static void addDuplicates(Layout layout) {
         // We duplicate every entity that has more than one role, except when the input is a catalyst
         final List<EntityGlyph> added = new ArrayList<>();

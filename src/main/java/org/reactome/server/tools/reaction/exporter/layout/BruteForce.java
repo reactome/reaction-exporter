@@ -31,7 +31,7 @@ public class BruteForce {
 
     public BruteForce(Layout layout) {
         this.layout = layout;
-        Dedup.addDuplicates(layout);
+        DuplicateManager.addDuplicates(layout);
         index = new LayoutIndex(layout);
         fixReactionWithNoCompartment(layout);
     }
