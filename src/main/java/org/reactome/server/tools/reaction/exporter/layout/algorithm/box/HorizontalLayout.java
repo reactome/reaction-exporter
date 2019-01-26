@@ -7,6 +7,9 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Glyph;
 
 import java.util.List;
 
+/**
+ * Horizontal layout of glyphs. Entities will be placed in a horizontal line, centered vertically.
+ */
 public class HorizontalLayout extends GlyphsLayout {
 
     public HorizontalLayout(List<? extends Glyph> glyphs) {

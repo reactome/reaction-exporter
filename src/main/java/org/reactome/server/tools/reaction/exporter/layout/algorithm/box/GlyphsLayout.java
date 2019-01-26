@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Common class for divs that contain glyph groups.
+ */
 public abstract class GlyphsLayout implements Div {
 
     private List<? extends Glyph> glyphs;
