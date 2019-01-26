@@ -73,7 +73,7 @@ public class VisualTest extends BaseTest {
         try {
             // 210430
             // 917744
-            convert("R-HSA-4655355", new BufferedWriter(new FileWriter("data.tsv")));
+            convert("R-HSA-4655355", new BufferedWriter(new FileWriter(new File(TEST_IMAGES, "data.tsv"))));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -296,7 +296,7 @@ public class VisualTest extends BaseTest {
     }
 
     private void test(Collection<String> identifiers) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("data.tsv"))){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(TEST_IMAGES, "data.tsv")))) {
             System.out.println(identifiers.size() + " reactions");
             writer.write("Layout\tTest\tImage");
             writer.newLine();
