@@ -15,44 +15,49 @@ import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipT
 public class GoTreeFactory {
 
     private static final String EXTRACELLULAR_REGION_ID = "GO:0005576";
+    private static final String CELLULAR_COMPONENT_ID = "GO:0005575";
     private static final List<RelationshipType> RELS = Arrays.asList(surrounded_by, component_of, part_of, is_a);
-    private static Map<String, GoTerm> terms = GoParser.readCompressed().values().stream()
+
+    private static Map<String, GoTerm> masterTree = GoParser.readCompressed().values().stream()
             .collect(Collectors.toMap(GoTerm::getId, Function.identity()));
 
     static {
-        final GoTerm root = terms.get(EXTRACELLULAR_REGION_ID);
-        for (final GoTerm term : terms.values()) {
-            if (term.getOutgoingTerms().isEmpty() && term.getParents().isEmpty() && !term.getName().equals("cellular_component") && term != root) {
-                term.createRelationship(OUTGOING, surrounded_by, root);
-                System.out.println(term.getName());
-            }
-        }
-        System.out.println(root);
+        // NOTE: Reactome diagrams show the cell and any other compartment surrounded by the extracellular region.
+        // This is not represented in Gene Ontology. To bypass this behaviour we create the relationship:
+        //                 (cellular component)-[surrounded_by]->(extracellular_region)
+        final GoTerm cellularComponent = masterTree.get(CELLULAR_COMPONENT_ID);
+        final GoTerm extracellularRegion = masterTree.get(EXTRACELLULAR_REGION_ID);
+        cellularComponent.createRelationship(OUTGOING, surrounded_by, extracellularRegion);
+
+        // To avoid cycles (extracellular region) is not a (cellular component) anymore
+        extracellularRegion.getParents().remove(cellularComponent);
     }
+
     /**
      * Creates a subtree from the components tree that contains the minimum number of terms such as all of the terms in
      * <em>ids</em> are connected to the tree root.
      *
+     * @param masterTree the tree where to extract the relationships
      * @param ids a list of GO accession (without GO: prefix)
      * @return a copy of the components root, with a smaller copy of the tree containing <em>ids</em>
      */
-    public static GoTerm getTree(List<String> ids) {
+    public static GoTerm getTree(Map<String, GoTerm> masterTree, List<String> ids) {
         // Create a graph with a copy of the nodes
         final Map<String, GoTerm> subTree = ids.stream()
                 .peek(id -> {
-                    if (!terms.containsKey(id)) System.err.println(id);
+                    if (!masterTree.containsKey(id)) System.err.println(id);
                 })
                 .filter(id -> !id.equals(EXTRACELLULAR_REGION_ID))
-                .filter(id -> terms.containsKey(id))
-                .collect(toMap(Function.identity(), id -> terms.get(id).copy()));
+                .filter(masterTree::containsKey)
+                .collect(toMap(Function.identity(), id -> masterTree.get(id).copy()));
 
         // extracellular region as root
-        final GoTerm root = terms.get(EXTRACELLULAR_REGION_ID).copy();
+        final GoTerm root = masterTree.get(EXTRACELLULAR_REGION_ID).copy();
         subTree.values().forEach(goTerm -> {
             // climb parents til reach one of the elements in tree
             // add myself as children
             // if not, add as surrounded by root
-            if (!findParent(goTerm, terms.get(goTerm.getId()), subTree)) {
+            if (!findParent(goTerm, masterTree.get(goTerm.getId()), subTree)) {
                 goTerm.createRelationship(OUTGOING, surrounded_by, root);
             }
         });
@@ -60,25 +65,37 @@ public class GoTreeFactory {
         return root;
     }
 
+
+    /**
+     * Creates a subtree from the GO tree that contains the terms in <em>ids</em> are connected and those in-between
+     * them. This method uses a precomputed GO hierarchy.
+     *
+     * @return a copy of the components root, with a smaller copy of the tree containing <em>ids</em>
+     */
+    public static GoTerm getTreeWithIntermediateNodes(List<String> goIds) {
+        return getTreeWithIntermediateNodes(GoTreeFactory.masterTree, goIds);
+    }
+
     /**
      * Creates a subtree from the GO tree that contains the terms in <em>ids</em> are connected and those in-between
      * them.
      *
+     * @param masterTree the tree where to extract the relationships
      * @param ids a list of GO accession (without GO: prefix)
      * @return a copy of the components root, with a smaller copy of the tree containing <em>ids</em>
      */
-    public static GoTerm getTreeWithIntermediateNodes(List<String> ids) {
-        final Map<String, GoTerm> index = new HashMap<>();
-        final List<GoTerm> terms = ids.stream().map(id -> new GoTerm(GoTreeFactory.terms.get(id))).collect(Collectors.toList());
+    public static GoTerm getTreeWithIntermediateNodes(Map<String, GoTerm> masterTree, Collection<String> ids) {
+        final Map<String, GoTerm> tree = new HashMap<>();
+        final List<GoTerm> terms = ids.stream().map(id -> new GoTerm(masterTree.get(id))).collect(Collectors.toList());
         for (final GoTerm term : terms) {
-            index.put(term.getId(), term);
+            tree.put(term.getId(), term);
         }
         for (final GoTerm term : terms)
-            addHierarchy2(term, index, terms);
+            addHierarchy2(masterTree, tree, term, terms);
         // Remove upper bound compartments
         // final GoTerm root = index.get(EXTRACELLULAR_REGION_ID);
         // removeUpperCompartments(ids, root);
-        GoTerm root = index.values().stream()
+        GoTerm root = tree.values().stream()
                 .filter(goTerm -> goTerm.getOutgoingTerms().isEmpty())
                 .findFirst()
                 .orElse(null);
@@ -93,8 +110,8 @@ public class GoTreeFactory {
         return findRoot(incomingTerms.iterator().next(), terms);
     }
 
-    private static void addHierarchy2(GoTerm term, Map<String, GoTerm> index, List<GoTerm> terms) {
-        Collection<List<GoTerm>> branches = getBranches(term);
+    private static void addHierarchy2(Map<String, GoTerm> masterTree, Map<String, GoTerm> tree, GoTerm term, List<GoTerm> terms) {
+        Collection<List<GoTerm>> branches = getBranches(term, masterTree);
         final List<GoTerm> best = branches.stream()
                 .min(Comparator
                         .comparingLong((List<GoTerm> branch) -> branch.stream().filter(terms::contains).count()).reversed()
@@ -104,18 +121,18 @@ public class GoTreeFactory {
         if (best != null) {
             GoTerm aux = term;
             for (final GoTerm masterParent : best) {
-                final GoTerm parent = index.computeIfAbsent(masterParent.getId(), id -> new GoTerm(masterParent));
+                final GoTerm parent = tree.computeIfAbsent(masterParent.getId(), id -> new GoTerm(masterParent));
                 aux.createRelationship(OUTGOING, surrounded_by, parent);
                 aux = parent;
             }
         }
     }
 
-    private static Collection<List<GoTerm>> getBranches(GoTerm term) {
+    private static Collection<List<GoTerm>> getBranches(GoTerm term, Map<String, GoTerm> masterTree) {
         final Collection<List<GoTerm>> rtn = new ArrayList<>();
-        final GoTerm masterTerm = terms.get(term.getId());
+        final GoTerm masterTerm = masterTree.get(term.getId());
         for (final GoTerm parent : masterTerm.getOutgoingTerms()) {
-            final Collection<List<GoTerm>> branches = getBranches(parent);
+            final Collection<List<GoTerm>> branches = getBranches(parent, masterTree);
             for (final List<GoTerm> branch : branches) {
                 branch.add(0, parent);
                 rtn.add(branch);
@@ -129,12 +146,12 @@ public class GoTreeFactory {
         return rtn;
     }
 
-    private static void addHierarchy(GoTerm term, Map<String, GoTerm> index) {
+    private static void addHierarchy(Map<String, GoTerm> masterTree, GoTerm term, Map<String, GoTerm> tree) {
         // This node has already been visited
-        if (index.containsKey(term.getId())) return;
+        if (tree.containsKey(term.getId())) return;
         // Mark as visited
-        index.putIfAbsent(term.getId(), term);
-        final GoTerm masterTerm = GoTreeFactory.terms.get(term.getId());
+        tree.putIfAbsent(term.getId(), term);
+        final GoTerm masterTerm = masterTree.get(term.getId());
         // We will use the first parent found, ordered by rels
         for (final RelationshipType type : RELS) {
             final Collection<GoTerm> relationships = masterTerm.getRelationships(OUTGOING, type);
@@ -142,17 +159,17 @@ public class GoTreeFactory {
             // We use the first one
             final GoTerm masterParent = relationships.iterator().next();
             // Create a copy and connect
-            final GoTerm parent = index.getOrDefault(masterParent.getId(), new GoTerm(masterParent));
+            final GoTerm parent = tree.getOrDefault(masterParent.getId(), new GoTerm(masterParent));
             term.createRelationship(OUTGOING, type, parent);
             // final boolean add = true;
-            addHierarchy(parent, index);
+            addHierarchy(masterTree, parent, tree);
             return;
         }
         // If nothing was found, let's go for the root
         // We use the first one
-        final GoTerm masterParent = GoTreeFactory.terms.get(EXTRACELLULAR_REGION_ID);
+        final GoTerm masterParent = masterTree.get(EXTRACELLULAR_REGION_ID);
         // Create a copy and connect
-        final GoTerm parent = index.computeIfAbsent(masterParent.getId(), id -> new GoTerm(masterParent));
+        final GoTerm parent = tree.computeIfAbsent(masterParent.getId(), id -> new GoTerm(masterParent));
         if (term == parent) return;
         term.createRelationship(OUTGOING, surrounded_by, parent);
     }
@@ -209,7 +226,4 @@ public class GoTreeFactory {
         return false;
     }
 
-    public static GoTerm getRoot() {
-        return terms.get(EXTRACELLULAR_REGION_ID);
-    }
 }

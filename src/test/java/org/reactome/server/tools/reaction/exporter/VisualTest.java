@@ -67,7 +67,7 @@ public class VisualTest extends BaseTest {
         // }
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testOne() {
         try {
@@ -79,7 +79,7 @@ public class VisualTest extends BaseTest {
         }
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testHomoSapiens() {
         Collection<String> identifiers = new ArrayList<>();
@@ -200,7 +200,7 @@ public class VisualTest extends BaseTest {
                 "R-HSA-3702184", "R-HSA-3702153", "R-HSA-3702186", "R-HSA-5683209")));
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testMostDifficult() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
@@ -311,6 +311,7 @@ public class VisualTest extends BaseTest {
         }
     }
 
+    @Ignore
     @Test
     public void testPerformance() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
@@ -341,6 +342,7 @@ public class VisualTest extends BaseTest {
         test(identifiers);
     }
 
+    @Ignore
     @Test
     public void bruteForce() {
         String stId = "R-HSA-434650";
