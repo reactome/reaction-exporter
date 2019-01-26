@@ -18,7 +18,7 @@ public class GoTreeFactory {
     private static final String CELLULAR_COMPONENT_ID = "GO:0005575";
     private static final List<RelationshipType> RELS = Arrays.asList(surrounded_by, component_of, part_of, is_a);
 
-    private static Map<String, GoTerm> masterTree = GoParser.readCompressed().values().stream()
+    private static Map<String, GoTerm> masterTree = GoParser.getGoOntology().values().stream()
             .collect(Collectors.toMap(GoTerm::getId, Function.identity()));
 
     static {
@@ -32,6 +32,8 @@ public class GoTreeFactory {
         // To avoid cycles (extracellular region) is not a (cellular component) anymore
         extracellularRegion.getParents().remove(cellularComponent);
     }
+
+    private GoTreeFactory() {}
 
     /**
      * Creates a subtree from the components tree that contains the minimum number of terms such as all of the terms in

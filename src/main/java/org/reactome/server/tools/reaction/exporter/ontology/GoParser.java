@@ -4,6 +4,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.reactome.server.tools.reaction.exporter.ontology.model.Obo;
 import org.reactome.server.tools.reaction.exporter.ontology.model.Relationship;
 import org.reactome.server.tools.reaction.exporter.ontology.model.Term;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,9 +36,15 @@ public class GoParser {
 	private final static Pattern REL2 = Pattern.compile("relationship:\\s*(\\S+)\\s+(GO:\\d+).*");
 	// node -> IN|OUT -> type -> ids
 	private static final Map<String, Map<GoTerm.Directionality, Map<RelationshipType, Set<String>>>> relationships = new TreeMap<>();
+	private static final String GENE_ONTOLOGY = "/ontology/go_daily-termdb.obo-xml";
 
 	private GoParser() {}
 
+	/**
+	 * @deprecated this method uses the go-basic.obo file. Use {@link GoParser#getGoOntology()} instead, that reads the
+	 * obo-xml.
+	 */
+	@Deprecated
 	public static Map<String, GoTerm> readGo() {
 		final InputStream resource = GoParser.class.getResourceAsStream("go-basic.obo");
 		final Map<String, GoTerm> nodes = new TreeMap<>();
@@ -147,16 +154,16 @@ public class GoParser {
 				.orElse("");
 	}
 
-	public static Map<String, GoTerm> readCompressed() {
+	public static Map<String, GoTerm> getGoOntology() {
 		try {
-			final InputStream resource = GoParser.class.getResourceAsStream("/ontology/go_daily-termdb.obo-xml");
+			final InputStream resource = GoParser.class.getResourceAsStream(GENE_ONTOLOGY);
 			final Obo obo = new XmlMapper().readValue(resource, Obo.class);
 			final Map<String, GoTerm> index = connect(obo);
 			addOcelotTerms(index);
 			return index;
 		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
+			LoggerFactory.getLogger("reaction-exporter").error("Missing resource: " + GENE_ONTOLOGY);
+			return Collections.emptyMap();
 		}
 	}
 

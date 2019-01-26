@@ -28,7 +28,7 @@ public class GoMain {
         }
         final File file = new File(output, "go_hierarchy.tsv");
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            final Map<String, GoTerm> termMap = GoParser.readGo();
+            final Map<String, GoTerm> termMap = GoParser.getGoOntology();
             final List<GoTerm> terms = termMap.keySet().stream().sorted()
                     .map(termMap::get)
                     .collect(Collectors.toList());
