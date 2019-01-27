@@ -39,6 +39,8 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUti
  * Finally, we transform rows and columns into 'x's and 'y's, by computing columns and rows max widths and height and
  * centering each box into its 'x' and 'y'. Special attention to compartments in this step, as they can cause an
  * enlargement of widths when their name is too long.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 @SuppressWarnings("Duplicates")
 public class BoxAlgorithm {
@@ -55,7 +57,7 @@ public class BoxAlgorithm {
      */
     public BoxAlgorithm(Layout layout) {
         this.layout = layout;
-        Dedup.addDuplicates(layout);
+        DuplicateManager.addDuplicates(layout);
         index = new LayoutIndex(layout);
         fixReactionWithNoCompartment(layout);
     }

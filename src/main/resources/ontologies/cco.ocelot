@@ -1,0 +1,1948 @@
+(
+(:OCELOT-KB :NAME CCO :PACKAGE "ECOCYC" :WRITE-DATE "2:52:42 on Tue Oct 25, 2005" :WRITE-UTIME 3339222762 :USER "pkarp")
+
+(CCO T (
+(SENSU |Organisms|)
+(COMMON-NAME "CELLULAR_COMPONENT")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222761)
+(OCELOT-GFP::PARENTS OCELOT-GFP::FRAMES) )
+NIL)
+
+(CCO-AMYLOPLAST NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(GOGOID "GO:0009501")
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(DEFINITION "A plastid whose main function is to synthesize and store starch.")
+(COMMON-NAME "amyloplast")
+(OCELOT-GFP::PARENTS CCO-LEUCOPLAST) )
+NIL)
+
+(CCO-CE-BAC T (
+(COMPONENTS CCO-PM-BACTERIA)
+(SENSU |Bacteria|)
+(SURROUNDS CCO-CYTOSOL)
+(DEFINITION-REFERENCE "http://www.med.sc.edu:85/fox/cell_envelope.htm")
+(DEFINITION
+ "The cell envelope of a bacteria is defined as the cell membrane (plasma membrane) and cell wall plus an outer membrane if one is present.")
+(COMMENT "GO definition of cell envelope does not include the cell membrane.")
+(COMMON-NAME "cell envelope (sensu Bacteria)")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-ENVELOPE) )
+NIL)
+
+(CCO-CE-BAC-NEG NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-CYTOSOL)
+(DEFINITION
+ "The cell envelope of an Gram-negative bacteria includes the cell membrane (plasma membrane) and cell wall plus the outer membrane.")
+(COMPONENTS CCO-PM-BAC-NEG CCO-PERI-BAC CCO-CW-BAC-NEG CCO-OUTER-MEM)
+(COMMON-NAME "cell envelope (sensu Gram-negative Bacteria)")
+(SENSU |Proteobacteria|)
+(OCELOT-GFP::PARENTS CCO-CE-BAC) )
+NIL)
+
+(CCO-CE-BAC-POS NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-CYTOSOL)
+(DEFINITION "The cell envelope of an Gram-positive bacteria includes the cell membrane (plasma membrane) and cell wall.")
+(COMPONENTS CCO-PM-BAC-POS CCO-CW-BAC-POS)
+(COMMON-NAME "cell envelope (sensu Gram-positive Bacteria)")
+(SENSU |Firmicutes| |Actinobacteria|)
+(OCELOT-GFP::PARENTS CCO-CE-BAC) )
+NIL)
+
+(CCO-CELL-FRACT T (
+(COMMENT
+ "Refers to artificial cell components that are derived from disruptive cell biological techniques. The components are not present within any cells. ")
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0000267")
+(DEFINITION "A generic term for parts of cells prepared by disruptive biochemical techniques.")
+(COMMON-NAME "cell fraction")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO) )
+NIL)
+
+(CCO-CELLWALL T (
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005618")
+(DEFINITION
+ "The rigid or semi-rigid envelope lying outside the cell membrane of plant, fungal, and most prokaryotic cells, maintaining their shape and protecting them from osmotic lysis. In plants it is made of cellulose and, often, lignin; in fungi it is composed largely of polysaccharides; in bacteria it is composed of peptidoglycan.")
+(COMMON-NAME "cell wall")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SURFACE-MAT) )
+NIL)
+
+(CCO-CHL-IM-SPC NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The region between the chloroplast inner membrane and chloroplast outer membrane.")
+(COMPONENT-OF CCO-CHLOR-ENV CCO-CHLOROPLAST)
+(COMMON-NAME "chloroplast intermembrane space")
+(SURROUNDED-BY CCO-CHLOR-OMEM)
+(SURROUNDS CCO-PLAST-IMEM CCO-CHLOR-IMEM)
+(OCELOT-GFP::PARENTS CCO-PLAST-IM-SPC) )
+NIL)
+
+(CCO-CHL-STKD-THY NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION
+ "A set of flattened disc-like sacs formed by the thylakoid membrane. They are interconnected and often arranged in stacks, and referred as grana.")
+(COMMON-NAME "chloroplast stacked thylakoid")
+(SURROUNDED-BY CCO-CHLOR-STR)
+(COMPONENT-OF CCO-CHLOROPLAST CCO-PLASTID)
+(OCELOT-GFP::PARENTS CCO-CHLOR-THY) )
+NIL)
+
+(CCO-CHL-STR-THY NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009533")
+(DEFINITION "Unstacked thylakoids that connect the grana stacks through the stroma.")
+(COMMON-NAME "chloroplast stromal thylakoid")
+(SURROUNDED-BY CCO-CHLOR-STR)
+(COMPONENT-OF CCO-CHLOROPLAST CCO-PLASTID)
+(OCELOT-GFP::PARENTS CCO-CHLOR-THY) )
+NIL)
+
+(CCO-CHL-THY-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the membrane of any chloroplast thylakoid.")
+(COMPONENT-OF CCO-CHLOROPLAST CCO-CHLOR-THY)
+(COMMON-NAME "chloroplast thylakoid lumen")
+(SURROUNDED-BY CCO-CHL-THY-MEM)
+(OCELOT-GFP::PARENTS CCO-THY-LUM) )
+NIL)
+
+(CCO-CHL-THY-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The pigmented membrane of any chlosoplast thylakoid.")
+(SURROUNDED-BY CCO-CHLOR-STR)
+(SURROUNDS CCO-THY-LUM CCO-CHL-THY-LUM)
+(COMPONENT-OF CCO-CHLOR-THY CCO-CHLOROPLAST)
+(COMMON-NAME "chloroplast thylakoid membrane")
+(OCELOT-GFP::PARENTS CCO-THY-MEM) )
+NIL)
+
+(CCO-CHLOR-ENV NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009941")
+(DEFINITION "The double membrane that encloses the chloroplast, including the intermembrane space.")
+(SURROUNDS CCO-PLASTID-STR CCO-CHLOR-STR)
+(COMPONENT-OF CCO-CHLOROPLAST)
+(COMPONENTS CCO-CHLOR-IMEM CCO-CHLOR-OMEM CCO-CHLOR-MEM CCO-CHL-IM-SPC)
+(COMMON-NAME "chloroplast envelope")
+(OCELOT-GFP::PARENTS CCO-PLASTID-ENV) )
+NIL)
+
+(CCO-CHLOR-IMEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009706")
+(DEFINITION "The membrane of the chloroplast envelope that is closer to the chloroplast stroma and the plastid intermembrane space.")
+(SURROUNDS CCO-PLASTID-STR CCO-CHLOR-STR)
+(SURROUNDED-BY CCO-CHL-IM-SPC)
+(COMPONENT-OF CCO-CHLOR-ENV CCO-CHLOROPLAST)
+(COMMON-NAME "chloroplast inner membrane")
+(OCELOT-GFP::PARENTS CCO-CHLOR-MEM CCO-PLAST-IMEM) )
+NIL)
+
+(CCO-CHLOR-MEM T (
+(DEFINITION "Either of the two membranes, inner and outer, of a chloroplast.")
+(COMMENT "This term does not include the intermembrane space.")
+(COMPONENT-OF CCO-CHLOR-ENV CCO-CHLOROPLAST)
+(COMMON-NAME "chloroplast membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-PLASTID-MEM) )
+NIL)
+
+(CCO-CHLOR-OMEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009707")
+(DEFINITION "The membrane of the chloroplast envelope that is closer to the cytoplasm.")
+(SURROUNDED-BY CCO-CYTOSOL)
+(SURROUNDS CCO-PLAST-IM-SPC CCO-CHL-IM-SPC)
+(COMPONENT-OF CCO-CHLOR-ENV CCO-CHLOROPLAST)
+(COMMON-NAME "chloroplast outer membrane")
+(OCELOT-GFP::PARENTS CCO-CHLOR-MEM CCO-PLAST-OMEM) )
+NIL)
+
+(CCO-CHLOR-STR NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009570")
+(DEFINITION
+ "The space enclosed by the double membrane of a chloroplast but excluding the thylakoid space. It contains DNA, ribosomes and some temporary products of photosynthesis.")
+(SURROUNDS CCO-PLAST-THY CCO-CHL-THY-MEM CCO-CHL-STKD-THY CCO-CHL-STR-THY CCO-CHLOR-THY)
+(SURROUNDED-BY CCO-CHLOR-ENV CCO-CHLOR-IMEM)
+(COMMON-NAME "chloroplast stroma")
+(COMPONENT-OF CCO-CHLOROPLAST CCO-PLASTID)
+(OCELOT-GFP::PARENTS CCO-PLASTID-STR) )
+NIL)
+
+(CCO-CHLOR-THY T (
+(SURROUNDED-BY CCO-CHLOR-STR)
+(COMPONENT-OF CCO-CHLOROPLAST CCO-PLASTID)
+(DEFINITION "Any thylakoid within a chloroplast.")
+(COMPONENTS CCO-CHL-THY-MEM CCO-CHL-THY-LUM)
+(COMMON-NAME "chloroplast thylakoid")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-PLAST-THY) )
+NIL)
+
+(CCO-CHLOROPLAST NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009507")
+(DEFINITION
+ "A chlorophyll-containing plastid with thylakoids organized into grana and frets, or stroma thylakoids, and embedded in a stroma.")
+(COMPONENTS CCO-CHLOR-IMEM CCO-CHLOR-OMEM CCO-CHLOR-ENV CCO-CHL-THY-MEM CCO-CHL-STKD-THY CCO-CHL-STR-THY CCO-CHL-THY-LUM CCO-CHL-IM-SPC
+ CCO-CHLOR-MEM CCO-CHLOR-THY CCO-CHLOR-STR)
+(COMMON-NAME "chloroplast")
+(OCELOT-GFP::PARENTS CCO-PLASTID) )
+NIL)
+
+(CCO-CHR-IM-SPC NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-CHROM-ENV CCO-CHROMOPLAST)
+(DEFINITION "The region between the chromoplast inner membrane and chloroplast outer membrane.")
+(COMMON-NAME "chromoplast intermembrane space")
+(SURROUNDED-BY CCO-CHROM-OMEM)
+(SURROUNDS CCO-PLAST-IMEM CCO-CHROM-IMEM)
+(OCELOT-GFP::PARENTS CCO-PLAST-IM-SPC) )
+NIL)
+
+(CCO-CHROM-ENV NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-PLASTID-STR CCO-CHROM-STR)
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENTS CCO-CHROM-MEM CCO-CHROM-IMEM CCO-CHROM-OMEM CCO-CHR-IM-SPC)
+(COMPONENT-OF CCO-CHROMOPLAST)
+(DEFINITION "The double membrane that encloses the chromoplast, including the intermembrane space.")
+(COMMON-NAME "chromoplast envelope")
+(OCELOT-GFP::PARENTS CCO-PLASTID-ENV) )
+NIL)
+
+(CCO-CHROM-IMEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-PLASTID-STR CCO-CHROM-STR)
+(SURROUNDED-BY CCO-CHR-IM-SPC)
+(COMPONENT-OF CCO-CHROM-ENV CCO-CHROMOPLAST)
+(COMMON-NAME "chromoplast inner membrane")
+(DEFINITION "The membrane of the chromoplast envelope that is closer to the chromoplast stroma.")
+(OCELOT-GFP::PARENTS CCO-PLAST-IMEM CCO-CHROM-MEM) )
+NIL)
+
+(CCO-CHROM-MEM T (
+(COMPONENT-OF CCO-CHROM-ENV CCO-CHROMOPLAST)
+(DEFINITION "The outer or inner membrane of a chromoplast.")
+(COMMENT "This term does not include the intermembrane space.")
+(GOID "GO:0046862")
+(COMMON-NAME "chromoplast membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-PLASTID-MEM) )
+NIL)
+
+(CCO-CHROM-OMEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-PLAST-IM-SPC CCO-CHR-IM-SPC)
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-CHROM-ENV CCO-CHROMOPLAST)
+(DEFINITION "The membrane of the chromoplast envelope that is closer to the cytosol.")
+(COMMON-NAME "chromoplast outer membrane")
+(OCELOT-GFP::PARENTS CCO-PLAST-OMEM CCO-CHROM-MEM) )
+NIL)
+
+(CCO-CHROM-STR NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CHROM-ENV CCO-CHROM-IMEM)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009575")
+(DEFINITION "The space enclosed by the double membrane of a chromoplast but excluding the photosynthetic material.")
+(COMMON-NAME "chromoplast stroma")
+(COMPONENT-OF CCO-CHROMOPLAST CCO-PLASTID)
+(SURROUNDS CCO-PLAST-THY)
+(OCELOT-GFP::PARENTS CCO-PLASTID-STR) )
+NIL)
+
+(CCO-CHROMOPLAST NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009509")
+(DEFINITION "A plastid containing pigments other than chlorophyll, usually yellow and orange carotenoid pigments.")
+(COMPONENTS CCO-CHROM-ENV CCO-CHROM-IMEM CCO-CHROM-OMEM CCO-CHROM-STR CCO-CHROM-MEM CCO-CHR-IM-SPC)
+(COMMON-NAME "chromoplast")
+(OCELOT-GFP::PARENTS CCO-PLASTID) )
+NIL)
+
+(CCO-CLATH-END-VES NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0045334")
+(DEFINITION
+ "A clathrin-coated, membrane-bounded intracellular vesicle formed by invagination of the plasma membrane around an extracellular substance.")
+(COMMON-NAME "clathrin-coated endocytic vesicle")
+(OCELOT-GFP::PARENTS CCO-CLATH-VES CCO-ENDOCYT-VES) )
+NIL)
+
+(CCO-CLATH-VES T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030136")
+(DEFINITION "A vesicle with a coat formed of clathrin connected to the membrane via one of the clathrin adaptor complexes.")
+(COMMON-NAME "clathrin-coated vesicle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-COATED-VES) )
+NIL)
+
+(CCO-COATED-VES T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030135")
+(DEFINITION
+ "Small membrane-bounded organelle formed by pinching off of a coated region of membrane. Some coats are made of clathrin, whereas others are made from other proteins.")
+(COMMON-NAME "coated vesicle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-VESICLE) )
+NIL)
+
+(CCO-COPI-VES T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030137")
+(DEFINITION
+ "A vesicle with a coat formed of the COPI coat complex proteins. COPI-coated vesicles are found associated with Golgi membranes at steady state, are involved in Golgi to endoplasmic reticulum (retrograde) vesicle transport, and possibly also in intra-Golgi transport.")
+(COMMON-NAME "COPI-coated vesicle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-COATED-VES) )
+NIL)
+
+(CCO-COPII-VES T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030138")
+(DEFINITION
+ "A vesicle with a coat formed of the COPII coat complex proteins; COPII-coated vesicles are found associated with endoplasmic reticulum (ER) membranes at steady state, and are involved in ER to Golgi (anterograde) vesicle transport.")
+(COMMON-NAME "COPII-coated vesicle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-COATED-VES) )
+NIL)
+
+(CCO-CW-BAC T (
+(SENSU |Bacteria|)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009274")
+(DEFINITION
+ "A protective structure outside the cytoplasmic membrane composed of peptidoglycan, a molecule made up of a glycan (sugar) backbone of repetitively alternating N-acetylglucosamine and N-acetylmuramic acid with short, attached, cross-linked peptide chains containing unusual amino acids; also called murein. As in, but not restricted to, the taxon Eubacteria (Bacteria, ncbi_taxonomy_id:2).")
+(COMMON-NAME "cell wall (sensu Bacteria)")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-CELLWALL) )
+NIL)
+
+(CCO-CW-BAC-NEG NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009276")
+(DEFINITION
+ "The peptidoglycan layer of the Gram negative cell envelope. In Gram negative cells the peptidoglycan is relatively thin (approximately 2 nm) and is linked to the outer membrane by lipoproteins. In Gram negative cells the peptidoglycan is too thin to retain the primary stain in the Gram staining procedure and therefore cells appear red after Gram stain.")
+(COMMON-NAME "cell wall (sensu Gram-negative Bacteria)")
+(SURROUNDS CCO-PM-BAC-NEG)
+(SURROUNDED-BY CCO-OUTER-MEM)
+(COMPONENT-OF CCO-CE-BAC-NEG)
+(SENSU |Proteobacteria|)
+(OCELOT-GFP::PARENTS CCO-CW-BAC) )
+NIL)
+
+(CCO-CW-BAC-POS NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009275")
+(DEFINITION
+ "A layer of peptidoglycan found outside of the cytoplasmic membrane. In Gram positive cells the peptidoglycan is relatively thick (approximately 40 nm) and retains the primary stain of the Gram procedure, thus cells appear blue after Gram stain. Gram positive cell walls often contain teichoic acids (acidic anionic polysaccharides) bound to the peptidoglycan.")
+(COMMON-NAME "cell wall (sensu Gram-positive Bacteria)")
+(SURROUNDS CCO-PM-BAC-POS)
+(COMPONENT-OF CCO-CE-BAC-POS)
+(SENSU |Firmicutes| |Actinobacteria|)
+(OCELOT-GFP::PARENTS CCO-CW-BAC) )
+NIL)
+
+(CCO-CW-FUNGI NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009277")
+(DEFINITION
+ "A rigid yet dynamic structure surrounding the plasma membrane that affords protection from stresses and contributes to cell morphogenesis. Major components are glycoproteins and peptidoglycans including mannoproteins, glucans and sometimes chitin. Enzymes involved in cell wall biosynthesis are also found in the cell wall. Note that some forms of fungi develop a capsule outside of the cell wall under certain circumstances; this is considered a separate structure. As in, but not restricted to, the fungi (Fungi, ncbi_taxonomy_id:4751).")
+(COMMON-NAME "cell wall (sensu Fungi)")
+(SURROUNDS CCO-PERI-FUNGI)
+(SENSU |Fungi|)
+(OCELOT-GFP::PARENTS CCO-CELLWALL) )
+NIL)
+
+(CCO-CW-PL-PRIM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009530")
+(DEFINITION
+ "A plant cell wall that is still able to expand, permitting cell growth. Primary cell walls contain more pectin than secondary walls and no lignin is present.")
+(SURROUNDS CCO-PM-PLANT CCO-CW-PL-SEC)
+(COMMON-NAME "primary cell wall (sensu Magnoliophyta)")
+(OCELOT-GFP::PARENTS CCO-CW-PLANT) )
+NIL)
+
+(CCO-CW-PL-SEC NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009531")
+(DEFINITION
+ "A plant cell wall that is no longer able to expand and so does not permit growth. Secondary cell walls contain less pectin that primary cell walls. The secondary cell is mostly composed of cellulose and is strengthened with lignin.")
+(COMMON-NAME "secondary cell wall (sensu Magnoliophyta)")
+(SURROUNDED-BY CCO-CW-PL-PRIM)
+(SURROUNDS CCO-PM-PLANT)
+(OCELOT-GFP::PARENTS CCO-CW-PLANT) )
+NIL)
+
+(CCO-CW-PLANT T (
+(SENSU |Magnoliophyta|)
+(SURROUNDS CCO-PM-PLANT)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009505")
+(DEFINITION
+ "A more or less rigid membrane enclosing the protoplast of a cell and composed of cellulose and other organic and inorganic substances. As in, but not restricted to, the flowering plants (Magnoliophyta, ncbi_taxonomy_id:3398).")
+(COMMON-NAME "cell wall (sensu Magnoliophyta)")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-CELLWALL) )
+NIL)
+
+(CCO-CYTOPLASM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENTS CCO-GOLGI-VES CCO-GOLGI ContologyCO-LYSOSOME CCO-MIT CCO-THY-CYA CCO-RIBOSOME CCO-CYTOSOL CCO-MICROBODY CCO-ER CCO-ENDOSOME
+ CCO-PLASTID CCO-VACUOLE CCO-VESICLE)
+(SURROUNDED-BY CCO-PM-BACTERIA CCO-PM-ANIMAL CCO-PM-FUNGI CCO-PM-PLANT CCO-PM-BAC-NEG CCO-PM-BAC-POS CCO-PLASMA-MEM)
+(GOID "GO:0005737")
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(DEFINITION "All of the contents of a cell excluding the plasma membrane and nucleus, but including other subcellular structures. ")
+(COMMON-NAME "cytoplasm")
+(SURROUNDS CCO-NUCLEUS)
+(OCELOT-GFP::PARENTS CCO-SUPER-COMP) )
+NIL)
+
+(CCO-CYTOSOL NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-CYTOPLASM)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005829")
+(DEFINITION "That part of the cytoplasm that does not contain membranous or particulate subcellular components.")
+(SURROUNDS CCO-NUC-ENV CCO-MIT-ENV CCO-CHROM-ENV CCO-CHLOR-ENV CCO-GOLGI-MEM CCO-VESICLE-MEM CCO-LYS-MEM CCO-VAC-MEM CCO-EARLY-ENDO-MEM
+ CCO-LATE-ENDO-MEM CCO-RGH-ER-MEM CCO-SMTH-ER-MEM CCO-NUC-OMEM CCO-MIT-OMEM CCO-THY-MEM-CYA CCO-CHLOR-OMEM CCO-CHROM-OMEM CCO-PEROX-MEM
+ CCO-GLYOX-MEM CCO-GOLGI CCO-LYSOSOME CCO-MIT CCO-NUCLEUS CCO-THY-CYA CCO-SMOOTH-ER CCO-ROUGH-ER CCO-EARLY-ENDO CCO-LATE-ENDO
+ CCO-ETIOPLAST CCO-CHLOROPLAST CCO-CHROMOPLAST CCO-AMYLOPLAST CCO-ELAIOPLAST CCO-PROT-PLAST CCO-LYTIC-VAC CCO-STORAGE-VAC
+ CCO-SEC-GRANULE CCO-CLATH-END-VES CCO-SYN-VES CCO-TR-GOLGI-VES CCO-GOLGI-ER-VES CCO-INTER-GOLGI-VES CCO-ER-GOLGI-VES CCO-GLYOXYSOME
+ CCO-PEROXISOME CCO-RIBOSOME CCO-LEUCOPLAST CCO-NON-MEM-ORG CCO-MEM-ORG CCO-GG-TR-CIST CCO-GG-MED-CIST CCO-GG-CIS-CIST CCO-MICROBODY
+ CCO-GOLGI-VES CCO-ENDOCYT-VES CCO-COPII-VES CCO-COPI-VES CCO-CLATH-VES CCO-COATED-VES CCO-VESICLE CCO-VACUOLE CCO-PLASTID CCO-ENDOSOME
+ CCO-ER CCO-GOLGI-CIST CCO-PLASTID-ENV CCO-MBODY-MEM CCO-PLAST-OMEM CCO-ER-MEM CCO-ENDO-MEM CCO-ORGANELLE)
+(SURROUNDED-BY CCO-CE-BAC-NEG CCO-CE-BAC-POS CCO-PM-ANIMAL CCO-PM-FUNGI CCO-PM-PLANT CCO-PM-BAC-NEG CCO-PM-BAC-POS CCO-PM-BACTERIA
+ CCO-CE-BAC CCO-PLASMA-MEM)
+(COMMON-NAME "cytosol")
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-EARLY-END-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the early endosome membrane.")
+(COMMON-NAME "early endosome lumen")
+(COMPONENT-OF CCO-EARLY-ENDO CCO-ENDOSOME)
+(SURROUNDED-BY CCO-EARLY-ENDO-MEM)
+(OCELOT-GFP::PARENTS CCO-ENDO-LUM) )
+NIL)
+
+(CCO-EARLY-ENDO NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005769")
+(DEFINITION "Small irregularly shaped intracellular vesicles to which endocytosed molecules are initially delivered.")
+(COMPONENTS CCO-EARLY-ENDO-MEM CCO-EARLY-END-LUM)
+(COMMON-NAME "early endosome")
+(OCELOT-GFP::PARENTS CCO-ENDOSOME) )
+NIL)
+
+(CCO-EARLY-ENDO-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-ENDO-LUM CCO-EARLY-END-LUM)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION "The lipid bilayer surrounding an early endosome.")
+(COMPONENT-OF CCO-EARLY-ENDO)
+(COMMON-NAME "early endosome membrane")
+(OCELOT-GFP::PARENTS CCO-ENDO-MEM) )
+NIL)
+
+(CCO-ELAIOPLAST NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009545")
+(DEFINITION "A leucoplast in which oil is stored.")
+(COMMON-NAME "elaioplast")
+(OCELOT-GFP::PARENTS CCO-LEUCOPLAST) )
+NIL)
+
+(CCO-ENDO-LUM T (
+(SURROUNDED-BY CCO-ENDO-MEM CCO-EARLY-ENDO-MEM CCO-LATE-ENDO-MEM)
+(COMPONENT-OF CCO-ENDOSOME)
+(DEFINITION "The space enclosed by the endosome membrane.")
+(COMMON-NAME "endosome lumen")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-ENDO-MEM T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0010008")
+(DEFINITION "The lipid bilayer surrounding an endosome.")
+(SURROUNDS CCO-ENDO-LUM)
+(COMPONENT-OF CCO-ENDOSOME)
+(COMMON-NAME "endosome membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-ENDOCYT-VES T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030139")
+(DEFINITION "A membrane-bounded intracellular vesicle formed by invagination of the plasma membrane around an extracellular substance.")
+(COMMON-NAME "endocytic vesicle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-VESICLE) )
+NIL)
+
+(CCO-ENDOSOME T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-CYTOPLASM)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005768")
+(DEFINITION
+ "A membrane-bound organelle that carries materials newly ingested by endocytosis. It passes many of the materials to lysosomes for degradation.")
+(COMPONENTS CCO-LATE-END-LUM CCO-EARLY-END-LUM CCO-ENDO-MEM CCO-ENDO-LUM)
+(COMMON-NAME "endosome")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-ENVELOPE T (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The multi-membrane structure including the space between the membranes that surrounds some cells and organelles.")
+(COMMON-NAME "envelope")
+(OCELOT-GFP::PARENTS CCO) )
+NIL)
+
+(CCO-ER T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-CYTOPLASM)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005783")
+(DEFINITION
+ "The irregular network of unit membranes, visible only by electron microscopy, that occurs in the cytoplasm of many eukaryotic cells. The membranes form a complex meshwork of tubular channels, which are often expanded into slitlike cavities called cisternae. The ER takes two forms, rough (or granular), with ribosomes adhering to the outer surface, and smooth (with no ribosomes attached).")
+(SYNONYMS "ER")
+(COMPONENTS CCO-SMTH-ER-LUM CCO-RGH-ER-LUM CCO-ER-MEM CCO-ER-LUM)
+(COMMON-NAME "endoplasmic reticulum")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-ER-GOLGI-VES NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030134")
+(DEFINITION "A vesicle that mediates transport from the endoplasmic reticulum to the Golgi complex.")
+(COMMON-NAME "ER-Golgi transport vesicle")
+(OCELOT-GFP::PARENTS CCO-COPII-VES CCO-GOLGI-VES) )
+NIL)
+
+(CCO-ER-LUM T (
+(SURROUNDED-BY CCO-ER-MEM CCO-RGH-ER-MEM CCO-SMTH-ER-MEM)
+(COMPONENT-OF CCO-ER)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005788")
+(DEFINITION "The volume enclosed by the membranes of the endoplasmic reticulum.")
+(SYNONYMS "ER lumen")
+(COMMON-NAME "endoplasmic reticulum lumen")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-ER-MEM T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005789")
+(DEFINITION "The lipid bilayer surrounding the endoplasmic reticulum.")
+(SYNONYMS "ER membrane")
+(SURROUNDS CCO-ER-LUM)
+(COMPONENT-OF CCO-ER)
+(COMMON-NAME "endoplasmic reticulum membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-ETIOPLAST NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(GOID "GO:0009513")
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(DEFINITION "A plastid arrested in the development of chloroplasts from proplastids due to absence of light or low light conditions.
+")
+(COMMON-NAME "etioplast")
+(OCELOT-GFP::PARENTS CCO-PLASTID) )
+NIL)
+
+(CCO-EXTRACELL-MAT NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "http://www.ncbi.nlm.nih.gov/books/bv.fcgi?call=bv.View..ShowSection&rid=cell.section.5140")
+(DEFINITION
+ "A variety of versatile proteins and polysaccharides that are secreted locally and assembled into an organized meshwork in close association with the surface of the cell that produced them. The matrix fills up the extracellular space.")
+(COMMON-NAME "extracellular matrix (sensu Animalia)")
+(SURROUNDS CCO-PM-ANIMAL)
+(SENSU |Metazoa|)
+(OCELOT-GFP::PARENTS CCO-SURFACE-MAT) )
+NIL)
+
+(CCO-EXTRACELLULAR NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005615")
+(DEFINITION
+ "That part of a multicellular organism outside the cells proper, usually taken to be outside the plasma membranes, and occupied by fluid.")
+(COMMON-NAME "extracellular space")
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-GG-CIS-CIST NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0000137")
+(DEFINITION
+ "The Golgi cisterna closest to the endoplasmic reticulum; the first processing compartment through which proteins pass after export from the ER.")
+(COMMON-NAME "Golgi cis cisterna")
+(SURROUNDED-BY CCO-CYTOSOL)
+(OCELOT-GFP::PARENTS CCO-GOLGI-CIST) )
+NIL)
+
+(CCO-GG-MED-CIST NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005797")
+(DEFINITION "The middle Golgi cisterna (or cisternae).")
+(COMMON-NAME "Golgi medial cisterna")
+(SURROUNDED-BY CCO-CYTOSOL)
+(OCELOT-GFP::PARENTS CCO-GOLGI-CIST) )
+NIL)
+
+(CCO-GG-TR-CIST NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0000138")
+(DEFINITION
+ "The Golgi cisterna farthest from the endoplasmic reticulum; the final processing compartment through which proteins pass before exiting the Golgi apparatus; the compartment in which N-linked protein glycosylation is completed.")
+(COMMON-NAME "Golgi trans cisterna")
+(SURROUNDED-BY CCO-CYTOSOL)
+(OCELOT-GFP::PARENTS CCO-GOLGI-CIST) )
+NIL)
+
+(CCO-GLYOX-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the glyoxysome membrane.")
+(COMMON-NAME "glyoxysomal lumen")
+(COMPONENT-OF CCO-GLYOXYSOME CCO-MICROBODY)
+(SURROUNDED-BY CCO-GLYOX-MEM)
+(OCELOT-GFP::PARENTS CCO-MICRO-LUM) )
+NIL)
+
+(CCO-GLYOX-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0046861")
+(DEFINITION "The membrane surrounding a glyoxysome.")
+(SURROUNDS CCO-MICRO-LUM CCO-GLYOX-LUM)
+(COMPONENT-OF CCO-GLYOXYSOME)
+(COMMON-NAME "glyoxysomal membrane")
+(OCELOT-GFP::PARENTS CCO-MBODY-MEM) )
+NIL)
+
+(CCO-GLYOXYSOME NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009514")
+(DEFINITION "A microbody that contains the enzymes of the glyoxylate pathway.")
+(COMPONENTS CCO-GLYOX-MEM CCO-GLYOX-LUM)
+(COMMON-NAME "glyoxysome")
+(OCELOT-GFP::PARENTS CCO-MICROBODY) )
+NIL)
+
+(CCO-GOLGI NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-CYTOPLASM)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005794")
+(DEFINITION
+ "A compound membranous cytoplasmic organelle of eukaryotic cells, consisting of flattened, ribosome-free vesicles arranged in a more or less regular stack. The Golgi apparatus differs from the endoplasmic reticulum in often having slightly thicker membranes, appearing in sections as a characteristic shallow semicircle so that the convex side (cis or entry face) abuts the endoplasmic reticulum, secretory vesicles emerging from the concave side (trans or exit face). In vertebrate cells there is usually one such organelle, while in invertebrates and plants, where they are known usually as dictyosomes, there may be several scattered in the cytoplasm. The Golgi apparatus processes proteins produced on the ribosomes of the rough endoplasmic reticulum; such processing includes modification of the core oligosaccharides of glycoproteins, and the sorting and packaging of proteins for transport to a variety of cellular locations. Three different regions of the Golgi are now recognized both in terms of structure and function: cis, in the vicinity of the cis face, trans, in the vicinity of the trans face, and medial, lying between the cis and trans regions.")
+(SYNONYMS "Golgi complex, Golgi body")
+(COMPONENTS CCO-GOLGI-MEM CCO-GOLGI-VES CCO-GOLGI-CIST CCO-GOLGI-LUM)
+(COMMON-NAME "Golgi apparatus")
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-GOLGI-CIST T (
+(COMPONENT-OF CCO-GOLGI)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "ISBN:0412631504")
+(DEFINITION
+ "The membrane-limited component of the Golgi apparatus which is typically flattened, usually with a central plate-like region which is often continuous with peripheral tubules and vesicles.")
+(COMMON-NAME "Golgi cisterna")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SUBORG-CMPT) )
+NIL)
+
+(CCO-GOLGI-ER-VES NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030142")
+(DEFINITION "A vesicle that mediates transport from the Golgi to the endoplasmic reticulum.")
+(COMMON-NAME "Golgi-ER transport vesicle")
+(OCELOT-GFP::PARENTS CCO-COPI-VES CCO-GOLGI-VES) )
+NIL)
+
+(CCO-GOLGI-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005796")
+(DEFINITION "The volume enclosed by the membranes of any cisterna of the Golgi apparatus.")
+(COMMON-NAME "Golgi lumen")
+(COMPONENT-OF CCO-GOLGI)
+(SURROUNDED-BY CCO-GOLGI-MEM)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-GOLGI-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-GOLGI)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0000139")
+(DEFINITION "The lipid bilayer surrounding any of the compartments of the Golgi apparatus.")
+(SURROUNDED-BY CCO-CYTOSOL)
+(SURROUNDS CCO-GOLGI-LUM)
+(COMMON-NAME "Golgi membrane")
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-GOLGI-VES T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-GOLGI CCO-CYTOPLASM)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005798")
+(DEFINITION
+ "Any vesicle associated with the Golgi complex and involved in mediating transport within the Golgi or between the Golgi and other parts of the cell.")
+(COMMON-NAME "Golgi vesicle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-VESICLE) )
+NIL)
+
+(CCO-INTER-GOLGI-VES NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030143")
+(DEFINITION "A vesicle that mediates transport of cargo within the Golgi complex (for example, between cisternae of the Golgi stack).")
+(COMMON-NAME "inter-Golgi transport vesicle")
+(OCELOT-GFP::PARENTS CCO-COPI-VES CCO-GOLGI-VES) )
+NIL)
+
+(CCO-LATE-END-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the late endosome membrane.")
+(COMMON-NAME "late endosome lumen")
+(COMPONENT-OF CCO-LATE-ENDO CCO-ENDOSOME)
+(SURROUNDED-BY CCO-LATE-ENDO-MEM)
+(OCELOT-GFP::PARENTS CCO-ENDO-LUM) )
+NIL)
+
+(CCO-LATE-ENDO NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005770")
+(DEFINITION
+ "A prelysosomal endocytic organelle defined by the time it takes for endocytosed macromolecules to be delivered. The time of delivery may vary ; for example, late endosomes are usually loaded 4-30 min after endocytic uptake in mammalian cells. late endosomes are more spherical than early endosomes and are mostly juxtanuclear, being concentrated near the microtubule organizing center. They are differentiated from early endosomes by their lower lumenal pH and different protein composition.")
+(COMPONENTS CCO-LATE-ENDO-MEM CCO-LATE-END-LUM)
+(COMMON-NAME "late endosome")
+(OCELOT-GFP::PARENTS CCO-ENDOSOME) )
+NIL)
+
+(CCO-LATE-ENDO-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-ENDO-LUM CCO-LATE-END-LUM)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION "The lipid bilayer surrounding a late endosome.")
+(COMPONENT-OF CCO-LATE-ENDO)
+(COMMON-NAME "late endosome membrane")
+(OCELOT-GFP::PARENTS CCO-ENDO-MEM) )
+NIL)
+
+(CCO-LEUCOPLAST T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID " GO:0009516")
+(DEFINITION "A non-pigmented plastid.")
+(COMMON-NAME "leucoplast")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-PLASTID) )
+NIL)
+
+(CCO-LYS-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the lysosomal membrane.")
+(COMMON-NAME "lysosome lumen")
+(COMPONENT-OF CCO-LYSOSOME)
+(SURROUNDED-BY CCO-LYS-MEM)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-LYS-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005765")
+(DEFINITION "The lipid bilayer surrounding the lysosome and separating its contents from the cell cytoplasm.")
+(SURROUNDS CCO-LYS-LUM)
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-LYSOSOME)
+(COMMON-NAME "lysosomal membrane")
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-LYSOSOME NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-CYTOPLASM)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005764")
+(DEFINITION
+ "Any of a group of related cytoplasmic, membrane bound organelles that are found in most animal cells and that contain a variety of hydrolases, most of which have their maximal activities in the pH range 5-6. The contained enzymes display latency if properly isolated. About 40 different lysosomal hydrolases are known and lysosomes have a great variety of morphologies and functions.")
+(COMPONENTS CCO-LYS-MEM CCO-LYS-LUM)
+(COMMON-NAME "lysosome")
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-LYTIC-VAC NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0000323")
+(DEFINITION
+ "A vacuole that is maintained at an acidic pH and which contains degradative enzymes, including a wide variety of acid hydrolases.")
+(COMMON-NAME "lytic vacuole")
+(OCELOT-GFP::PARENTS CCO-VACUOLE) )
+NIL)
+
+(CCO-MBODY-MEM T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION "the membrane surrounding a microbody.")
+(SURROUNDS CCO-MICRO-LUM)
+(COMPONENT-OF CCO-MICROBODY)
+(COMMON-NAME "microbody membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-MEM-ORG T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(GOID "GO:0043227")
+(DEFINITION
+ "A discrete structure of a cell specialized to carry out a particular function, bounded by a membrane so that sets of enzymes can operate without interference from reactions occurring in other compartments.      ")
+(COMMON-NAME "membrane-bound organelle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-ORGANELLE) )
+NIL)
+
+(CCO-MEMBRANE T (
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0016020")
+(DEFINITION
+ "Double layer of lipid molecules that encloses all cells, and, in eukaryotes, many organelles; may be a single or double lipid bilayer, also includes associated proteins.")
+(COMMON-NAME "membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO) )
+NIL)
+
+(CCO-MICRO-LUM T (
+(SURROUNDED-BY CCO-MBODY-MEM CCO-PEROX-MEM CCO-GLYOX-MEM)
+(COMPONENT-OF CCO-MICROBODY)
+(DEFINITION "The space enclosed by the microbody membrane.")
+(COMMON-NAME "microbody lumen")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-MICROBODY T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-CYTOPLASM)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0042579")
+(DEFINITION
+ "Cytoplasmic organelles, spherical or oval in shape, that are bounded by a single membrane and contain oxidative enzymes, especially those utilizing hydrogen peroxide (H2O2).")
+(COMPONENTS CCO-GLYOX-LUM CCO-PEROX-LUM CCO-MBODY-MEM CCO-MICRO-LUM)
+(COMMON-NAME "microbody")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-MICROSOME NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005792")
+(DEFINITION
+ "Any of the small, heterogeneous, artifactual, vesicular particles, 50-150 nm in diameter, that are formed when some eukaryotic cells are homogenized and that sediment on centrifugation at 100000 g.")
+(COMMON-NAME "microsome")
+(OCELOT-GFP::PARENTS CCO-CELL-FRACT) )
+NIL)
+
+(CCO-MIT NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-CYTOPLASM)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005739")
+(DEFINITION
+ "A semiautonomous, self replicating organelle that occurs in varying numbers, shapes, and sizes in the cytoplasm of virtually all eukaryotic cells. It is notably the site of tissue respiration.")
+(COMPONENTS CCO-MIT-IMEM CCO-MIT-OMEM CCO-MIT-ENV CCO-MIT-IM-SPC CCO-MIT-MEM CCO-MIT-LUM)
+(COMMON-NAME "mitochondrion")
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-MIT-ENV NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The double membrane that encloses the mitochondrion, including the intermembrane space.")
+(SURROUNDED-BY CCO-CYTOSOL)
+(SURROUNDS CCO-MIT-LUM)
+(COMPONENT-OF CCO-MIT)
+(COMPONENTS CCO-MIT-IMEM CCO-MIT-OMEM CCO-MIT-MEM CCO-MIT-IM-SPC)
+(COMMON-NAME "mitochondrial envelope")
+(OCELOT-GFP::PARENTS CCO-ORGANEL-ENV) )
+NIL)
+
+(CCO-MIT-IM-SPC NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005758")
+(DEFINITION "The space between the mitochondrial outer membrane and inner membrane.")
+(COMPONENT-OF CCO-MIT-ENV CCO-MIT)
+(COMMON-NAME "mitochondrial intermembrane space")
+(SURROUNDED-BY CCO-MIT-OMEM)
+(SURROUNDS CCO-MIT-IMEM)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-MIT-IMEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005743")
+(DEFINITION "The inner membrane of the mitochondria. It is highly folded to form cristae.")
+(SURROUNDS CCO-MIT-LUM)
+(SURROUNDED-BY CCO-MIT-IM-SPC)
+(COMPONENT-OF CCO-MIT-ENV CCO-MIT)
+(COMMON-NAME "mitochondrial inner membrane")
+(OCELOT-GFP::PARENTS CCO-MIT-MEM) )
+NIL)
+
+(CCO-MIT-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the mitochondrial inner membrane.")
+(GOID "GO:0005759")
+(SURROUNDED-BY CCO-MIT-ENV CCO-MIT-IMEM)
+(COMMON-NAME "mitochondrial lumen")
+(COMPONENT-OF CCO-MIT)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-MIT-MEM T (
+(DEFINITION
+ "Either of the inner and outer membranes, comprising the mitochondrial envelope. Note that the term mitochondrial membrane is a classification term for the inner and outer mitochondrial membranes. It does not include the intermembrane space.")
+(COMPONENT-OF CCO-MIT-ENV CCO-MIT)
+(GOID "GO:0031966")
+(COMMON-NAME "mitochondrial membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-MIT-OMEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005741")
+(DEFINITION "The membrane on the outer surface of the mitochondrion, interfacing with the cell cytoplasm.")
+(SURROUNDED-BY CCO-CYTOSOL)
+(SURROUNDS CCO-MIT-IM-SPC)
+(COMPONENT-OF CCO-MIT-ENV CCO-MIT)
+(COMMON-NAME "mitochondrial outer membrane")
+(OCELOT-GFP::PARENTS CCO-MIT-MEM) )
+NIL)
+
+(CCO-NON-MEM-ORG T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(GOID "GO:0043228")
+(DEFINITION "A discrete structure of a cell specialized to carry out a particular function, not bounded by a membrane.")
+(COMMON-NAME "non-membrane-bound organelle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-ORGANELLE) )
+NIL)
+
+(CCO-NUC-ENV NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The double membrane that encloses the nucleus, including the perinuclear space.")
+(SURROUNDED-BY CCO-CYTOSOL)
+(SURROUNDS CCO-NUC-LUM)
+(COMPONENT-OF CCO-NUCLEUS)
+(COMPONENTS CCO-NUC-OMEM CCO-NUC-IMEM CCO-NUC-MEM CCO-PERINUC-SPC)
+(COMMON-NAME "nuclear envelope")
+(OCELOT-GFP::PARENTS CCO-ORGANEL-ENV) )
+NIL)
+
+(CCO-NUC-IMEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005637")
+(DEFINITION "The inner lipid bilayer of the nuclear envelope.")
+(SURROUNDS CCO-NUC-LUM)
+(SURROUNDED-BY CCO-PERINUC-SPC)
+(COMPONENT-OF CCO-NUC-ENV CCO-NUCLEUS)
+(COMMON-NAME "nuclear inner membrane")
+(OCELOT-GFP::PARENTS CCO-NUC-MEM) )
+NIL)
+
+(CCO-NUC-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the nuclear inner membrane.")
+(SURROUNDED-BY CCO-NUC-ENV CCO-NUC-IMEM)
+(COMMON-NAME "nuclear lumen")
+(SURROUNDS CCO-NUCLEOLUS)
+(COMPONENT-OF CCO-NUCLEUS)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-NUC-MEM T (
+(DEFINITION "Either of the inner and outer membranes, comprising the nuclear envelope.")
+(COMMENT
+ "some sources use the same term refer to nuclear envelope. We distinguish them. The term nuclear membrane is a classification term for the inner and outer nuclear membranes. It does not include the perinuclear space.")
+(COMPONENT-OF CCO-NUC-ENV CCO-NUCLEUS)
+(COMMON-NAME "nuclear membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-NUC-OMEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005640")
+(DEFINITION
+ "The outer lipid bilayer of the nuclear envelope; continuous with the endoplasmic reticulum of the cell and sometimes studded with ribosomes.")
+(SURROUNDED-BY CCO-CYTOSOL)
+(SURROUNDS CCO-PERINUC-SPC)
+(COMPONENT-OF CCO-NUC-ENV CCO-NUCLEUS)
+(COMMON-NAME "nuclear outer membrane")
+(OCELOT-GFP::PARENTS CCO-NUC-MEM) )
+NIL)
+
+(CCO-NUCLEOLUS NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMMON-NAME "nucleolus")
+(DEFINITION
+ "A small, dense body one or more of which are present in the nucleus of eukaryotic cells. It is rich in RNA and protein, is not bounded by a limiting membrane, and is not seen during mitosis. ")
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005730")
+(SURROUNDED-BY CCO-NUC-LUM)
+(COMPONENT-OF CCO-NUCLEUS)
+(OCELOT-GFP::PARENTS CCO-NON-MEM-ORG) )
+NIL)
+
+(CCO-NUCLEUS NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOPLASM CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005634")
+(DEFINITION
+ "A membrane-bounded organelle of eukaryotic cells that contains the chromosomes. It is the primary site of DNA replication and RNA synthesis in the cell.")
+(COMPONENTS CCO-NUC-OMEM CCO-NUC-IMEM CCO-NUC-ENV CCO-NUCLEOLUS CCO-PERINUC-SPC CCO-NUC-MEM CCO-NUC-LUM)
+(COMMON-NAME "nucleus")
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-ORGANEL-ENV T (
+(DEFINITION
+ "Any double membrane structure including the intermembrane space that surrounds an organelle. In some cases, an organellar envelope may have more than two membranes.")
+(COMMON-NAME "organellar envelope")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-ENVELOPE) )
+NIL)
+
+(CCO-ORGANELLE T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(GOID "GO:0043226")
+(DEFINITION "A discrete structure of a cell specialized to carry out a particular function.")
+(COMMON-NAME "organelle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO) )
+NIL)
+
+(CCO-OUTER-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009279")
+(DEFINITION
+ "A lipid bilayer that forms the outermost layer of the cell envelope of Gram-negative bacteria; enriched in polysaccharide and protein; the outer leaflet of the membrane contains specific lipopolysaccharide structures.")
+(SURROUNDS CCO-PERI-BAC CCO-CW-BAC-NEG)
+(COMMON-NAME "outer membrane (sensu Gram-negative Bacteria)")
+(COMPONENT-OF CCO-CE-BAC-NEG)
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-PERI-BAC NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030288")
+(DEFINITION "The region between the inner (cytoplasmic) membrane and outer membrane of Gram-negative bacteria.")
+(SYNONYMS "periplasm (sensu Gram-negative Bacteria)")
+(COMMON-NAME "periplasmic space (sensu Gram-negative Bacteria)")
+(SURROUNDS CCO-PM-BAC-NEG)
+(SURROUNDED-BY CCO-OUTER-MEM)
+(COMPONENT-OF CCO-CE-BAC-NEG)
+(SENSU |Proteobacteria|)
+(OCELOT-GFP::PARENTS CCO-PERIPLASM) )
+NIL)
+
+(CCO-PERI-FUNGI NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030287")
+(DEFINITION
+ "The region between the plasma membrane and the cell wall. As in, but not restricted to, the fungi (Fungi, ncbi_taxonomy_id:4751).")
+(SYNONYMS "periplasm (sensu Fungi)")
+(SURROUNDED-BY CCO-CW-FUNGI)
+(COMMON-NAME "periplasmic space (sensu Fungi)")
+(SURROUNDS CCO-PM-FUNGI)
+(SENSU |Fungi|)
+(OCELOT-GFP::PARENTS CCO-PERIPLASM) )
+NIL)
+
+(CCO-PERINUC-SPC NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(GOID "GO:0005641")
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(DEFINITION "The zone, 20-40 nm wide, between the two lipid bilayers of the nuclear envelope.")
+(SYNONYMS "nuclear membrane lumen")
+(COMPONENT-OF CCO-NUC-ENV CCO-NUCLEUS)
+(COMMON-NAME "perinuclear space")
+(SURROUNDED-BY CCO-NUC-OMEM)
+(SURROUNDS CCO-NUC-IMEM)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-PERIPLASM T (
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0042597")
+(DEFINITION
+ "The region between the inner (cytoplasmic) and outer membrane (Gram-negative bacteria) or inner membrane and cell wall (fungi).")
+(SYNONYMS "periplasm")
+(COMMON-NAME "periplasmic space")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-PEROX-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the peroxisome membrane.")
+(COMMON-NAME "peroxisomal lumen")
+(COMPONENT-OF CCO-PEROXISOME CCO-MICROBODY)
+(SURROUNDED-BY CCO-PEROX-MEM)
+(OCELOT-GFP::PARENTS CCO-MICRO-LUM) )
+NIL)
+
+(CCO-PEROX-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005778")
+(DEFINITION "The lipid bilayer surrounding a peroxisome.")
+(SURROUNDS CCO-MICRO-LUM CCO-PEROX-LUM)
+(COMPONENT-OF CCO-PEROXISOME)
+(COMMON-NAME "peroxisomal membrane")
+(OCELOT-GFP::PARENTS CCO-MBODY-MEM) )
+NIL)
+
+(CCO-PEROXISOME NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005777")
+(DEFINITION
+ "A small, membrane-bounded organelle that uses dioxygen (O2) to oxidize organic molecules; contains some enzymes that produce and others that degrade hydrogen peroxide (H2O2).")
+(COMPONENTS CCO-PEROX-MEM CCO-PEROX-LUM)
+(COMMON-NAME "peroxisome")
+(OCELOT-GFP::PARENTS CCO-MICROBODY) )
+NIL)
+
+(CCO-PLASMA-MEM T (
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005886")
+(DEFINITION
+ "The membrane surrounding a cell that separates the cell from its external environment. It consists of a phospholipid bilayer and associated proteins.")
+(SYNONYMS "cell membrane" "cytoplasmic membrane" "plasmalemma")
+(SURROUNDS CCO-CYTOSOL CCO-CYTOPLASM)
+(COMMON-NAME "plasma membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-PLAST-IM-SPC T (
+(SURROUNDS CCO-PLAST-IMEM)
+(SURROUNDED-BY CCO-PLAST-OMEM CCO-CHLOR-OMEM CCO-CHROM-OMEM)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009529")
+(DEFINITION "The region between the plastid inner membrane and plastid outer membrane.")
+(COMPONENT-OF CCO-PLASTID-ENV CCO-PLASTID)
+(COMMON-NAME "plastid intermembrane space")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-PLAST-IMEM T (
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009528")
+(DEFINITION "The portion of the plastid envelope that faces the plastid stroma and the plastid intermembrane space.")
+(SURROUNDS CCO-PLASTID-STR)
+(SURROUNDED-BY CCO-CHR-IM-SPC CCO-CHL-IM-SPC CCO-PLAST-IM-SPC)
+(COMPONENT-OF CCO-PLASTID-ENV CCO-PLASTID)
+(COMMON-NAME "plastid inner membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-PLASTID-MEM) )
+NIL)
+
+(CCO-PLAST-OMEM T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009527")
+(DEFINITION "The portion of the plastid envelope that faces the cytoplasm and the plastid intermembrane space.")
+(SURROUNDS CCO-PLAST-IM-SPC)
+(COMPONENT-OF CCO-PLASTID-ENV CCO-PLASTID)
+(COMMON-NAME "plastid outer membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-PLASTID-MEM) )
+NIL)
+
+(CCO-PLAST-THY T (
+(COMPONENT-OF CCO-PLASTID)
+(SURROUNDED-BY CCO-PLASTID-STR CCO-CHLOR-STR CCO-CHROM-STR)
+(DEFINITION "Any thylakoid within a plastid.")
+(COMMON-NAME "plastid thylakoid")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SUBORG-CMPT) )
+NIL)
+
+(CCO-PLASTID T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-CYTOPLASM)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009536")
+(DEFINITION
+ "Any member of a family of organelles found in the cytoplasm of plants and some protists, which are membrane-bounded and contain DNA. Plant plastids develop from a common type, the proplastid.")
+(COMPONENTS CCO-CHROM-STR CCO-CHLOR-STR CCO-CHL-STR-THY CCO-CHL-STKD-THY CCO-PLAST-IMEM CCO-PLAST-OMEM CCO-PLASTID-MEM CCO-PLASTID-STR
+ CCO-PLAST-IM-SPC CCO-CHLOR-THY CCO-PLASTID-ENV CCO-PLAST-THY)
+(COMMON-NAME "plastid")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-PLASTID-ENV T (
+(SURROUNDS CCO-PLASTID-STR)
+(COMPONENT-OF CCO-PLASTID)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009526")
+(DEFINITION "Double membrane structure of plastid, including the intermembrane space.")
+(COMPONENTS CCO-PLAST-IMEM CCO-PLAST-OMEM CCO-PLASTID-MEM CCO-PLAST-IM-SPC)
+(COMMON-NAME "plastid envelope")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-ORGANEL-ENV) )
+NIL)
+
+(CCO-PLASTID-MEM T (
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0042170")
+(DEFINITION "Double membrane structure of a plastid.")
+(COMMENT
+ "The term plastid membrane is a classification term for the inner and outer mitochondrial membranes. It does not include the intermembrane space.")
+(COMPONENT-OF CCO-PLASTID-ENV CCO-PLASTID)
+(COMMON-NAME "plastid membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-PLASTID-STR T (
+(COMPONENT-OF CCO-PLASTID)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0009532")
+(DEFINITION "The proteinaceous ground substance of plastids.")
+(SURROUNDS CCO-PLAST-THY)
+(SURROUNDED-BY CCO-PLAST-IMEM CCO-CHROM-ENV CCO-CHLOR-ENV CCO-CHLOR-IMEM CCO-CHROM-IMEM CCO-PLASTID-ENV)
+(COMMON-NAME "plastid stroma")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-PM-ANIMAL NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-CYTOPLASM CCO-CYTOSOL)
+(DEFINITION "The plasma membrane of an animal cell.")
+(SYNONYMS "cell membrane, cytoplasmic membrane, plasmalemma")
+(SURROUNDED-BY CCO-EXTRACELL-MAT)
+(COMMON-NAME "plasma membrane (sensu Animalia)")
+(SENSU |Metazoa|)
+(OCELOT-GFP::PARENTS CCO-PLASMA-MEM) )
+NIL)
+
+(CCO-PM-BAC-NEG NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-CYTOPLASM CCO-CYTOSOL)
+(DEFINITION "The plasma membrane of a gram-negative bacteria cell.")
+(SYNONYMS "plasma membrane (sensu Gram-negative Bacteria)" "cell membrane" "cytoplasmic membrane" "plasmalemma")
+(SURROUNDED-BY CCO-CW-BAC-NEG CCO-PERI-BAC)
+(COMMON-NAME "inner membrane (sensu Gram-negative Bacteria)")
+(COMPONENT-OF CCO-CE-BAC-NEG)
+(SENSU |Proteobacteria|)
+(OCELOT-GFP::PARENTS CCO-PM-BACTERIA) )
+NIL)
+
+(CCO-PM-BAC-POS NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-CYTOPLASM CCO-CYTOSOL)
+(DEFINITION "The plasma membrane of a gram-positive bacteria cell.")
+(SYNONYMS "cell membrane, cytoplasmic membrane, bacteria inner membrane, plasmalemma")
+(SURROUNDED-BY CCO-CW-BAC-POS)
+(COMMON-NAME "plasma membrane (sensu Gram-positive Bacteria)")
+(COMPONENT-OF CCO-CE-BAC-POS)
+(SENSU |Firmicutes| |Actinobacteria|)
+(OCELOT-GFP::PARENTS CCO-PM-BACTERIA) )
+NIL)
+
+(CCO-PM-BACTERIA T (
+(SENSU |Bacteria|)
+(SURROUNDS CCO-CYTOPLASM CCO-CYTOSOL)
+(COMPONENT-OF CCO-CE-BAC)
+(DEFINITION "The plasma membrane of a bacteria cell.")
+(SYNONYMS "cell membrane" "cytoplasmic membrane" "plasmalemma")
+(COMMON-NAME "plasma membrane (sensu Bacteria)")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-PLASMA-MEM) )
+NIL)
+
+(CCO-PM-FUNGI NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-CYTOPLASM CCO-CYTOSOL)
+(DEFINITION "The plasma membrane of a fungus cell.")
+(SYNONYMS "cell membrane, cytoplasmic membrane, plasmalemma")
+(SURROUNDED-BY CCO-PERI-FUNGI)
+(COMMON-NAME "plasma membrane (sensu Fungi)")
+(SENSU |Fungi|)
+(OCELOT-GFP::PARENTS CCO-PLASMA-MEM) )
+NIL)
+
+(CCO-PM-PLANT NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-CYTOPLASM CCO-CYTOSOL)
+(DEFINITION "The plasma membrane of a plant cell.")
+(SYNONYMS "cell membrane, cytoplasmic membrane, plasmalemma")
+(SURROUNDED-BY CCO-CW-PL-PRIM CCO-CW-PL-SEC CCO-CW-PLANT)
+(COMMON-NAME "plasma membrane (sensu Magnoliophyta)")
+(SENSU |Magnoliophyta|)
+(OCELOT-GFP::PARENTS CCO-PLASMA-MEM) )
+NIL)
+
+(CCO-PROT-PLAST NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION "A leucoplast in which protein is stored.")
+(COMMON-NAME "proteinoplast")
+(OCELOT-GFP::PARENTS CCO-LEUCOPLAST) )
+NIL)
+
+(CCO-RGH-ER-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0048237")
+(DEFINITION "The volume enclosed by the membranes of the rough endoplasmic reticulum.")
+(SYNONYMS "rough ER lumen")
+(COMMON-NAME "rough endoplasmic reticulum lumen")
+(COMPONENT-OF CCO-ROUGH-ER CCO-ER)
+(SURROUNDED-BY CCO-RGH-ER-MEM)
+(OCELOT-GFP::PARENTS CCO-ER-LUM) )
+NIL)
+
+(CCO-RGH-ER-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-ROUGH-ER)
+(SURROUNDED-BY CCO-CYTOSOL)
+(SYNONYMS "rough ER membrane")
+(GOID "GO:0030867")
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(DEFINITION "The lipid bilayer surrounding the rough endoplasmic reticulum.")
+(SURROUNDS CCO-ER-LUM CCO-RGH-ER-LUM)
+(COMMON-NAME "rough endoplasmic reticulum membrane ")
+(OCELOT-GFP::PARENTS CCO-ER-MEM) )
+NIL)
+
+(CCO-RIBOSOME NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-CYTOPLASM)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005840")
+(DEFINITION
+ "An intracellular organelle, about 200 A in diameter, consisting of RNA and protein. It is the site of protein biosynthesis resulting from translation of messenger RNA (mRNA). It consists of two subunits, one large and one small, each containing only protein and RNA. Both the ribosome and its subunits are characterized by their sedimentation coefficients, expressed in Svedberg units (symbol: S). Hence, the prokaryotic ribosome (70S) comprises a large (50S) subunit and a small (30S) subunit, while the eukaryotic ribosome (80S) comprises a large (60S) subunit and a small (40S) subunit. Two sites on the ribosomal large subunit are involved in translation, namely the aminoacyl site (A site) and peptidyl site (P site). Ribosomes from prokaryotes, eukaryotes, mitochondria, and chloroplasts have characteristically distinct ribosomal proteins.")
+(COMMON-NAME "ribosome")
+(OCELOT-GFP::PARENTS CCO-NON-MEM-ORG) )
+NIL)
+
+(CCO-ROUGH-ER NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005791")
+(DEFINITION
+ "The rough (or granular) endoplasmic reticulum (ER) has ribosomes adhering to the outer surface; the ribosomes are the site of translation of the mRNA for those proteins which are either to be retained within the cisternae (ER-resident proteins), the proteins of the lysosomes, or the proteins destined for export from the cell. Glycoproteins undergo their initial glycosylation within the cisternae.")
+(SYNONYMS "rough ER")
+(COMPONENTS CCO-RGH-ER-MEM CCO-RGH-ER-LUM)
+(COMMON-NAME "rough endoplasmic reticulum")
+(OCELOT-GFP::PARENTS CCO-ER) )
+NIL)
+
+(CCO-SEC-GRANULE NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(SYNONYMS "secretory vesicle")
+(GOID "GO:0030141")
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(DEFINITION
+ "A small subcellular vesicle, surrounded by a single-layered membrane, that is formed from the Golgi apparatus and contains a highly concentrated protein destined for secretion. Secretory granules move towards the periphery of the cell, their membranes fuse with the cell membrane, and their protein load is exteriorized. Processing of the contained protein may take place in secretory granules.")
+(COMMON-NAME "secretory granule")
+(OCELOT-GFP::PARENTS CCO-VESICLE) )
+NIL)
+
+(CCO-SMOOTH-ER NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005790")
+(DEFINITION
+ "The smooth endoplasmic reticulum (ER) has with no ribosomes attached to it. The smooth is the recipient of the proteins synthesized in the rough ER. Those proteins to be exported are passed to the Golgi complex, the resident proteins are returned to the rough ER and the lysosomal proteins after phosphorylation of their mannose residues are passed to the lysosomes. Glycosylation of the glycoproteins also continues. The smooth ER is the site of synthesis of lipids, including the phospholipids. The membranes of the smooth ER also contain enzymes that catalyze a series of reactions to detoxify both lipid-soluble drugs and harmful products of metabolism. Large quantities of certain compounds such as phenobarbital cause an increase in the amount of the smooth ER.")
+(SYNONYMS "smooth ER")
+(COMPONENTS CCO-SMTH-ER-MEM CCO-SMTH-ER-LUM)
+(COMMON-NAME "smooth endoplasmic reticulum")
+(OCELOT-GFP::PARENTS CCO-ER) )
+NIL)
+
+(CCO-SMTH-ER-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0048238")
+(DEFINITION "The volume enclosed by the membranes of the smooth endoplasmic reticulum.")
+(SYNONYMS "smooth ER lumen")
+(COMMON-NAME "smooth endoplasmic reticulum lumen")
+(COMPONENT-OF CCO-SMOOTH-ER CCO-ER)
+(SURROUNDED-BY CCO-SMTH-ER-MEM)
+(OCELOT-GFP::PARENTS CCO-ER-LUM) )
+NIL)
+
+(CCO-SMTH-ER-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-SMOOTH-ER)
+(SURROUNDED-BY CCO-CYTOSOL)
+(GOID "GO:0030868")
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(DEFINITION "The lipid bilayer surrounding the smooth endoplasmic reticulum.")
+(SYNONYMS "smooth ER membrane")
+(SURROUNDS CCO-ER-LUM CCO-SMTH-ER-LUM)
+(COMMON-NAME "smooth endoplasmic reticulum membrane ")
+(OCELOT-GFP::PARENTS CCO-ER-MEM) )
+NIL)
+
+(CCO-SPACE T (
+(DEFINITION-REFERENCE "Merriam-Webster")
+(DEFINITION "A three-dimensional extent in which objects and events occur.")
+(COMMON-NAME "space")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO) )
+NIL)
+
+(CCO-STORAGE-VAC NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0000322")
+(DEFINITION
+ "A vacuole that functions primarily in the storage of materials, including nutrients, pigments, waste products, and small molecules.")
+(COMMON-NAME "storage vacuole")
+(OCELOT-GFP::PARENTS CCO-VACUOLE) )
+NIL)
+
+(CCO-SUBORG-CMPT T (
+(DEFINITION "A membrane-enclosed compartment that is a part of an organelle.")
+(COMMON-NAME "suborganelle compartment")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO) )
+NIL)
+
+(CCO-SUPER-COMP T (
+(COMMON-NAME "super component")
+(DEFINITION "space plus other components that are located in the space.")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO) )
+NIL)
+
+(CCO-SURFACE-MAT T (
+(DEFINITION "The structured network of macromolecules secreted outside of the cell membrane (plasma membrane).")
+(COMMON-NAME "cell surface matrix")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO) )
+NIL)
+
+(CCO-SYN-VES NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0008021")
+(DEFINITION
+ "Secretory organelles, some 50 nm in diameter, of presynaptic nerve terminals; accumulate high concentrations of neurotransmitters and secrete these into the synaptic cleft by fusion with the 'active zone' of the presynaptic plasma membrane.")
+(COMMON-NAME "synaptic vesicle")
+(OCELOT-GFP::PARENTS CCO-CLATH-VES) )
+NIL)
+
+(CCO-THY-CYA NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(COMPONENT-OF CCO-CYTOPLASM)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030075")
+(DEFINITION "A thylakoid; as in, but not restricted to, the blue-green algae (Cyanobacteria, ncbi_taxonomy_id:1117).")
+(COMPONENTS CCO-THY-MEM-CYA CCO-THY-LUM-CYA)
+(COMMON-NAME "thylakoid (sensu Cyanobacteria)")
+(SENSU |Cyanobacteria|)
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-THY-LUM T (
+(SURROUNDED-BY CCO-THY-MEM CCO-CHL-THY-MEM CCO-THY-MEM-CYA)
+(DEFINITION "The space enclosed by the thylakoid membrane.")
+(COMMON-NAME "thylakoid lumen")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-THY-LUM-CYA NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the thylakoid membrane of a cyanobacteria.")
+(COMMON-NAME "thylakoid lumen (sensu Cyanobacteria)")
+(COMPONENT-OF CCO-THY-CYA)
+(SURROUNDED-BY CCO-THY-MEM-CYA)
+(OCELOT-GFP::PARENTS CCO-THY-LUM) )
+NIL)
+
+(CCO-THY-MEM T (
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0042651")
+(DEFINITION "The pigmented membrane of any thylakoid.")
+(SURROUNDS CCO-THY-LUM)
+(COMMON-NAME "thylakoid membrane")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-THY-MEM-CYA NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDS CCO-THY-LUM CCO-THY-LUM-CYA)
+(DEFINITION "The pigmented membrane of thylakoid in cyanobacteria.")
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-THY-CYA)
+(COMMON-NAME "thylakoid membrane (sensu Cyanobacteria)")
+(SENSU |Cyanobacteria|)
+(OCELOT-GFP::PARENTS CCO-THY-MEM) )
+NIL)
+
+(CCO-TR-GOLGI-VES NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(SURROUNDED-BY CCO-CYTOSOL)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0030140")
+(DEFINITION "A vesicle that mediates transport between the trans-Golgi network and other parts of the cell.")
+(COMMON-NAME "trans-Golgi network transport vesicle")
+(OCELOT-GFP::PARENTS CCO-CLATH-VES CCO-GOLGI-VES) )
+NIL)
+
+(CCO-VAC-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005775")
+(DEFINITION "The volume enclosed within the vacuolar membrane.")
+(COMPONENT-OF CCO-VACUOLE)
+(COMMON-NAME "vacuolar lumen")
+(SURROUNDED-BY CCO-VAC-MEM)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-VAC-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005774")
+(DEFINITION "The lipid bilayer surrounding the vacuole and separating its contents from the cytoplasm of the cell.")
+(SURROUNDED-BY CCO-CYTOSOL)
+(SURROUNDS CCO-VAC-LUM)
+(COMPONENT-OF CCO-VACUOLE)
+(COMMON-NAME "vacuolar membrane")
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(CCO-VACUOLE T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-CYTOPLASM)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0005773")
+(DEFINITION
+ "A closed structure, found only in eukaryotic cells, that is completely surrounded by unit membrane and contains liquid material.")
+(COMPONENTS CCO-VAC-MEM CCO-VAC-LUM)
+(COMMON-NAME "vacuole")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-VES-LUM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION "The space enclosed by the vesicle membrane.")
+(COMPONENT-OF CCO-VESICLE)
+(COMMON-NAME "vesicle lumen")
+(SURROUNDED-BY CCO-VESICLE-MEM)
+(OCELOT-GFP::PARENTS CCO-SPACE) )
+NIL)
+
+(CCO-VESICLE T (
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-CYTOPLASM)
+(DEFINITION
+ "Any small, fluid-filled, membrane-limited spherical organelle in the cytoplasm. Vesicle store, transport, or digest cellular products or wastes.")
+(COMPONENTS CCO-VESICLE-MEM CCO-VES-LUM)
+(COMMON-NAME "vesicle")
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OCELOT-GFP::PARENTS CCO-MEM-ORG) )
+NIL)
+
+(CCO-VESICLE-MEM NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(DEFINITION-REFERENCE "Gene Ontology Consortium")
+(GOID "GO:0012506")
+(DEFINITION "The membrane surrounding any vesicle in the cell.")
+(SURROUNDS CCO-VES-LUM)
+(SURROUNDED-BY CCO-CYTOSOL)
+(COMPONENT-OF CCO-VESICLE)
+(COMMON-NAME "vesicle membrane")
+(OCELOT-GFP::PARENTS CCO-MEMBRANE) )
+NIL)
+
+(COMMENT NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222761)
+(QUERYABLE? T)
+(:DOCUMENTATION "The Comment slot stores a general comment about the object that
+contains the slot.")
+(:DOMAIN :THING)
+(:VALUE-TYPE :STRING)
+(:INHERITANCE-TYPE :UNIQUE)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(COMMON-NAME NIL (
+(:DOMAIN CCO)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(COMPONENT-OF NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(:INVERSE COMPONENTS)
+(:VALUE-TYPE :THING)
+(:DOMAIN :THING)
+(QUERYABLE? T)
+(:DOCUMENTATION "This slot specifies an object that contains this object as a smaller
+part.  For example, this slot points from a monomer to a larger
+complex that contains it.
+")
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(COMPONENTS NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(OPTIONAL-ANNOTATIONS COEFFICIENT)
+(:VALUE-TYPE :THING)
+(QUERYABLE? T)
+(:DOMAIN :THING)
+(:DOCUMENTATION "This slot lists the components of some physical assembly, such as
+the subunits of a protein complex or the genes within a chromosome.
+The coefficient of each component (when known) is listed as an 
+annotation of the component value under the label coefficient.
+
+When a modified protein is created to reflect a chemically modified
+alternate form of the protein, if that protein is a complex, its subunit
+structure need not be mirrored in the modified-protein frame.  The
+subunit structure should be defined only once, for the frame that
+represents the unmodified form of the protein.
+")
+(:INVERSE COMPONENT-OF)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(DEFINITION NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222761)
+(:DOMAIN CCO)
+(:VALUE-TYPE :STRING)
+(:MAXIMUM-CARDINALITY 1)
+(:INHERITANCE-TYPE :UNIQUE)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(DEFINITION-REFERENCE NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222761)
+(:DOMAIN CCO)
+(:VALUE-TYPE :STRING)
+(:INHERITANCE-TYPE :UNIQUE)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(GOID NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222761)
+(:DOMAIN CCO)
+(:VALUE-TYPE :STRING)
+(:INHERITANCE-TYPE :UNIQUE)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(HISTORY NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(:DOMAIN :THING)
+(:VALUE-TYPE (:OR :STRING |Notes|))
+(:COLLECTION-TYPE :LIST)
+(:DOCUMENTATION "Contains a textual history of changes made to this frame.  Each item is either a string or a note frame.")
+(:INHERITANCE-TYPE :UNIQUE)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(SENSU NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222761)
+(:DOCUMENTATION "Restricts the cellular compartment to organisms that match one of the values of this slot.")
+(:DOMAIN CCO)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(SURROUNDED-BY NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222761)
+(:DOMAIN CCO)
+(:INVERSE SURROUNDS)
+(:VALUE-TYPE :THING)
+(:INHERITANCE-TYPE :UNIQUE)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(SURROUNDS NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222761)
+(:DOMAIN CCO)
+(:INVERSE SURROUNDED-BY)
+(:VALUE-TYPE :THING)
+(:INHERITANCE-TYPE :UNIQUE)
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+(SYNONYMS NIL (
+(:CREATOR |pkarp|)
+(:CREATION-DATE 3339222762)
+(:INHERITANCE-TYPE :UNIQUE)
+(:VALUE-TYPE :STRING)
+(:DOMAIN :THING)
+(:DOCUMENTATION "One or more secondary names for an object -- names
+that a scientist might attempt to use to retrieve the object.  
+The Synonyms should include any name a user might use to
+try to retrieve an object.")
+(OCELOT-GFP::PARENTS OCELOT-GFP::DOMAIN-SLOTS) )
+NIL)
+
+)

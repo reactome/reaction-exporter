@@ -1,5 +1,10 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.box;
 
+/**
+ * Matrix coordinates expressed as <b>row</b> and <b>col</b>. Useful to index a {@link Grid}.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 public class Point {
     private int row;
     private int col;

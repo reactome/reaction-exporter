@@ -5,6 +5,8 @@ import java.util.*;
 import static java.util.stream.Collectors.joining;
 
 /**
+ * Main in-memory representation of a GO term. It is the most complete and allows adding relationships.
+ *
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class GoTerm implements Comparable<GoTerm> {

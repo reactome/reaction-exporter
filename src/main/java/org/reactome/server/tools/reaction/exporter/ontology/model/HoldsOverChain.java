@@ -5,6 +5,11 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import java.util.List;
 
+/**
+ * Wrapper class to digest GO obo-xml format.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 public class HoldsOverChain {
 
     @JacksonXmlProperty(localName = "relation")

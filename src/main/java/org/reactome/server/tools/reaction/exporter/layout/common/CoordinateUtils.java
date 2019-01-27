@@ -4,12 +4,56 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+/**
+ * Operations to calculate intersections between segments.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 public class CoordinateUtils {
 
+    private CoordinateUtils() {
+    }
+
+    /**
+     * Returns the intersection point between the 2 segments. Null is returned if less than 1 or more than 1 point
+     * belong to both segments.
+     *
+     * @param a first segment
+     * @param b second segment
+     * @return the intersection point between the two lines or null if they are parallel.
+     */
+    public static Point2D intersection(Line2D a, Line2D b) {
+        return intersection(a.getP1(), a.getP2(), b.getP1(), b.getP2());
+    }
+
+    /**
+     * Returns the intersection point between the 2 segments [a1-a2] and [b1-b2]. Null is returned if less than 1 or
+     * more than 1 point belong to both segments.
+     *
+     * @param a1 starting point of the first segment
+     * @param a2 ending point of the first segment
+     * @param b1 starting point of the second segment
+     * @param b2 ending point of the second segment
+     * @return the intersection point between the two lines or null if they are parallel.
+     */
     public static Point2D intersection(Point2D a1, Point2D a2, Point2D b1, Point2D b2) {
         return intersection(a1.getX(), a1.getY(), a2.getX(), a2.getY(), b1.getX(), b1.getY(), b2.getX(), b2.getY());
     }
 
+    /**
+     * Returns the intersection point between the 2 segments [(x1, y1) - (x2, y2)] and [(x3, y3) - (x4, y4)]. Null is
+     * returned if less than 1 or more than 1 point belong to both segments.
+     *
+     * @param x1 x value of the starting point of first segment
+     * @param y1 y value of the starting point of first segment
+     * @param x2 x value of the ending point of first segment
+     * @param y2 y value of the ending point of first segment
+     * @param x3 x value of the starting point of second segment
+     * @param y3 y value of the starting point of second segment
+     * @param x4 x value of the ending point of second segment
+     * @param y4 y value of the ending point of second segment
+     * @return the intersection point between the two lines or null if they are parallel.
+     */
     public static Point2D intersection(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
         // calculate the direction of the lines
         double uA = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
@@ -24,6 +68,13 @@ public class CoordinateUtils {
         return null;
     }
 
+    /**
+     * Calculates if line has at least one intersection with the sides of the rectangle.
+     *
+     * @param line      a segment
+     * @param rectangle a rectangle
+     * @return true if line intersects with at least one of the sides of rectangle.
+     */
     public static boolean intersects(Line2D line, Rectangle2D rectangle) {
         return intersects(line, new Line2D.Double(rectangle.getMinX(), rectangle.getMinY(), rectangle.getMinX(), rectangle.getMaxY()))
                 || intersects(line, new Line2D.Double(rectangle.getMaxX(), rectangle.getMinY(), rectangle.getMaxX(), rectangle.getMaxY()))
@@ -32,14 +83,43 @@ public class CoordinateUtils {
 
     }
 
+    /**
+     * Calculates if two segments intersect.
+     *
+     * @param a first segment
+     * @param b second segment
+     * @return true if both lines have at least one point in common.
+     */
     public static boolean intersects(Line2D a, Line2D b) {
         return intersects(a.getP1(), a.getP2(), b.getP1(), b.getP2());
     }
 
+    /**
+     * Calculates if two segments intersect.
+     *
+     * @param a1 starting point of the first segment
+     * @param a2 ending point of the first segment
+     * @param b1 starting point of the second segment
+     * @param b2 ending point of the second segment
+     * @return true if both lines have at least one point in common.
+     */
     public static boolean intersects(Point2D a1, Point2D a2, Point2D b1, Point2D b2) {
         return intersects(a1.getX(), a1.getY(), a2.getX(), a2.getY(), b1.getX(), b1.getY(), b2.getX(), b2.getY());
     }
 
+    /**
+     * Calculates if two segments intersect.
+     *
+     * @param x1 x value of the starting point of first segment
+     * @param y1 y value of the starting point of first segment
+     * @param x2 x value of the ending point of first segment
+     * @param y2 y value of the ending point of first segment
+     * @param x3 x value of the starting point of second segment
+     * @param y3 y value of the starting point of second segment
+     * @param x4 x value of the ending point of second segment
+     * @param y4 y value of the ending point of second segment
+     * @return true if both lines have at least one point in common.
+     */
     public static boolean intersects(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4) {
         // calculate the direction of the lines
         final double div = (y4 - y3) * (x2 - x1) - (y2 - y1) * (x4 - x3);
