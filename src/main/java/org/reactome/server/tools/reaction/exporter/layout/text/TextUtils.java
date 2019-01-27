@@ -10,6 +10,8 @@ import java.util.List;
 
 /**
  * Utility to calculate the size of the text based of a Font and a width/height ratio.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class TextUtils {
 

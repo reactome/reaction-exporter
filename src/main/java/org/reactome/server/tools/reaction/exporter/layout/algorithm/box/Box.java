@@ -104,6 +104,8 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUti
  *   - A contains B and C
  *   - C contains D
  * </pre>
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class Box implements Div {
 

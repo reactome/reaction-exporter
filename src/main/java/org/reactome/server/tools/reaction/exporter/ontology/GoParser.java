@@ -4,17 +4,14 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.reactome.server.tools.reaction.exporter.ontology.model.Obo;
 import org.reactome.server.tools.reaction.exporter.ontology.model.Relationship;
 import org.reactome.server.tools.reaction.exporter.ontology.model.Term;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -23,77 +20,15 @@ import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipT
 
 
 /**
- * Reads go-basic.obo and cco.ocelot files and creates the hierarchy of GoTerms,
- * using
+ * Reads Gene Ontology and Cellular Component Ontology resource files and creates the hierarchy of GO terms.
  *
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class GoParser {
 
-	private final static Pattern ID_PATTERN = Pattern.compile("id:\\s+(GO:\\d+).*");
-	private final static Pattern IS_A = Pattern.compile("is_a:\\s+(GO:\\d+).*");
-	private final static Pattern REL2 = Pattern.compile("relationship:\\s*(\\S+)\\s+(GO:\\d+).*");
-	// node -> IN|OUT -> type -> ids
-	private static final Map<String, Map<GoTerm.Directionality, Map<RelationshipType, Set<String>>>> relationships = new TreeMap<>();
+	private static final String GENE_ONTOLOGY = "/ontologies/go_daily-termdb.obo-xml";
 
 	private GoParser() {}
-
-	public static Map<String, GoTerm> readGo() {
-		final InputStream resource = GoParser.class.getResourceAsStream("go-basic.obo");
-		final Map<String, GoTerm> nodes = new TreeMap<>();
-		final AtomicReference<GoTerm> current = new AtomicReference<>();
-
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource))) {
-			reader.lines().forEach(line -> {
-				if (line.startsWith("id:")) {
-					final Matcher matcher = ID_PATTERN.matcher(line);
-					if (matcher.matches()) {
-						final GoTerm goTerm = new GoTerm(matcher.group(1));
-						nodes.put(goTerm.getId(), goTerm);
-						current.set(goTerm);
-					}
-				} else if (line.startsWith("namespace:"))
-					current.get().setNamespace(line.split(": ")[1].trim());
-				else if (line.startsWith("name:"))
-					current.get().setName(line.split(": ")[1].trim());
-				else if (line.startsWith("is_obsolete:"))
-					current.get().setObsolete(true);
-				else if (line.startsWith("alt_id:"))
-					current.get().addAltId(line.split(": ")[1].trim());
-				else if (line.startsWith("consider:"))
-					current.get().addConsider(line.split(": ")[1].trim());
-				else if (line.startsWith("is_a: ")) {
-					final Matcher matcher = IS_A.matcher(line);
-					if (matcher.matches())
-						relationships.computeIfAbsent(current.get().getId(), s -> new EnumMap<>(GoTerm.Directionality.class))
-								.computeIfAbsent(OUTGOING, d -> new TreeMap<>())
-								.computeIfAbsent(is_a, t -> new TreeSet<>())
-								.add(matcher.group(1));
-				} else if (line.startsWith("relationship: part_of ")) {
-					Matcher matcher = REL2.matcher(line);
-					if (matcher.matches()) {
-						final String id = matcher.group(2);
-						relationships.computeIfAbsent(current.get().getId(), s -> new EnumMap<>(GoTerm.Directionality.class))
-								.computeIfAbsent(OUTGOING, d -> new TreeMap<>())
-								.computeIfAbsent(part_of, t -> new TreeSet<>())
-								.add(id);
-					}
-				}
-			});
-		} catch (IOException e) {
-			// Should never happen, it's a resource
-			e.printStackTrace();
-		}
-		// Lazy assignment of nodes in relationships
-		relationships.forEach((termId, map) -> map.forEach((directionality, map1) -> map1.forEach((type, ids) -> ids.forEach(id -> {
-			nodes.get(termId).createRelationship(directionality, type, nodes.get(id));
-		}))));
-		addOcelotTerms(nodes);
-
-		return nodes.values().stream()
-				.filter(term -> term.getNamespace().equals("cellular_component"))
-				.collect(Collectors.toMap(GoTerm::getId, Function.identity()));
-	}
 
 	private static void addOcelotTerms(Map<String, GoTerm> nodes) {
 		final OcelotParser.OcelotElement root = OcelotParser.readOcelot();
@@ -147,16 +82,16 @@ public class GoParser {
 				.orElse("");
 	}
 
-	public static Map<String, GoTerm> readCompressed() {
+	public static Map<String, GoTerm> getGoOntology() {
 		try {
-			final InputStream resource = GoParser.class.getResourceAsStream("/ontology/go_daily-termdb.obo-xml");
+			final InputStream resource = GoParser.class.getResourceAsStream(GENE_ONTOLOGY);
 			final Obo obo = new XmlMapper().readValue(resource, Obo.class);
 			final Map<String, GoTerm> index = connect(obo);
 			addOcelotTerms(index);
 			return index;
 		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
+			LoggerFactory.getLogger("reaction-exporter").error("Missing resource: " + GENE_ONTOLOGY);
+			return Collections.emptyMap();
 		}
 	}
 

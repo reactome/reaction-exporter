@@ -15,6 +15,8 @@ import java.util.ArrayList;
 
 /**
  * Helper class to perform transformations on glyphs: translating, scaling and sizing.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class Transformer {
 
@@ -265,7 +267,7 @@ public class Transformer {
                 position.getHeight() + 2 * padding);
     }
 
-    public static Position padd(Position position, double horizontal, double vertical ){
+    public static Position padd(Position position, double horizontal, double vertical) {
         return new Position(
                 position.getX() - horizontal,
                 position.getY() - vertical,

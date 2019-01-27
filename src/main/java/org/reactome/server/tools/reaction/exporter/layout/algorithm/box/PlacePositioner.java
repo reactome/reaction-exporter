@@ -11,6 +11,8 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRo
 
 /**
  * Helper class to decide relative position of elements: compartment vs compartment or compartment vs reaction
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class PlacePositioner {
 
@@ -155,11 +157,15 @@ public class PlacePositioner {
      */
     public static Place getPlace(EntityRole role) {
         switch (role) {
-            case INPUT: return LEFT;
-            case OUTPUT: return RIGHT;
-            case CATALYST: return TOP;
+            case INPUT:
+                return LEFT;
+            case OUTPUT:
+                return RIGHT;
+            case CATALYST:
+                return TOP;
             case NEGATIVE_REGULATOR:
-            case POSITIVE_REGULATOR: return BOTTOM;
+            case POSITIVE_REGULATOR:
+                return BOTTOM;
         }
         return CENTER;
     }

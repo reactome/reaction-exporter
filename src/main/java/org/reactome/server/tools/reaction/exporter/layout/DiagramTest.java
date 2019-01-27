@@ -10,6 +10,18 @@ import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Class to test validity of a diagram. Currently it tests the following cases:
+ * <ol>
+ *     <li>If two elements(reaction or participant) overlap</li>
+ *     <li>If an element overlaps a segment</li>
+ *     <li>If two segments intersect</li>
+ *     <li>If an element is outside its compartment</li>
+ *     <li>If a compartment is outside its parent compartment</li>
+ * </ol>
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 public class DiagramTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("reaction-converter-test");

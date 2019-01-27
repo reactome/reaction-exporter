@@ -67,19 +67,19 @@ public class VisualTest extends BaseTest {
         // }
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testOne() {
         try {
             // 210430
             // 917744
-            convert("R-HSA-4655355", new BufferedWriter(new FileWriter("data.tsv")));
+            convert("R-HSA-4655355", new BufferedWriter(new FileWriter(new File(TEST_IMAGES, "data.tsv"))));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testHomoSapiens() {
         Collection<String> identifiers = new ArrayList<>();
@@ -200,7 +200,7 @@ public class VisualTest extends BaseTest {
                 "R-HSA-3702184", "R-HSA-3702153", "R-HSA-3702186", "R-HSA-5683209")));
     }
 
-    // @Ignore
+    @Ignore
     @Test
     public void testMostDifficult() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
@@ -296,7 +296,7 @@ public class VisualTest extends BaseTest {
     }
 
     private void test(Collection<String> identifiers) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("data.tsv"))){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(TEST_IMAGES, "data.tsv")))) {
             System.out.println(identifiers.size() + " reactions");
             writer.write("Layout\tTest\tImage");
             writer.newLine();
@@ -311,6 +311,7 @@ public class VisualTest extends BaseTest {
         }
     }
 
+    @Ignore
     @Test
     public void testPerformance() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
@@ -341,6 +342,7 @@ public class VisualTest extends BaseTest {
         test(identifiers);
     }
 
+    @Ignore
     @Test
     public void bruteForce() {
         String stId = "R-HSA-434650";
