@@ -26,7 +26,7 @@ import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipT
  */
 public class GoParser {
 
-	private static final String GENE_ONTOLOGY = "/ontology/go_daily-termdb.obo-xml";
+	private static final String GENE_ONTOLOGY = "/ontologies/go_daily-termdb.obo-xml";
 
 	private GoParser() {}
 

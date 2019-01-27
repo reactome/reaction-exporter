@@ -13,6 +13,8 @@ import java.util.List;
 /**
  * Vertical layout of glyphs. Entities will be placed in a vertical line, centered horizontally. If there are more than
  * 6 entities, they will be placed in two columns.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class VerticalLayout extends GlyphsLayout {
 

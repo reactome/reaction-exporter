@@ -8,6 +8,8 @@ import static org.reactome.server.tools.reaction.exporter.ontology.GoTerm.Direct
 import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipType.surrounded_by;
 
 /**
+ * Helper class to generate compartment trees.
+ *
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class GoTreeFactory {

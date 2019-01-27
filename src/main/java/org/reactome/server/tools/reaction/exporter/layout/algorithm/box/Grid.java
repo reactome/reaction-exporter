@@ -8,6 +8,8 @@ import java.util.StringJoiner;
  * contain operations to add or remove rows and columns and work with columns as rows.
  *
  * @param <T> type of elements in grid
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class Grid<T extends HasInitial> {
 

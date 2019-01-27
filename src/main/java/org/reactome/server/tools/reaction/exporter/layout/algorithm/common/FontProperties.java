@@ -5,7 +5,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- * Helper class for measuring text
+ * Helper class for measuring text.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class FontProperties {
 

@@ -19,9 +19,57 @@ import static java.lang.Math.*;
 import static org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Constants.MIN_SEGMENT;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.*;
 
+/**
+ * Helper class to add connectors to diagram via {@link ConnectorFactory#addConnectors(Point, Grid, double[], double[],
+ * Layout, LayoutIndex)}. This class relies in that reaction layout is properly placed: inputs on the left, outputs on
+ * the right, catalysts on top, and regulators at the bottom.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 public class ConnectorFactory {
 
     private ConnectorFactory() {
+    }
+
+    public static void addConnectors(Point reactionPosition, Grid<Div> grid, double[] widths, double[] heights, Layout layout, LayoutIndex index) {
+        // Points of interest
+        double x1 = 0;
+        double y1 = 0;
+        int i = reactionPosition.getCol() - 1;
+        while (i >= 0 && !hasRole(grid.getColumn(i), INPUT)) i--;
+        for (int j = 0; j <= i; j++) x1 += widths[j];
+
+        i = reactionPosition.getRow() - 1;
+        while (i >= 0 && !hasRole(grid.getRow(i), CATALYST)) i--;
+        for (int j = 0; j <= i; j++) y1 += heights[j];
+
+        double x2 = 0;
+        i = 0;
+        while (i < grid.getColumns() && !(hasRole(grid.getColumn(i), OUTPUT))) {
+            x2 += widths[i++];
+        }
+        double y2 = 0;
+        i = 0;
+        while (i < grid.getRows() && !(hasRole(grid.getRow(i), POSITIVE_REGULATOR) || hasRole(grid.getRow(i), NEGATIVE_REGULATOR))) {
+            y2 += heights[i++];
+        }
+
+        double cx = layout.getReaction().getPosition().getCenterX();
+        double cy = layout.getReaction().getPosition().getCenterY();
+        double rx1 = layout.getReaction().getPosition().getX() - Constants.BACKBONE_LENGTH;
+        double rx2 = layout.getReaction().getPosition().getMaxX() + Constants.BACKBONE_LENGTH;
+        /*
+         *      x1 rx1 cx  rx2  x2
+         * y1 ---------------------
+         *      |   |       |   |
+         * cy   |   |---o---|   |
+         *      |   |       |   |
+         * y2 ---------------------
+         */
+        inputs(index, x1, rx1, cy, cx);
+        outputs(index, x2, rx2, cy);
+        catalysts(index, grid, reactionPosition, cx, y1, cy);
+        regulators(index, grid, reactionPosition, x1, x2, cx, y2, cy);
     }
 
     private static ConnectorImpl createConnector(EntityGlyph entity) {
@@ -67,47 +115,6 @@ public class ConnectorFactory {
                 0.5 * (segment.getFrom().getX() + segment.getTo().getX()),
                 0.5 * (segment.getFrom().getY() + segment.getTo().getY())
         );
-    }
-
-    public static void addConnectors(Point reactionPosition, Grid<Div> grid, double[] widths, double[] heights, Layout layout, LayoutIndex index) {
-        // Points of interest
-        double x1 = 0;
-        double y1 = 0;
-        int i = reactionPosition.getCol() - 1;
-        while (i >= 0 && !hasRole(grid.getColumn(i), INPUT)) i--;
-        for (int j = 0; j <= i; j++) x1 += widths[j];
-
-        i = reactionPosition.getRow() - 1;
-        while (i>= 0 && !hasRole(grid.getRow(i), CATALYST)) i--;
-        for (int j = 0; j <= i; j++) y1 += heights[j];
-
-        double x2 = 0;
-        i = 0;
-        while (i < grid.getColumns() && !(hasRole(grid.getColumn(i), OUTPUT))) {
-            x2 += widths[i++];
-        }
-        double y2 = 0;
-        i = 0;
-        while (i < grid.getRows() && !(hasRole(grid.getRow(i), POSITIVE_REGULATOR) || hasRole(grid.getRow(i), NEGATIVE_REGULATOR))) {
-            y2 += heights[i++];
-        }
-
-        double cx = layout.getReaction().getPosition().getCenterX();
-        double cy = layout.getReaction().getPosition().getCenterY();
-        double rx1 = layout.getReaction().getPosition().getX() - Constants.BACKBONE_LENGTH;
-        double rx2 = layout.getReaction().getPosition().getMaxX() + Constants.BACKBONE_LENGTH;
-        /*
-         *      x1 rx1 cx  rx2  x2
-         * y1 ---------------------
-         *      |   |       |   |
-         * cy   |   |---o---|   |
-         *      |   |       |   |
-         * y2 ---------------------
-         */
-        inputs(index, x1, rx1, cy, cx);
-        outputs(index, x2, rx2, cy);
-        catalysts(index, grid, reactionPosition, cx, y1, cy);
-        regulators(index, grid, reactionPosition, x1, x2, cx, y2, cy);
     }
 
     private static boolean hasRole(Div[] divs, EntityRole role) {

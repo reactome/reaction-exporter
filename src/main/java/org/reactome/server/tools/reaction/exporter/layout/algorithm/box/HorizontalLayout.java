@@ -9,6 +9,8 @@ import java.util.List;
 
 /**
  * Horizontal layout of glyphs. Entities will be placed in a horizontal line, centered vertically.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class HorizontalLayout extends GlyphsLayout {
 

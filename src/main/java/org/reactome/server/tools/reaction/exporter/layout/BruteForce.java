@@ -23,6 +23,20 @@ import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRo
 import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils.hasRole;
 import static org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils.isAncestor;
 
+/**
+ * NOTE: Lab class. Given a Grid, plus all of the elements of a reaction. Tries all of the possible combinations of
+ * elements in the grid, testing every time all of the elements have a new position in the grid. Return the first
+ * combination that passes the validation.
+ * <p>
+ * This algorithm has a very high cost, but, if there is one valid combination, it will find it.
+ * </p>
+ * <p>
+ * <b>To do: </b>The algorithm can benefit of the restrictions of the problem, since most of the branches can be pruned before
+ * placing all of the elements.
+ * </p>
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 @SuppressWarnings("Duplicates")
 public class BruteForce {
 
@@ -276,7 +290,7 @@ public class BruteForce {
                 }
                 c--;
             }
-        }while (hasMoved);
+        } while (hasMoved);
 
     }
 

@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 /**
  * Common class for divs that contain glyph groups.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public abstract class GlyphsLayout implements Div {
 

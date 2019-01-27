@@ -1,5 +1,10 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
 
+/**
+ * Constant values shared by more than one class.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 public class Constants {
     public static final double COMPARTMENT_PADDING = 20;
     public static final int VERTICAL_PADDING = 40;

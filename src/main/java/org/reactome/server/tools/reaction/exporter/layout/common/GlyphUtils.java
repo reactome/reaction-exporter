@@ -11,6 +11,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * These methods extend {@link Glyph} class behaviour without overloading the class.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 public class GlyphUtils {
 
     public static boolean hasRole(EntityGlyph entityGlyph, EntityRole... roles) {

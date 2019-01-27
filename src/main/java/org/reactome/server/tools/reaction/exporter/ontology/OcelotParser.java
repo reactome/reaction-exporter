@@ -9,12 +9,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * Consumes a .ocelot file.
+ *
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 class OcelotParser {
 
+	private static final String CCO_OCELOT = "/ontologies/cco.ocelot";
+
 	static OcelotElement readOcelot() {
-		final InputStream resource = OcelotParser.class.getResourceAsStream("cco.ocelot");
+		final InputStream resource = OcelotParser.class.getResourceAsStream(CCO_OCELOT);
 		try {
 			final String text = IOUtils.toString(resource, Charset.defaultCharset()).replaceAll("\\s+", " ");
 			return parse(text);

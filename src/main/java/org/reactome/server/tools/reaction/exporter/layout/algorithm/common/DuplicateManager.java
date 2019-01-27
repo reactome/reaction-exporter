@@ -11,6 +11,11 @@ import java.util.List;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.CATALYST;
 import static org.reactome.server.tools.reaction.exporter.layout.common.EntityRole.INPUT;
 
+/**
+ * Helper class to duplicate elements on a reaction layout.
+ *
+ * @author Pascual Lorente (plorente@ebi.ac.uk)
+ */
 public class DuplicateManager {
 
     private DuplicateManager() {
