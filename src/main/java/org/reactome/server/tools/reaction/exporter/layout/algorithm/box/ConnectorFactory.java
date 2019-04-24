@@ -8,8 +8,8 @@ import org.reactome.server.tools.diagram.data.layout.impl.*;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Constants;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
+import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
@@ -54,10 +54,10 @@ public class ConnectorFactory {
             y2 += heights[i++];
         }
 
-        double cx = layout.getReaction().getPosition().getCenterX();
-        double cy = layout.getReaction().getPosition().getCenterY();
-        double rx1 = layout.getReaction().getPosition().getX() - Constants.BACKBONE_LENGTH;
-        double rx2 = layout.getReaction().getPosition().getMaxX() + Constants.BACKBONE_LENGTH;
+        double cx = layout.getReaction().getBounds().getCenterX();
+        double cy = layout.getReaction().getBounds().getCenterY();
+        double rx1 = layout.getReaction().getBounds().getX() - Constants.BACKBONE_LENGTH;
+        double rx2 = layout.getReaction().getBounds().getMaxX() + Constants.BACKBONE_LENGTH;
         /*
          *      x1 rx1 cx  rx2  x2
          * y1 ---------------------
@@ -123,29 +123,29 @@ public class ConnectorFactory {
 
     private static void inputs(LayoutIndex index, double x, double rx, double cy, double cx) {
         for (final EntityGlyph entity : index.getInputs()) {
-            final Position position = Transformer.getBounds(entity);
+            final Bounds bounds = Transformer.getBounds(entity);
             final ConnectorImpl connector = createConnector(entity);
             final List<Segment> segments = connector.getSegments();
             if (entity.getRenderableClass() == RenderableClass.GENE) {
                 // Genes need an extra segment from the arrow
-                segments.add(new SegmentImpl(position.getMaxX() + 8, position.getY(),
-                        position.getMaxX() + Constants.GENE_SEGMENT_LENGTH, position.getCenterY()));
+                segments.add(new SegmentImpl(bounds.getMaxX() + 8, bounds.getY(),
+                        bounds.getMaxX() + Constants.GENE_SEGMENT_LENGTH, bounds.getCenterY()));
                 segments.add(new SegmentImpl(
-                        new CoordinateImpl(position.getMaxX() + Constants.GENE_SEGMENT_LENGTH, position.getCenterY()),
-                        new CoordinateImpl(x, position.getCenterY())));
+                        new CoordinateImpl(bounds.getMaxX() + Constants.GENE_SEGMENT_LENGTH, bounds.getCenterY()),
+                        new CoordinateImpl(x, bounds.getCenterY())));
                 segments.add(new SegmentImpl(
-                        new CoordinateImpl(x, position.getCenterY()),
+                        new CoordinateImpl(x, bounds.getCenterY()),
                         new CoordinateImpl(rx, cy)));
             } else {
-                segments.add(new SegmentImpl(position.getMaxX(), position.getCenterY(), x, position.getCenterY()));
-                segments.add(new SegmentImpl(x, position.getCenterY(), rx, cy));
+                segments.add(new SegmentImpl(bounds.getMaxX(), bounds.getCenterY(), x, bounds.getCenterY()));
+                segments.add(new SegmentImpl(x, bounds.getCenterY(), rx, cy));
             }
             if (entity.getRoles().size() > 1) {
                 // Add catalyst segments
-                final double top = min(position.getY() - 10, cy - 50);
+                final double top = min(bounds.getY() - 10, cy - 50);
                 final double catalystPosition = cx - 20;
-                segments.add(new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), top));
-                segments.add(new SegmentImpl(position.getCenterX(), top, catalystPosition, top));
+                segments.add(new SegmentImpl(bounds.getCenterX(), bounds.getY(), bounds.getCenterX(), top));
+                segments.add(new SegmentImpl(bounds.getCenterX(), top, catalystPosition, top));
                 segments.add(new SegmentImpl(catalystPosition, top, cx, cy));
                 connector.setPointer(ConnectorType.CATALYST);
             } else {
@@ -162,10 +162,10 @@ public class ConnectorFactory {
 
     private static void outputs(LayoutIndex index, double x2, double rx2, double cy) {
         for (final EntityGlyph entity : index.getOutputs()) {
-            final Position position = Transformer.getBounds(entity);
+            final Bounds bounds = Transformer.getBounds(entity);
             final List<Segment> segments = Arrays.asList(
-                    new SegmentImpl(position.getX() - 4, position.getCenterY(), x2, position.getCenterY()),
-                    new SegmentImpl(x2, position.getCenterY(), rx2, cy));
+                    new SegmentImpl(bounds.getX() - 4, bounds.getCenterY(), x2, bounds.getCenterY()),
+                    new SegmentImpl(x2, bounds.getCenterY(), rx2, cy));
             createConnector(entity, segments);
         }
     }
@@ -194,10 +194,10 @@ public class ConnectorFactory {
     private static void addConnectorsToCenterCatalysts(double cx, double y1, double cy, List<? extends Glyph> glyphs) {
         for (final Glyph glyph : glyphs) {
             final EntityGlyph entity = (EntityGlyph) glyph;
-            final Position position = Transformer.getBounds(entity);
+            final Bounds bounds = Transformer.getBounds(entity);
             createConnector(entity, Arrays.asList(
-                    new SegmentImpl(position.getCenterX(), position.getMaxY(), position.getCenterX(), y1),
-                    new SegmentImpl(position.getCenterX(), y1, cx, cy)));
+                    new SegmentImpl(bounds.getCenterX(), bounds.getMaxY(), bounds.getCenterX(), y1),
+                    new SegmentImpl(bounds.getCenterX(), y1, cx, cy)));
         }
     }
 
@@ -205,11 +205,11 @@ public class ConnectorFactory {
         // Behaviour as inputs
         for (final Glyph glyph : glyphs) {
             final EntityGlyph entity = (EntityGlyph) glyph;
-            final Position position = Transformer.getBounds(entity);
-            final double x1 = position.getMaxX() + MIN_SEGMENT;
+            final Bounds bounds = Transformer.getBounds(entity);
+            final double x1 = bounds.getMaxX() + MIN_SEGMENT;
             createConnector(entity, Arrays.asList(
-                    new SegmentImpl(position.getMaxX(), position.getCenterY(), x1, position.getCenterY()),
-                    new SegmentImpl(x1, position.getCenterY(), cx, cy)));
+                    new SegmentImpl(bounds.getMaxX(), bounds.getCenterY(), x1, bounds.getCenterY()),
+                    new SegmentImpl(x1, bounds.getCenterY(), cx, cy)));
         }
     }
 
@@ -217,11 +217,11 @@ public class ConnectorFactory {
         // Behaviour as outputs
         for (final Glyph glyph : glyphs) {
             final EntityGlyph entity = (EntityGlyph) glyph;
-            final Position position = Transformer.getBounds(entity);
-            final double x2 = position.getX() - MIN_SEGMENT;
+            final Bounds bounds = Transformer.getBounds(entity);
+            final double x2 = bounds.getX() - MIN_SEGMENT;
             createConnector(entity, Arrays.asList(
-                    new SegmentImpl(position.getX(), position.getCenterY(), x2, position.getCenterY()),
-                    new SegmentImpl(x2, position.getCenterY(), cx, cy)));
+                    new SegmentImpl(bounds.getX(), bounds.getCenterY(), x2, bounds.getCenterY()),
+                    new SegmentImpl(x2, bounds.getCenterY(), cx, cy)));
         }
     }
 
@@ -249,17 +249,17 @@ public class ConnectorFactory {
         }
         final HorizontalLayout layout = (HorizontalLayout) grid.get(reactBox.getRow(), reactBox.getCol());
         final ReactionGlyph reactionGlyph = (ReactionGlyph) layout.getGlyphs().iterator().next();
-        final Position reactionPosition = reactionGlyph.getPosition();
-        double my = index.getRegulators().stream().map(Transformer::getBounds).mapToDouble(Position::getY).min().orElse(0);
+        final Bounds reactionBounds = reactionGlyph.getBounds();
+        double my = index.getRegulators().stream().map(Transformer::getBounds).mapToDouble(Bounds::getY).min().orElse(0);
         final double hRule = my - MIN_SEGMENT;
         // we want to fit all catalysts in a semi-circumference, not using the corners
         final int sectors = index.getRegulators().size() + 1;
         // the semi-circumference is centered into the reaction, and its length (PI*radius) should be enough to fit all
         // the shapes without touching each other
         int i = 1;
-        regulators.sort(Comparator.comparingDouble(v -> v.getPosition().getCenterX()));
-        final boolean left = regulators.stream().noneMatch(e -> e.getPosition().getMaxX() > reactionPosition.getX());
-        final boolean right = regulators.stream().noneMatch(e -> e.getPosition().getX() < reactionPosition.getMaxX());
+        regulators.sort(Comparator.comparingDouble(v -> v.getBounds().getCenterX()));
+        final boolean left = regulators.stream().noneMatch(e -> e.getBounds().getMaxX() > reactionBounds.getX());
+        final boolean right = regulators.stream().noneMatch(e -> e.getBounds().getX() < reactionBounds.getMaxX());
         double startAngle = 0;
         double totalAngle = PI;
         if (left) {
@@ -269,14 +269,14 @@ public class ConnectorFactory {
             startAngle = 0.5 * PI;
             totalAngle = 0.5 * PI;
         }
-        double radius = reactionPosition.getHeight() / 2 + Constants.REGULATOR_SIZE * sectors / totalAngle;
+        double radius = reactionBounds.getHeight() / 2 + Constants.REGULATOR_SIZE * sectors / totalAngle;
         for (EntityGlyph entity : regulators) {
-            final Position position = Transformer.getBounds(entity);
-            final double x = reactionPosition.getCenterX() - radius * cos((startAngle + totalAngle) * i / sectors);
-            final double y = reactionPosition.getCenterY() + radius * sin((startAngle + totalAngle) * i / sectors);
+            final Bounds bounds = Transformer.getBounds(entity);
+            final double x = reactionBounds.getCenterX() - radius * cos((startAngle + totalAngle) * i / sectors);
+            final double y = reactionBounds.getCenterY() + radius * sin((startAngle + totalAngle) * i / sectors);
             final List<Segment> segments = Arrays.asList(
-                    new SegmentImpl(position.getCenterX(), position.getY(), position.getCenterX(), hRule),
-                    new SegmentImpl(position.getCenterX(), hRule, x, y));
+                    new SegmentImpl(bounds.getCenterX(), bounds.getY(), bounds.getCenterX(), hRule),
+                    new SegmentImpl(bounds.getCenterX(), hRule, x, y));
             createConnector(entity, segments);
             i++;
         }

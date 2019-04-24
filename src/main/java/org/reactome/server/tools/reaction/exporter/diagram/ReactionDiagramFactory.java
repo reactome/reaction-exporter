@@ -2,7 +2,7 @@ package org.reactome.server.tools.reaction.exporter.diagram;
 
 import org.reactome.server.tools.diagram.data.layout.*;
 import org.reactome.server.tools.diagram.data.layout.impl.*;
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
+import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import java.util.ArrayList;
@@ -37,10 +37,10 @@ public class ReactionDiagramFactory {
         diagram.setDbId(reaction.getDbId());
         diagram.setCompartments(getCompartments(rxnLayout));
         diagram.setEdges(getEdges(rxnLayout));
-        diagram.setMaxX((int) rxnLayout.getPosition().getMaxX());
-        diagram.setMaxY((int) rxnLayout.getPosition().getMaxY());
-        diagram.setMinX((int) rxnLayout.getPosition().getX());
-        diagram.setMinY((int) rxnLayout.getPosition().getY());
+        diagram.setMaxX((int) rxnLayout.getBounds().getMaxX());
+        diagram.setMaxY((int) rxnLayout.getBounds().getMaxY());
+        diagram.setMinX((int) rxnLayout.getBounds().getX());
+        diagram.setMinY((int) rxnLayout.getBounds().getY());
         diagram.setNodes(getNodes(rxnLayout));
         diagram.setNotes(Collections.emptyList());
         diagram.setShadows(Collections.emptyList());
@@ -61,25 +61,25 @@ public class ReactionDiagramFactory {
             final CompartmentImpl compartment = new CompartmentImpl(ids);
             compartments.add(compartment);
             copyGlyphToDatabaseObject(comp, compartment);
-            final Position position = comp.getPosition();
-            compartment.setProp(getProp(position));
+            final Bounds bounds = comp.getBounds();
+            compartment.setProp(getProp(bounds));
             compartment.setTextPosition(comp.getLabelPosition().minus(GWU_CORRECTION));
         }
         return compartments;
     }
 
     private static void copyGlyphToDatabaseObject(Glyph glyph, DiagramObjectImpl object) {
-        final Position position = glyph.getPosition();
+        final Bounds bounds = glyph.getBounds();
         object.setId(glyph.getId());
-        object.setMinX(position.getX());
-        object.setMinY(position.getY());
-        object.setMaxX(position.getMaxX());
-        object.setMaxY(position.getMaxY());
+        object.setMinX(bounds.getX());
+        object.setMinY(bounds.getY());
+        object.setMaxX(bounds.getMaxX());
+        object.setMaxY(bounds.getMaxY());
         object.setDisplayName(glyph.getName());
         object.setRenderableClass(glyph.getRenderableClass().toString());
         object.setSchemaClass(glyph.getSchemaClass());
         object.setReactomeId(glyph.getDbId());
-        object.setPosition(new CoordinateImpl(position.getCenterX(), position.getCenterY()));
+        object.setPosition(new CoordinateImpl(bounds.getCenterX(), bounds.getCenterY()));
     }
 
     /**
@@ -133,29 +133,29 @@ public class ReactionDiagramFactory {
     }
 
     private static Shape getReactionShape(ReactionGlyph reaction) {
-        final Position position = reaction.getPosition();
+        final Bounds bounds = reaction.getBounds();
         final Coordinate a;
         final Coordinate b;
         final Coordinate c;
         switch (reaction.getRenderableClass()) {
             case DISSOCIATION_REACTION:
-                c = new CoordinateImpl(position.getCenterX(), position.getCenterY());
+                c = new CoordinateImpl(bounds.getCenterX(), bounds.getCenterY());
                 return new DoubleCircleImpl(c, 6., 4.);
             case OMITTED_REACTION:
-                a = new CoordinateImpl(position.getX(), position.getY());
-                b = new CoordinateImpl(position.getMaxX(), position.getMaxY());
+                a = new CoordinateImpl(bounds.getX(), bounds.getY());
+                b = new CoordinateImpl(bounds.getMaxX(), bounds.getMaxY());
                 return new BoxImpl(a, b, true, "\\\\");
             case UNCERTAIN_REACTION:
-                a = new CoordinateImpl(position.getX(), position.getY());
-                b = new CoordinateImpl(position.getMaxX(), position.getMaxY());
+                a = new CoordinateImpl(bounds.getX(), bounds.getY());
+                b = new CoordinateImpl(bounds.getMaxX(), bounds.getMaxY());
                 return new BoxImpl(a, b, true, "?");
             case BINDING_REACTION:
-                c = new CoordinateImpl(position.getCenterX(), position.getCenterY());
+                c = new CoordinateImpl(bounds.getCenterX(), bounds.getCenterY());
                 return new CircleImpl(c, 6., null, null);
             case TRANSITION_REACTION:
             default:
-                a = new CoordinateImpl(position.getX(), position.getY());
-                b = new CoordinateImpl(position.getMaxX(), position.getMaxY());
+                a = new CoordinateImpl(bounds.getX(), bounds.getY());
+                b = new CoordinateImpl(bounds.getMaxX(), bounds.getMaxY());
                 return new BoxImpl(a, b, true, null);
         }
     }
@@ -170,8 +170,8 @@ public class ReactionDiagramFactory {
             node.setFadeOut(entity.isFadeOut() ? true : null);
             node.setCrossed(entity.isCrossed() ? true : null);
             node.setNeedDashBorder(entity.isDashed() ? true : null);
-            final Position position = entity.getPosition();
-            node.setProp(getProp(position));
+            final Bounds bounds = entity.getBounds();
+            node.setProp(getProp(bounds));
             final ConnectorImpl connector = (ConnectorImpl) entity.getConnector();
             node.setConnectors(Collections.singletonList(connector));
             connector.setEdgeId(rxnLayout.getReaction().getId());
@@ -192,13 +192,13 @@ public class ReactionDiagramFactory {
     }
 
     private static Shape getAttachmentShape(AttachmentGlyph attachment) {
-        final Position position = attachment.getPosition();
-        final Coordinate a = new CoordinateImpl(position.getX(), position.getY());
-        final Coordinate b = new CoordinateImpl(position.getMaxX(), position.getMaxY());
+        final Bounds bounds = attachment.getBounds();
+        final Coordinate a = new CoordinateImpl(bounds.getX(), bounds.getY());
+        final Coordinate b = new CoordinateImpl(bounds.getMaxX(), bounds.getMaxY());
         return new BoxImpl(a, b, true, attachment.getName());
     }
 
-    private static NodeProperties getProp(Position position) {
-        return NodePropertiesFactory.get(position.getX(), position.getY(), position.getWidth(), position.getHeight());
+    private static NodeProperties getProp(Bounds bounds) {
+        return NodePropertiesFactory.get(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
     }
 }

@@ -1,7 +1,7 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.box;
 
+import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.CompartmentGlyph;
 
 import java.util.Collection;
@@ -27,7 +27,7 @@ import java.util.Collection;
  */
 public interface Div extends HasInitial {
 
-    Position getBounds();
+    Bounds getBounds();
 
     void setPadding(double padding);
 

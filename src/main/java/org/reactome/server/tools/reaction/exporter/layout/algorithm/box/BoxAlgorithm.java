@@ -4,9 +4,9 @@ import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.diagram.data.layout.Segment;
 import org.reactome.server.tools.diagram.data.layout.impl.CoordinateImpl;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.*;
+import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
 import org.reactome.server.tools.reaction.exporter.layout.common.GlyphUtils;
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import java.util.Arrays;
@@ -591,7 +591,7 @@ public class BoxAlgorithm {
                     // Only compute sizes of elements that belong to this compartment, otherwise, we will compute the
                     // same bounds more than once
                     if (compartment == div.getCompartment()) {
-                        final Position bounds = div.getBounds();
+                        final Bounds bounds = div.getBounds();
                         widths[c] = Math.max(widths[c], bounds.getWidth());
                         heights[r] = Math.max(heights[r], bounds.getHeight());
                     }
@@ -713,57 +713,57 @@ public class BoxAlgorithm {
      * Calculates the size of the compartments so each of them surrounds all of its contained glyphs and children.
      */
     private void layoutCompartment(CompartmentGlyph compartment) {
-        Position position = null;
+        Bounds b = null;
         for (CompartmentGlyph child : compartment.getChildren()) {
             layoutCompartment(child);
-            if (position == null) position = new Position(child.getPosition());
-            else position.union(child.getPosition());
+            if (b == null) b = new Bounds(child.getBounds());
+            else b.union(child.getBounds());
         }
         for (Glyph glyph : compartment.getContainedGlyphs()) {
-            final Position bounds = glyph instanceof ReactionGlyph
+            final Bounds bounds = glyph instanceof ReactionGlyph
                     ? Transformer.padd(getBounds(glyph), 60, 40)
                     : getBounds(glyph);
-            if (position == null) position = new Position(bounds);
-            else position.union(bounds);
+            if (b == null) b = new Bounds(bounds);
+            else b.union(bounds);
             // If there is an input that is a catalyst, it will have a connector on top of it. That will be part of the
             // compartment
             if (glyph instanceof EntityGlyph) {
                 final EntityGlyph entityGlyph = (EntityGlyph) glyph;
                 if (hasRole(entityGlyph, CATALYST, INPUT)) {
-                    double topy = entityGlyph.getPosition().getY();
+                    double topy = entityGlyph.getBounds().getY();
                     for (final Segment segment : entityGlyph.getConnector().getSegments()) {
                         if (segment.getFrom().getY() < topy) topy = segment.getFrom().getY();
                     }
-                    position.union(new Position(entityGlyph.getPosition().getX(), topy, 1, 1));
+                    b.union(new Bounds(entityGlyph.getBounds().getX(), topy, 1, 1));
                 }
             }
         }
-        position.setX(position.getX() - Constants.COMPARTMENT_PADDING);
-        position.setY(position.getY() - Constants.COMPARTMENT_PADDING);
-        position.setWidth(position.getWidth() + 2 * Constants.COMPARTMENT_PADDING);
-        position.setHeight(position.getHeight() + 2 * Constants.COMPARTMENT_PADDING);
+        b.setX(b.getX() - Constants.COMPARTMENT_PADDING);
+        b.setY(b.getY() - Constants.COMPARTMENT_PADDING);
+        b.setWidth(b.getWidth() + 2 * Constants.COMPARTMENT_PADDING);
+        b.setHeight(b.getHeight() + 2 * Constants.COMPARTMENT_PADDING);
 
         final double textWidth = FontProperties.getTextWidth(compartment.getName());
         final double textHeight = FontProperties.getTextHeight();
         final double textPadding = textWidth + 30;
         // If the text is too large, we increase the size of the compartment
-        if (position.getWidth() < textPadding) {
-            double diff = textPadding - position.getWidth();
-            position.setWidth(textPadding);
-            position.setX(position.getX() - 0.5 * diff);
+        if (b.getWidth() < textPadding) {
+            double diff = textPadding - b.getWidth();
+            b.setWidth(textPadding);
+            b.setX(b.getX() - 0.5 * diff);
         }
         // Puts text in the bottom right corner of the compartment
-        boolean center = textWidth > 0.5 * position.getWidth();
+        boolean center = textWidth > 0.5 * b.getWidth();
         final Collection<EntityRole> roles = GlyphUtils.getContainedRoles(compartment);
         final double x = center
-                ? position.getCenterX() - 0.5 * textWidth
-                : position.getMaxX() - textWidth - 15;
+                ? b.getCenterX() - 0.5 * textWidth
+                : b.getMaxX() - textWidth - 15;
         final double y = roles.contains(CATALYST)
-                ? position.getY() + 0.5 * textHeight
-                : position.getMaxY() + 0.5 * textHeight - Constants.COMPARTMENT_PADDING;
+                ? b.getY() + 0.5 * textHeight
+                : b.getMaxY() + 0.5 * textHeight - Constants.COMPARTMENT_PADDING;
         final Coordinate coordinate = new CoordinateImpl(x, y);
         compartment.setLabelPosition(coordinate);
-        compartment.setPosition(position);
+        compartment.setBounds(b);
     }
 
     /**
@@ -778,37 +778,37 @@ public class BoxAlgorithm {
      * Compute the absolute dimension of the layout.
      */
     private void computeDimension() {
-        Position position = null;
+        Bounds b = null;
         for (CompartmentGlyph compartment : layout.getCompartments()) {
-            if (position == null) position = new Position(compartment.getPosition());
-            else position.union(compartment.getPosition());
+            if (b == null) b = new Bounds(compartment.getBounds());
+            else b.union(compartment.getBounds());
         }
         for (EntityGlyph entity : layout.getEntities()) {
-            final Position bounds = Transformer.getBounds(entity);
-            if (position == null) position = new Position(bounds);
-            else position.union(bounds);
+            final Bounds bounds = Transformer.getBounds(entity);
+            if (b == null) b = new Bounds(bounds);
+            else b.union(bounds);
             for (final Segment segment : entity.getConnector().getSegments()) {
                 final double minX = Math.min(segment.getFrom().getX(), segment.getTo().getX());
                 final double maxX = Math.max(segment.getFrom().getX(), segment.getTo().getX());
                 final double minY = Math.min(segment.getFrom().getY(), segment.getTo().getY());
                 final double maxY = Math.max(segment.getFrom().getY(), segment.getTo().getY());
-                position.union(new Position(minX, minY, maxX - minX, maxY - minY));
+                b.union(new Bounds(minX, minY, maxX - minX, maxY - minY));
             }
         }
-        final Position bounds = Transformer.getBounds(layout.getReaction());
-        if (position == null) position = new Position(bounds);
-        else position.union(bounds);
-        layout.getPosition().set(position);
+        final Bounds bounds = Transformer.getBounds(layout.getReaction());
+        if (b == null) b = new Bounds(bounds);
+        else b.union(bounds);
+        layout.getBounds().set(b);
     }
 
     /**
      * Modify all positions so the layout.position is (x,y)=(0,0)
      */
     private void moveToOrigin() {
-        final double dx = -layout.getPosition().getX();
-        final double dy = -layout.getPosition().getY();
+        final double dx = -layout.getBounds().getX();
+        final double dy = -layout.getBounds().getY();
         final Coordinate delta = new CoordinateImpl(dx, dy);
-        layout.getPosition().move(dx, dy);
+        layout.getBounds().move(dx, dy);
         move(layout.getCompartmentRoot(), delta, true);
     }
 }

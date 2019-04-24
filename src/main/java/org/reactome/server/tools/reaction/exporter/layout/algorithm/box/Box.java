@@ -2,8 +2,8 @@ package org.reactome.server.tools.reaction.exporter.layout.algorithm.box;
 
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Constants;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.LayoutIndex;
+import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -393,7 +393,7 @@ public class Box implements Div {
     }
 
     @Override
-    public Position getBounds() {
+    public Bounds getBounds() {
         return null;
     }
 

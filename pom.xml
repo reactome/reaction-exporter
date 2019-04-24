@@ -4,7 +4,7 @@
 
     <groupId>org.reactome.server.tools</groupId>
     <artifactId>reaction-exporter</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>reaction-exporter</name>
@@ -35,7 +35,7 @@
 
         <reactome.graph.core>1.1.19</reactome.graph.core>
         <diagram.reader>1.1.5</diagram.reader>
-        <diagram.exporter>1.3.11</diagram.exporter>
+        <diagram.exporter>1.3.12-SNAPSHOT</diagram.exporter>
 
         <jasp.version>2.1</jasp.version>
         <spring.test.version>4.3.11.RELEASE</spring.test.version>

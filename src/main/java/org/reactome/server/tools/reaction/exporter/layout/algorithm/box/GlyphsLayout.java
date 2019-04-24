@@ -2,8 +2,8 @@ package org.reactome.server.tools.reaction.exporter.layout.algorithm.box;
 
 import org.reactome.server.tools.diagram.data.layout.impl.CoordinateImpl;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.common.Transformer;
+import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 import org.reactome.server.tools.reaction.exporter.layout.common.EntityRole;
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
 import org.reactome.server.tools.reaction.exporter.layout.model.*;
 
 import java.util.Collection;
@@ -25,7 +25,7 @@ public abstract class GlyphsLayout implements Div {
     private double topPadding = 10;
     private double bottomPadding = 10;
     private double separation = 5;
-    private Position bounds;
+    private Bounds bounds;
 
     GlyphsLayout(List<? extends Glyph> glyphs) {
         this.glyphs = glyphs;
@@ -45,7 +45,7 @@ public abstract class GlyphsLayout implements Div {
     }
 
     @Override
-    public Position getBounds() {
+    public Bounds getBounds() {
         if (bounds == null) bounds = layout();
         return bounds;
     }
@@ -68,13 +68,13 @@ public abstract class GlyphsLayout implements Div {
 
     @Override
     public void center(double x, double y) {
-        final Position bounds = getBounds();
+        final Bounds bounds = getBounds();
         move(x - bounds.getCenterX(), y - bounds.getCenterY());
     }
 
     @Override
     public void move(double dx, double dy) {
-        final Position bounds = getBounds();
+        final Bounds bounds = getBounds();
         final CoordinateImpl delta = new CoordinateImpl(dx, dy);
         for (final Glyph glyph : glyphs) Transformer.move(glyph, delta);
         bounds.move(dx, dy);
@@ -147,7 +147,7 @@ public abstract class GlyphsLayout implements Div {
         this.topPadding = topPadding;
     }
 
-    abstract Position layout();
+    abstract Bounds layout();
 
     @Override
     public CompartmentGlyph getCompartment() {

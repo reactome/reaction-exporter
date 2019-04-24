@@ -1,6 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
+import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 
 /**
  * Objects implementing this interface will have to be assigned a position and dimension (x, y, width, height)
@@ -8,8 +8,8 @@ import org.reactome.server.tools.reaction.exporter.layout.common.Position;
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
-public interface HasPosition {
+public interface HasBounds {
 
-    Position getPosition();
+    Bounds getBounds();
 
 }

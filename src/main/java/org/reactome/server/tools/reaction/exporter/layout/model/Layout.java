@@ -3,7 +3,7 @@ package org.reactome.server.tools.reaction.exporter.layout.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.reactome.server.graph.domain.model.Compartment;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
+import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTreeFactory;
 
@@ -15,11 +15,11 @@ import java.util.*;
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
-public class Layout implements HasPosition {
+public class Layout implements HasBounds {
 
     private String pathway;
 
-    private Position position = new Position();
+    private Bounds bounds = new Bounds();
 
     private ReactionGlyph reactionGlyph;
 
@@ -56,8 +56,8 @@ public class Layout implements HasPosition {
     }
 
     @Override
-    public Position getPosition() {
-        return position;
+    public Bounds getBounds() {
+        return bounds;
     }
 
     // This setter is called automatically by the graph-core marshaller

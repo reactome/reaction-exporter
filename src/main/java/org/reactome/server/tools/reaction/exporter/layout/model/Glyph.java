@@ -10,7 +10,7 @@ import org.reactome.server.tools.reaction.exporter.layout.common.RenderableClass
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public interface Glyph extends HasPosition {
+public interface Glyph extends HasBounds {
 
     Long getId();
 

@@ -8,15 +8,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  * @author Antonio Fabregat (fabregat@ebi.ac.uk)
  */
-public class Position {
+public class Bounds {
 
     private double x, y, width, height;
     private double cx, cy;
     private double mx, my;
 
-    public Position(){}
+    public Bounds(){}
 
-    public Position(double x, double y, double width, double height) {
+    public Bounds(double x, double y, double width, double height) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -27,15 +27,15 @@ public class Position {
         this.my = y + height;
     }
 
-    public Position(Position position) {
-        this.x = position.x;
-        this.y = position.y;
-        this.width = position.width;
-        this.height = position.height;
-        this.cx = position.cx;
-        this.cy = position.cy;
-        this.mx = position.mx;
-        this.my = position.my;
+    public Bounds(Bounds bounds) {
+        this.x = bounds.x;
+        this.y = bounds.y;
+        this.width = bounds.width;
+        this.height = bounds.height;
+        this.cx = bounds.cx;
+        this.cy = bounds.cy;
+        this.mx = bounds.mx;
+        this.my = bounds.my;
     }
 
     public double getX() {
@@ -117,7 +117,7 @@ public class Position {
      *
      * @param that the second position for the union
      */
-    public void union(Position that) {
+    public void union(Bounds that) {
         if (that == null) return;
         final double minX = Math.min(this.x, that.x);
         final double minY = Math.min(this.y, that.y);
@@ -129,16 +129,16 @@ public class Position {
         setHeight(maxY - minY);
     }
 
-    public void set(Position position) {
-        this.x = position.x;
-        this.y = position.y;
-        setWidth(position.width);
-        setHeight(position.height);
+    public void set(Bounds bounds) {
+        this.x = bounds.x;
+        this.y = bounds.y;
+        setWidth(bounds.width);
+        setHeight(bounds.height);
     }
 
     @Override
     public String toString() {
-        return "Position{" +
+        return "Bounds{" +
                 "x=" + x +
                 ", y=" + y +
                 ", w=" + width +
@@ -146,8 +146,8 @@ public class Position {
                 '}';
     }
 
-    public boolean intersects(Position position) {
-        return intersects(x, mx, position.x, position.mx) && intersects(y, my, position.y, position.my);
+    public boolean intersects(Bounds bounds) {
+        return intersects(x, mx, bounds.x, bounds.mx) && intersects(y, my, bounds.y, bounds.my);
     }
 
     /**

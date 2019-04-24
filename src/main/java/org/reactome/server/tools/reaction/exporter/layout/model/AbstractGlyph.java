@@ -1,6 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.model;
 
-import org.reactome.server.tools.reaction.exporter.layout.common.Position;
+import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -16,7 +16,7 @@ public abstract class AbstractGlyph implements Glyph{
     private final static AtomicLong NEXT_ID = new AtomicLong();
     private final long id;
 
-    private Position position = new Position();
+    private Bounds bounds = new Bounds();
 
     AbstractGlyph() {
         id = NEXT_ID.incrementAndGet();
@@ -27,12 +27,12 @@ public abstract class AbstractGlyph implements Glyph{
     }
 
     @Override
-    public Position getPosition() {
-        return position;
+    public Bounds getBounds() {
+        return bounds;
     }
 
-    public void setPosition(Position position) {
-        this.position = position;
+    public void setBounds(Bounds bounds) {
+        this.bounds = bounds;
     }
 
     @Override
