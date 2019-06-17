@@ -1,5 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.common;
 
+import org.reactome.server.tools.diagram.data.layout.Connector;
 import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.diagram.data.layout.Segment;
 import org.reactome.server.tools.diagram.data.layout.Shape;
@@ -68,14 +69,14 @@ public class Transformer {
         for (AttachmentGlyph attachment : entity.getAttachments()) {
             attachment.getBounds().move(delta.getX(), delta.getY());
         }
-        if (entity.getConnector() != null) {
-            for (Segment segment : entity.getConnector().getSegments()) {
+        for (Connector connector : entity.getConnector()) {
+            for (Segment segment : connector.getSegments()) {
                 ((SegmentImpl) segment).setFrom(segment.getFrom().add(delta));
                 ((SegmentImpl) segment).setTo(segment.getTo().add(delta));
             }
-            moveShape(entity.getConnector().getEndShape(), delta);
-            if (entity.getConnector().getStoichiometry() != null) {
-                moveShape(entity.getConnector().getStoichiometry().getShape(), delta);
+            moveShape(connector.getEndShape(), delta);
+            if (connector.getStoichiometry() != null) {
+                moveShape(connector.getStoichiometry().getShape(), delta);
             }
         }
     }
