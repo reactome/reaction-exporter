@@ -76,7 +76,7 @@ public class ConnectorFactory {
         final ConnectorImpl connector = new ConnectorImpl();
         final List<Segment> segments = new ArrayList<>();
         connector.setSegments(segments);
-        entity.setConnector(connector);
+        entity.addConnector(connector);
         return connector;
     }
 
@@ -124,39 +124,45 @@ public class ConnectorFactory {
     private static void inputs(LayoutIndex index, double x, double rx, double cy, double cx) {
         for (final EntityGlyph entity : index.getInputs()) {
             final Bounds bounds = Transformer.getBounds(entity);
-            final ConnectorImpl connector = createConnector(entity);
-            final List<Segment> segments = connector.getSegments();
-            if (entity.getRenderableClass() == RenderableClass.GENE) {
-                // Genes need an extra segment from the arrow
-                segments.add(new SegmentImpl(bounds.getMaxX() + 8, bounds.getY(),
-                        bounds.getMaxX() + Constants.GENE_SEGMENT_LENGTH, bounds.getCenterY()));
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(bounds.getMaxX() + Constants.GENE_SEGMENT_LENGTH, bounds.getCenterY()),
-                        new CoordinateImpl(x, bounds.getCenterY())));
-                segments.add(new SegmentImpl(
-                        new CoordinateImpl(x, bounds.getCenterY()),
-                        new CoordinateImpl(rx, cy)));
-            } else {
-                segments.add(new SegmentImpl(bounds.getMaxX(), bounds.getCenterY(), x, bounds.getCenterY()));
-                segments.add(new SegmentImpl(x, bounds.getCenterY(), rx, cy));
-            }
-            if (entity.getRoles().size() > 1) {
-                // Add catalyst segments
-                final double top = min(bounds.getY() - 10, cy - 50);
-                final double catalystPosition = cx - 20;
-                segments.add(new SegmentImpl(bounds.getCenterX(), bounds.getY(), bounds.getCenterX(), top));
-                segments.add(new SegmentImpl(bounds.getCenterX(), top, catalystPosition, top));
-                segments.add(new SegmentImpl(catalystPosition, top, cx, cy));
-                connector.setPointer(ConnectorType.CATALYST);
-            } else {
-                connector.setPointer(ConnectorType.INPUT);
-            }
+            ConnectorImpl connector;
+            List<Segment> segments;
             // We expect to have stoichiometry only in input role
-            for (Role role : entity.getRoles())
-                if (role.getType() == INPUT) {
-                    connector.setStoichiometry(getStoichiometry(segments, role));
-                    break;
+            for (Role role : entity.getRoles()) {
+                switch (role.getType()) {
+                    case INPUT:
+                        connector = createConnector(entity);
+                        segments = connector.getSegments();
+                        if (entity.getRenderableClass() == RenderableClass.GENE) {
+                            // Genes need an extra segment from the arrow
+                            segments.add(new SegmentImpl(bounds.getMaxX() + 8, bounds.getY(),
+                                    bounds.getMaxX() + Constants.GENE_SEGMENT_LENGTH, bounds.getCenterY()));
+                            segments.add(new SegmentImpl(
+                                    new CoordinateImpl(bounds.getMaxX() + Constants.GENE_SEGMENT_LENGTH, bounds.getCenterY()),
+                                    new CoordinateImpl(x, bounds.getCenterY())));
+                            segments.add(new SegmentImpl(
+                                    new CoordinateImpl(x, bounds.getCenterY()),
+                                    new CoordinateImpl(rx, cy)));
+                        } else {
+                            segments.add(new SegmentImpl(bounds.getMaxX(), bounds.getCenterY(), x, bounds.getCenterY()));
+                            segments.add(new SegmentImpl(x, bounds.getCenterY(), rx, cy));
+                        }
+                        connector.setPointer(ConnectorType.INPUT);
+                        connector.setStoichiometry(getStoichiometry(segments, role));
+                        break;
+                    case CATALYST:
+                        // Add catalyst segments
+                        connector = createConnector(entity);
+                        segments = connector.getSegments();
+                        final double top = min(bounds.getY() - 10, cy - 50);
+                        final double catalystPosition = cx - 20;
+                        segments.add(new SegmentImpl(bounds.getCenterX(), bounds.getY(), bounds.getCenterX(), top));
+                        segments.add(new SegmentImpl(bounds.getCenterX(), top, catalystPosition, top));
+                        segments.add(new SegmentImpl(catalystPosition, top, cx, cy));
+                        connector.setPointer(ConnectorType.CATALYST);
+                        break;
                 }
+            }
+
         }
     }
 
@@ -228,7 +234,7 @@ public class ConnectorFactory {
     private static void createConnector(EntityGlyph entity, List<Segment> segments) {
         final ConnectorImpl connector = new ConnectorImpl();
         connector.setSegments(new ArrayList<>(segments));
-        entity.setConnector(connector);
+        entity.addConnector(connector);
         for (Role role : entity.getRoles()) {
             connector.setStoichiometry(getStoichiometry(segments, role));
             connector.setPointer(getConnectorType(role.getType()));
