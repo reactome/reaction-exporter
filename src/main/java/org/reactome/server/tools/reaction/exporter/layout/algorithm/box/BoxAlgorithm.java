@@ -1,5 +1,6 @@
 package org.reactome.server.tools.reaction.exporter.layout.algorithm.box;
 
+import org.reactome.server.tools.diagram.data.layout.Connector;
 import org.reactome.server.tools.diagram.data.layout.Coordinate;
 import org.reactome.server.tools.diagram.data.layout.Segment;
 import org.reactome.server.tools.diagram.data.layout.impl.CoordinateImpl;
@@ -731,8 +732,10 @@ public class BoxAlgorithm {
                 final EntityGlyph entityGlyph = (EntityGlyph) glyph;
                 if (hasRole(entityGlyph, CATALYST, INPUT)) {
                     double topy = entityGlyph.getBounds().getY();
-                    for (final Segment segment : entityGlyph.getConnector().getSegments()) {
-                        if (segment.getFrom().getY() < topy) topy = segment.getFrom().getY();
+                    for (Connector connector : entityGlyph.getConnector()) {
+                        for (final Segment segment : connector.getSegments()) {
+                            if (segment.getFrom().getY() < topy) topy = segment.getFrom().getY();
+                        }
                     }
                     b.union(new Bounds(entityGlyph.getBounds().getX(), topy, 1, 1));
                 }
@@ -787,12 +790,14 @@ public class BoxAlgorithm {
             final Bounds bounds = Transformer.getBounds(entity);
             if (b == null) b = new Bounds(bounds);
             else b.union(bounds);
-            for (final Segment segment : entity.getConnector().getSegments()) {
-                final double minX = Math.min(segment.getFrom().getX(), segment.getTo().getX());
-                final double maxX = Math.max(segment.getFrom().getX(), segment.getTo().getX());
-                final double minY = Math.min(segment.getFrom().getY(), segment.getTo().getY());
-                final double maxY = Math.max(segment.getFrom().getY(), segment.getTo().getY());
-                b.union(new Bounds(minX, minY, maxX - minX, maxY - minY));
+            for (Connector connector : entity.getConnector()) {
+                for (final Segment segment : connector.getSegments()) {
+                    final double minX = Math.min(segment.getFrom().getX(), segment.getTo().getX());
+                    final double maxX = Math.max(segment.getFrom().getX(), segment.getTo().getX());
+                    final double minY = Math.min(segment.getFrom().getY(), segment.getTo().getY());
+                    final double maxY = Math.max(segment.getFrom().getY(), segment.getTo().getY());
+                    b.union(new Bounds(minX, minY, maxX - minX, maxY - minY));
+                }
             }
         }
         final Bounds bounds = Transformer.getBounds(layout.getReaction());
