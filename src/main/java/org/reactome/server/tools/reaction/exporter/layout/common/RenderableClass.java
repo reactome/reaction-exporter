@@ -61,6 +61,14 @@ public enum RenderableClass {
         return getRenderableClass(databaseObject, false);
     }
 
+    public static RenderableClass get(String type) {
+        if (type == null || type.isEmpty()) return null;
+        for (RenderableClass value : values()) {
+            if (value.name.equalsIgnoreCase(type)) return value;
+        }
+        return null;
+    }
+
     /**
      * @param databaseObject the object associated with the glyph
      * @param drug For entities, the query in {@link LayoutFactory} assigns it to true for {@link Drug} class instances
