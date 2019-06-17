@@ -172,11 +172,13 @@ public class ReactionDiagramFactory {
             node.setNeedDashBorder(entity.isDashed() ? true : null);
             final Bounds bounds = entity.getBounds();
             node.setProp(getProp(bounds));
-            final ConnectorImpl connector = (ConnectorImpl) entity.getConnector();
-            node.setConnectors(Collections.singletonList(connector));
-            connector.setEdgeId(rxnLayout.getReaction().getId());
-            connector.setDisease(rxnLayout.getReaction().isDisease() ? true : null);
-            connector.setFadeOut(entity.isFadeOut() ? true : null);
+            node.setConnectors(new ArrayList<>(entity.getConnector()));
+            for (Connector c : entity.getConnector()) {
+                ConnectorImpl connector = (ConnectorImpl) c;
+                connector.setEdgeId( rxnLayout.getReaction().getId());
+                connector.setDisease(rxnLayout.getReaction().isDisease() ? true : null);
+                connector.setFadeOut(entity.isFadeOut() ? true : null);
+            }
             List<NodeAttachment> attachments = new ArrayList<>();
             for (AttachmentGlyph attachment : entity.getAttachments()) {
                 final NodeAttachmentImpl nodeAttachment = new NodeAttachmentImpl();
