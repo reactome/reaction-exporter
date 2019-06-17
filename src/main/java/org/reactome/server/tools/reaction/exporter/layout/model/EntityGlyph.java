@@ -17,63 +17,70 @@ import java.util.List;
 public class EntityGlyph extends AbstractGlyph {
 
     //From the query
-    private PhysicalEntity pe;
     private Collection<Role> roles = new HashSet<>();
-    private Boolean drug = false;
+    private transient Boolean drug = false;
     private Boolean crossed = false;
     private Boolean dashed = false;
 
     //Populated in this class
+    private Long dbId;
+    private String stId;
+    private String name;
+    private Boolean inDisease;
+    private String schemaClass;
+    private List<Compartment> compartments;
     private Collection<AttachmentGlyph> attachments = new ArrayList<>();
     private RenderableClass renderableClass;
     private Boolean trivial = false;
 
-    private Connector connector;
+    private List<Connector> connector = new ArrayList<>();
     private CompartmentGlyph compartment;
 
     public EntityGlyph() {
-	    super();
 	}
 
 	public EntityGlyph(EntityGlyph entity) {
-		super();
-		pe = entity.pe;
+        dbId = entity.dbId;
+        stId = entity.stId;
+        name = entity.name;
+        inDisease = entity.inDisease;
+        schemaClass = entity.schemaClass;
+        compartments = entity.compartments;
+        compartment = entity.compartment;
+        crossed = entity.crossed;
+        dashed = entity.dashed;
+        drug = entity.drug;
 		trivial = entity.trivial;
-		drug = entity.drug;
-		crossed = entity.crossed;
-		dashed = entity.dashed;
-		renderableClass = entity.renderableClass;
-		compartment = entity.compartment;
-		if (entity.attachments != null) {
-			attachments = new ArrayList<>();
-			for (AttachmentGlyph attachment : entity.attachments) {
-				attachments.add(new AttachmentGlyph(attachment));
-			}
-		}
-	}
+        if (entity.attachments != null) {
+            attachments = new ArrayList<>();
+            for (AttachmentGlyph attachment : entity.attachments) {
+                attachments.add(new AttachmentGlyph(attachment));
+            }
+        }
+        renderableClass = entity.renderableClass;
+    }
 
-	public Collection<AttachmentGlyph> getAttachments() {
+    public Collection<AttachmentGlyph> getAttachments() {
         return attachments;
     }
 
     @JsonIgnore
     List<Compartment> getCompartments() {
-        return pe.getCompartment();
+        return compartments;
     }
 
     @Override
     public String getName() {
-        return pe.getName().get(0);
+        return name;
     }
 
     @Override
     public String getSchemaClass() {
-        return pe.getSchemaClass();
+        return schemaClass;
     }
 
     @Override
     public RenderableClass getRenderableClass() {
-        if(renderableClass == null) renderableClass = RenderableClass.getRenderableClass(pe, drug);
         return renderableClass;
     }
 
@@ -84,11 +91,11 @@ public class EntityGlyph extends AbstractGlyph {
 
 	@Override
 	public Long getDbId() {
-		return pe.getDbId();
+		return dbId;
 	}
 
 	public String getStId() {
-        return pe.getStId();
+        return stId;
     }
 
     public Boolean isCrossed() {
@@ -107,7 +114,7 @@ public class EntityGlyph extends AbstractGlyph {
     }
 
     public Boolean isDisease() {
-        return isDashed() ||  pe.getInDisease();
+        return isDashed() ||  inDisease;
     }
 
     public Boolean isFadeOut(){
@@ -121,7 +128,12 @@ public class EntityGlyph extends AbstractGlyph {
     // This setter is called automatically by the graph-core marshaller
     @SuppressWarnings("unused")
     public void setPhysicalEntity(PhysicalEntity pe) {
-        this.pe = pe;
+        this.dbId = pe.getDbId();
+        this.stId = pe.getStId();
+        this.name = pe.getName().get(0);
+        this.inDisease = pe.getInDisease();
+        this.compartments = pe.getCompartment();
+        this.schemaClass = pe.getSchemaClass();
 
         ReferenceEntity re = pe.fetchSingleValue("getReferenceEntity");
         if (re instanceof ReferenceMolecule){
@@ -136,6 +148,24 @@ public class EntityGlyph extends AbstractGlyph {
                 attachments.add(new AttachmentGlyph((TranslationalModification) modifiedResidue));
             }
         }
+
+        renderableClass = RenderableClass.getRenderableClass(pe, drug);
+    }
+
+    // This setter is called automatically by the graph-core marshaller
+    @SuppressWarnings("unused")
+    public void setDrug(Boolean drug) {
+        this.drug = drug;
+        if (drug & renderableClass != null) {
+            switch (renderableClass){
+                case ENTITY_SET:
+                    renderableClass = RenderableClass.ENTITY_SET_DRUG;
+                    break;
+                case COMPLEX:
+                    renderableClass = RenderableClass.COMPLEX_DRUG;
+                    break;
+            }
+        }
     }
 
     // This setter is called automatically by the graph-core marshaller
@@ -144,12 +174,12 @@ public class EntityGlyph extends AbstractGlyph {
         roles.add(role);
     }
 
-    public Connector getConnector() {
+    public List<Connector> getConnector() {
         return connector;
     }
 
-    public void setConnector(Connector connector) {
-        this.connector = connector;
+    public void addConnector(Connector connector) {
+        this.connector.add(connector);
     }
 
     public CompartmentGlyph getCompartment() {
