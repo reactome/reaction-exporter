@@ -19,7 +19,7 @@ public class Layout implements HasBounds {
 
     private String pathway;
 
-    private Bounds bounds = new Bounds();
+    private Bounds bounds;
 
     private ReactionGlyph reactionGlyph;
 
@@ -27,7 +27,12 @@ public class Layout implements HasBounds {
 
     private CompartmentGlyph compartmentRoot;
 
-    private Map<String, CompartmentGlyph> compartments = new HashMap<>();
+    private Map<String, CompartmentGlyph> compartments;
+
+    public Layout() {
+        this.bounds = new Bounds();
+        this.compartments = new HashMap<>();
+    }
 
     public void add(EntityGlyph entityGlyph) {
         entities.add(entityGlyph);
@@ -101,7 +106,12 @@ public class Layout implements HasBounds {
                 break; //We only want to assign the participant to the first compartment in the list
             }
         }
+        this.entities = new HashSet<>(entities.values());
 
+        createCompartmentsStructure();
+    }
+
+    private void createCompartmentsStructure() {
         List<String> compartments = new ArrayList<>();
         for (CompartmentGlyph compartment : this.compartments.values()) {
             compartments.add("GO:" + compartment.getAccession());
@@ -110,10 +120,7 @@ public class Layout implements HasBounds {
         GoTerm treeRoot = GoTreeFactory.getTreeWithIntermediateNodes(compartments);
         compartmentRoot = this.compartments.computeIfAbsent(treeRoot.getAccession(), a -> new CompartmentGlyph(treeRoot));
 
-
         buildCompartmentHierarchy(compartmentRoot, treeRoot);
-
-        this.entities = new HashSet<>(entities.values());
     }
 
     private void buildCompartmentHierarchy(CompartmentGlyph cg, GoTerm term) {
@@ -124,5 +131,4 @@ public class Layout implements HasBounds {
             buildCompartmentHierarchy(aux, goTerm);
         }
     }
-
 }
