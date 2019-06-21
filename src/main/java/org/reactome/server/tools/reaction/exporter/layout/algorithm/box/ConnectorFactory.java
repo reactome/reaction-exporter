@@ -153,6 +153,7 @@ public class ConnectorFactory {
                         // Add catalyst segments
                         connector = createConnector(entity);
                         segments = connector.getSegments();
+                        connector.setStoichiometry(new StoichiometryImpl(1, null));
                         final double top = min(bounds.getY() - 10, cy - 50);
                         final double catalystPosition = cx - 20;
                         segments.add(new SegmentImpl(bounds.getCenterX(), bounds.getY(), bounds.getCenterX(), top));
