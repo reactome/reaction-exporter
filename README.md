@@ -40,7 +40,7 @@ Or as a maven dependency:
 <dependency>
      <groupId>org.reactome.server.tools</groupId>
      <artifactId>reaction-exporter</artifactId>
-     <version>0.0.1-SNAPSHOT</version>
+     <version>1.1.1-SNAPSHOT</version>
 </dependency>
 ```
 ```xml
