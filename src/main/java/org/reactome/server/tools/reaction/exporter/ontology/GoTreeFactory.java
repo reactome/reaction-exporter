@@ -1,5 +1,7 @@
 package org.reactome.server.tools.reaction.exporter.ontology;
 
+import org.reactome.server.tools.reaction.exporter.compartment.ReactomeCompartmentFactory;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -14,13 +16,24 @@ import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipT
  */
 public class GoTreeFactory {
 
+    enum Source {
+        GO, REACTOME
+    }
+
+    private static final Source source = Source.REACTOME;
     private static final String EXTRACELLULAR_REGION_ID = "GO:0005576";
     private static final String CELLULAR_COMPONENT_ID = "GO:0005575";
 
-    private static Map<String, GoTerm> masterTree = GoParser.getGoOntology().values().stream()
-            .collect(Collectors.toMap(GoTerm::getId, Function.identity()));
+    private static Map<String, GoTerm> masterTree;
 
     static {
+        //noinspection ConstantConditions
+        if (source == Source.GO) {
+            masterTree = GoParser.getGoOntology().values().stream()
+                    .collect(Collectors.toMap(GoTerm::getId, Function.identity()));
+        } else {
+            masterTree = ReactomeCompartmentFactory.getMasterTree();
+        }
         // NOTE: Reactome diagrams show the cell and any other compartment surrounded by the extracellular region.
         // This is not represented in Gene Ontology. To bypass this behaviour we create the relationship:
         //                 (cellular component)-[surrounded_by]->(extracellular_region)
