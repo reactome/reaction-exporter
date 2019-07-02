@@ -6,6 +6,8 @@ import org.junit.runner.RunWith;
 import org.reactome.server.graph.aop.LazyFetchAspect;
 import org.reactome.server.graph.config.Neo4jConfig;
 import org.reactome.server.graph.service.GeneralService;
+import org.reactome.server.graph.service.SchemaService;
+import org.reactome.server.tools.reaction.exporter.compartment.ReactomeCompartmentFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ public abstract class BaseTest {
     protected GeneralService generalService;
 
     @Autowired
+    protected SchemaService schemaService;
+
+    @Autowired
     protected LazyFetchAspect lazyFetchAspect;
 
     @AfterClass
@@ -40,6 +45,7 @@ public abstract class BaseTest {
             checkedOnce = true;
         }
         assumeTrue(isFit);
+        ReactomeCompartmentFactory.setSchemaService(schemaService);
     }
 
 
