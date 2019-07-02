@@ -1,5 +1,7 @@
 package org.reactome.server.tools.reaction.exporter.ontology;
 
+import org.reactome.server.graph.domain.model.GO_CellularComponent;
+
 import java.util.*;
 
 import static java.util.stream.Collectors.joining;
@@ -33,6 +35,15 @@ public class GoTerm implements Comparable<GoTerm> {
         this.obsolete = that.obsolete;
         this.altIds = new ArrayList<>(that.altIds);
         this.consider = new ArrayList<>(that.altIds);
+    }
+
+    public GoTerm(GO_CellularComponent compartment){
+        this.id = compartment.getDatabaseName() + ":" + compartment.getAccession();
+        this.namespace = "cellular_component";
+        this.name = compartment.getDisplayName();
+        this.obsolete = false;
+        this.altIds = new ArrayList<>();
+        this.consider = new ArrayList<>();
     }
 
     public String getAccession(){
