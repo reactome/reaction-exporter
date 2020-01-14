@@ -40,13 +40,13 @@ Or as a maven dependency:
 <dependency>
      <groupId>org.reactome.server.tools</groupId>
      <artifactId>reaction-exporter</artifactId>
-     <version>1.1.1</version>
+     <version>1.1.2</version>
 </dependency>
 ```
 ```xml
 <repository>
     <id>pst-release</id>
     <name>EBI Nexus Repository</name>
-    <url>http://www.ebi.ac.uk/Tools/maven/repos/content/repositories/pst-release</url>
+    <url>https://www.ebi.ac.uk/Tools/maven/repos/content/repositories/pst-release</url>
 </repository>
 ```
