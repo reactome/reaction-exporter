@@ -16,14 +16,9 @@ import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipT
  */
 public class GoTreeFactory {
 
-    enum Source {
-        GO, REACTOME
-    }
-
     private static final Source source = Source.REACTOME;
     private static final String EXTRACELLULAR_REGION_ID = "GO:0005576";
     private static final String CELLULAR_COMPONENT_ID = "GO:0005575";
-
     private static Map<String, GoTerm> masterTree;
 
     static {
@@ -42,11 +37,16 @@ public class GoTreeFactory {
         cellularComponent.createRelationship(OUTGOING, surrounded_by, extracellularRegion);
 
         // To avoid cycles (extracellular region) is not a (cellular component) anymore
-        extracellularRegion.getParents().remove(cellularComponent);
+        // (gviteri) IMPORTANT: FOLLOWING LINE DOESN'T WORK FOR RELEASE V71 SINCE ANOTHER PARENT FOR EXTRACELLULAR REGION HAS BEEN ADDED.
+        // extracellularRegion.getParents().remove(cellularComponent);
+
+        // BUG FIX NOTE: As per release V71, extracellularRegion's parent isn't cellular component, so the line above would not work
+        //               and in the later process will lead to stackoverflow exception in the getBranches().
+        extracellularRegion.getParents().clear();
     }
 
-    private GoTreeFactory() {}
-
+    private GoTreeFactory() {
+    }
 
     /**
      * Creates a subtree from the GO tree that contains the terms in <em>ids</em> are connected and those in-between
@@ -63,7 +63,7 @@ public class GoTreeFactory {
      * them.
      *
      * @param masterTree the tree where to extract the relationships
-     * @param ids a list of GO accession (without GO: prefix)
+     * @param ids        a list of GO accession (without GO: prefix)
      * @return a copy of the components root, with a smaller copy of the tree containing <em>ids</em>
      */
     public static GoTerm getTreeWithIntermediateNodes(Map<String, GoTerm> masterTree, Collection<String> ids) {
@@ -126,5 +126,7 @@ public class GoTreeFactory {
         return rtn;
     }
 
-
+    enum Source {
+        GO, REACTOME
+    }
 }
