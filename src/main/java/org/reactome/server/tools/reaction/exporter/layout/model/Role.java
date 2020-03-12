@@ -28,4 +28,8 @@ public class Role {
     public String toString() {
         return "(" + n + "x" + type + ")";
     }
+
+    public void setStoichiometry(Integer n) {
+      this.n = n;
+    }
 }

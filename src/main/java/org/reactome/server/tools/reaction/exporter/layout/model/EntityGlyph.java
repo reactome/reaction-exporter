@@ -210,4 +210,8 @@ public class EntityGlyph extends AbstractGlyph {
                 ", dashed=" + isDashed() +
                 '}';
     }
+
+    public void setDashed(Boolean dashed) {
+      this.dashed = dashed;
+    }
 }

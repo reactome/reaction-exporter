@@ -29,7 +29,7 @@ public class CompartmentGlyph extends AbstractGlyph implements HasInitial {
 
     private Coordinate labelPosition;
 
-    CompartmentGlyph(Compartment compartment) {
+    public CompartmentGlyph(Compartment compartment) {
         super();
         dbId = compartment.getDbId();
         schemaClass = compartment.getSchemaClass();
@@ -37,7 +37,7 @@ public class CompartmentGlyph extends AbstractGlyph implements HasInitial {
         accession = compartment.getAccession();
     }
 
-    CompartmentGlyph(GoTerm term) {
+    public CompartmentGlyph(GoTerm term) {
         super();
         name = term.getName();
         accession = term.getId().replaceAll("GO:", "");
