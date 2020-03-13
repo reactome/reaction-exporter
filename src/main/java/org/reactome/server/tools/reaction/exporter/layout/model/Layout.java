@@ -6,6 +6,7 @@ import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.tools.reaction.exporter.layout.common.Bounds;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTreeFactory;
+import org.reactome.server.tools.reaction.exporter.ontology.GoTreeFactory.Source;
 
 import java.util.*;
 
@@ -16,6 +17,8 @@ import java.util.*;
  * @author Pascual Lorente (plorente@ebi.ac.uk)
  */
 public class Layout implements HasBounds {
+
+    private Source goTreeSource = Source.REACTOME;
 
     private String pathway;
 
@@ -29,9 +32,21 @@ public class Layout implements HasBounds {
 
     private Map<String, CompartmentGlyph> compartments;
 
+
     public Layout() {
         this.bounds = new Bounds();
         this.compartments = new HashMap<>();
+    }
+
+  /**
+   *
+   * @param source
+   *          defines source of Go tree hierarchy that should be used when layout
+   *          is generated
+   */
+    public Layout(Source source) {
+      this();
+      this.goTreeSource=source;
     }
 
     public void add(EntityGlyph entityGlyph) {
@@ -117,7 +132,7 @@ public class Layout implements HasBounds {
             compartments.add("GO:" + compartment.getAccession());
         }
 
-        GoTerm treeRoot = GoTreeFactory.getTreeWithIntermediateNodes(compartments);
+        GoTerm treeRoot = GoTreeFactory.getTreeWithIntermediateNodes(compartments, goTreeSource);
         compartmentRoot = this.compartments.computeIfAbsent(treeRoot.getAccession(), a -> new CompartmentGlyph(treeRoot));
 
         buildCompartmentHierarchy(compartmentRoot, treeRoot);

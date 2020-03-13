@@ -1,13 +1,14 @@
 package org.reactome.server.tools.reaction.exporter.ontology;
 
-import org.reactome.server.tools.reaction.exporter.compartment.ReactomeCompartmentFactory;
+import static org.reactome.server.tools.reaction.exporter.ontology.GoTerm.Directionality.OUTGOING;
+import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipType.surrounded_by;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.reactome.server.tools.reaction.exporter.ontology.GoTerm.Directionality.OUTGOING;
-import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipType.surrounded_by;
+import org.reactome.server.tools.reaction.exporter.InvalidArgumentException;
+import org.reactome.server.tools.reaction.exporter.compartment.ReactomeCompartmentFactory;
 
 /**
  * Helper class to generate compartment trees.
@@ -16,34 +17,11 @@ import static org.reactome.server.tools.reaction.exporter.ontology.RelationshipT
  */
 public class GoTreeFactory {
 
-    private static final Source source = Source.REACTOME;
     private static final String EXTRACELLULAR_REGION_ID = "GO:0005576";
     private static final String CELLULAR_COMPONENT_ID = "GO:0005575";
-    private static Map<String, GoTerm> masterTree;
 
-    static {
-        //noinspection ConstantConditions
-        if (source == Source.GO) {
-            masterTree = GoParser.getGoOntology().values().stream()
-                    .collect(Collectors.toMap(GoTerm::getId, Function.identity()));
-        } else {
-            masterTree = ReactomeCompartmentFactory.getMasterTree();
-        }
-        // NOTE: Reactome diagrams show the cell and any other compartment surrounded by the extracellular region.
-        // This is not represented in Gene Ontology. To bypass this behaviour we create the relationship:
-        //                 (cellular component)-[surrounded_by]->(extracellular_region)
-        final GoTerm cellularComponent = masterTree.get(CELLULAR_COMPONENT_ID);
-        final GoTerm extracellularRegion = masterTree.get(EXTRACELLULAR_REGION_ID);
-        cellularComponent.createRelationship(OUTGOING, surrounded_by, extracellularRegion);
-
-        // To avoid cycles (extracellular region) is not a (cellular component) anymore
-        // (gviteri) IMPORTANT: FOLLOWING LINE DOESN'T WORK FOR RELEASE V71 SINCE ANOTHER PARENT FOR EXTRACELLULAR REGION HAS BEEN ADDED.
-        // extracellularRegion.getParents().remove(cellularComponent);
-
-        // BUG FIX NOTE: As per release V71, extracellularRegion's parent isn't cellular component, so the line above would not work
-        //               and in the later process will lead to stackoverflow exception in the getBranches().
-        extracellularRegion.getParents().clear();
-    }
+    private static Map<String, GoTerm> reactomeSourcedMasterTree = null;
+    private static Map<String, GoTerm> goSourcedMasterTree = null;
 
     private GoTreeFactory() {
     }
@@ -54,8 +32,48 @@ public class GoTreeFactory {
      *
      * @return a copy of the components root, with a smaller copy of the tree containing <em>ids</em>
      */
-    public static GoTerm getTreeWithIntermediateNodes(List<String> goIds) {
-        return getTreeWithIntermediateNodes(GoTreeFactory.masterTree, goIds);
+    public static GoTerm getTreeWithIntermediateNodes(List<String> goIds, Source source) {
+      Map<String, GoTerm> tree;
+      switch (source) {
+        case REACTOME:
+          tree = getLazyLoadedReactomeTree();
+          break;
+        case GO:
+          tree = getLazyLoadedGoTree();
+          break;
+        default:
+          throw new InvalidArgumentException("Don't know how to process tree source: "+source);
+      }
+      return getTreeWithIntermediateNodes(tree, goIds);
+    }
+
+    private static Map<String, GoTerm> getLazyLoadedGoTree() {
+      if (goSourcedMasterTree ==null) {
+        goSourcedMasterTree = GoParser.getGoOntology().values().stream().collect(Collectors.toMap(GoTerm::getId, Function.identity()));
+      }
+      return goSourcedMasterTree ;
+    }
+
+    private static Map<String, GoTerm> getLazyLoadedReactomeTree() {
+      if (reactomeSourcedMasterTree ==null) {
+        reactomeSourcedMasterTree = ReactomeCompartmentFactory.getMasterTree();
+
+        // NOTE: Reactome diagrams show the cell and any other compartment surrounded by the extracellular region.
+        // This is not represented in Gene Ontology. To bypass this behaviour we create the relationship:
+        //                 (cellular component)-[surrounded_by]->(extracellular_region)
+        final GoTerm cellularComponent = reactomeSourcedMasterTree.get(CELLULAR_COMPONENT_ID);
+        final GoTerm extracellularRegion = reactomeSourcedMasterTree.get(EXTRACELLULAR_REGION_ID);
+        cellularComponent.createRelationship(OUTGOING, surrounded_by, extracellularRegion);
+
+        //To avoid cycles (extracellular region) is not a (cellular component) anymore
+        // (gviteri) IMPORTANT: FOLLOWING LINE DOESN'T WORK FOR RELEASE V71 SINCE ANOTHER PARENT FOR EXTRACELLULAR REGION HAS BEEN ADDED.
+        // extracellularRegion.getParents().remove(cellularComponent);
+
+        // BUG FIX NOTE: As per release V71, extracellularRegion's parent isn't cellular component, so the line above would not work
+        //               and in the later process will lead to stackoverflow exception in the getBranches().
+        extracellularRegion.getParents().clear();
+      }
+      return reactomeSourcedMasterTree;
     }
 
     /**
@@ -126,7 +144,7 @@ public class GoTreeFactory {
         return rtn;
     }
 
-    enum Source {
+    public enum Source {
         GO, REACTOME
     }
 }
