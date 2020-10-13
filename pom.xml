@@ -39,7 +39,7 @@
 
         <jasp.version>2.1</jasp.version>
         <spring.test.version>4.3.11.RELEASE</spring.test.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
 
         <maven.compiler.version>3.5.1</maven.compiler.version>
         <maven.jar.version>2.6</maven.jar.version>
