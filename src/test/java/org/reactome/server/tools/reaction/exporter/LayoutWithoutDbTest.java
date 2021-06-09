@@ -109,7 +109,7 @@ public class LayoutWithoutDbTest {
         long id = idCounter++;
         SimpleEntity input2 = new SimpleEntity();
         input2.setDbId(id);
-        input2.setId(id);
+//        input2.setId(id);
         input2.setStId(id + "");
         input2.setCompartment(Arrays.asList(compartment));
         input2.setName(Arrays.asList(name));
@@ -123,7 +123,7 @@ public class LayoutWithoutDbTest {
         compartment.setAccession(accession);
         compartment.setName(name);
         compartment.setDatabaseName("GO");
-        compartment.setId(id);
+//        compartment.setId(id);
         compartment.setStId(id + "");
         compartment.setDisplayName(name);
         return compartment;

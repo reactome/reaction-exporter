@@ -34,9 +34,9 @@
         <jdk.version>11</jdk.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <reactome.graph.core>1.1.25-SNAPSHOT</reactome.graph.core>
+        <reactome.graph.core>2.0.0-SNAPSHOT</reactome.graph.core>
         <diagram.reader>1.2.0-SNAPSHOT</diagram.reader>
-        <diagram.exporter>1.4.0-SNAPSHOT</diagram.exporter>
+        <diagram.exporter>2.0.0-SNAPSHOT</diagram.exporter>
 
         <jasp.version>2.1</jasp.version>
         <spring.test.version>5.3.6</spring.test.version>
@@ -99,6 +99,20 @@
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>${jackson-dataformat.version}</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>30.1.1-jre</version>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-test</artifactId>-->
+<!--            <version>2.4.5</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 
     </dependencies>
 

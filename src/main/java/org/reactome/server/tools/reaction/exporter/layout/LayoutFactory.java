@@ -1,13 +1,15 @@
 package org.reactome.server.tools.reaction.exporter.layout;
 
-import org.reactome.server.graph.domain.model.ReactionLikeEvent;
+import org.reactome.server.graph.domain.model.Event;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
+import org.reactome.server.graph.service.GeneralService;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.box.BoxAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -24,7 +26,7 @@ public class LayoutFactory {
 
 
     private static final String QUERY = "" +
-            "MATCH (rle:ReactionLikeEvent{stId:{stId}}) " +
+            "MATCH (rle:ReactionLikeEvent{stId:$stId}) " +
             "OPTIONAL MATCH (rle)-[:normalReaction]->(nr:ReactionLikeEvent) " +
             "WHERE (rle:FailedReaction)" +
 
@@ -121,6 +123,7 @@ public class LayoutFactory {
             "WHERE SINGLE(x IN NODES(path) WHERE (x:Pathway) AND x.hasDiagram) " +
             "RETURN p.stId AS pathway, rle AS reactionLikeEvent, ps AS participants";
     private AdvancedDatabaseObjectService ads;
+    private GeneralService generalService;
 
     @Autowired
     public LayoutFactory(AdvancedDatabaseObjectService ads) {
@@ -134,16 +137,17 @@ public class LayoutFactory {
      * @return the corresponding layout of the rle
      * @throws NullPointerException if rle is null
      */
-    public Layout getReactionLikeEventLayout(ReactionLikeEvent rle, Style style) {
+    public Layout getReactionLikeEventLayout(Event rle, Style style) {
         if (rle == null) throw new NullPointerException("rle cannot be null");
         Map<String, Object> params = new HashMap<>();
         params.put("stId", rle.getStId());
         try {
+            Collection<Map<String, Object>> aa = generalService.query(QUERY, params);
+            System.out.println(aa);
             final Layout layout = ads.getCustomQueryResult(Layout.class, QUERY, params);
             style.apply(layout);
             return layout;
         } catch (CustomQueryException e) {
-            //TODO: log -> e.printStackTrace();
             e.printStackTrace();
             return null;
         }
