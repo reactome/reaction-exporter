@@ -57,6 +57,18 @@
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
             <version>${reactome.graph.core}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-neo4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-neo4j</artifactId>
+            <version>6.0.9</version>
         </dependency>
 
         <dependency>
