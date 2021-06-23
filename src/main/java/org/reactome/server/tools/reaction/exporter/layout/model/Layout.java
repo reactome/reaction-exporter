@@ -146,4 +146,8 @@ public class Layout implements HasBounds {
             buildCompartmentHierarchy(aux, goTerm);
         }
     }
+
+    public void setPathway(String pathway) {
+        this.pathway = pathway;
+    }
 }

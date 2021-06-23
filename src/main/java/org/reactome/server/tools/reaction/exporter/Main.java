@@ -6,11 +6,11 @@ import com.martiansoftware.jsap.*;
 import org.reactome.server.graph.domain.model.Event;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
-import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.util.DatabaseObjectUtils;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.diagram.data.graph.Graph;
 import org.reactome.server.tools.diagram.data.layout.Diagram;
+import org.reactome.server.tools.reaction.exporter.config.ReactomeNeo4jConfig;
 import org.reactome.server.tools.reaction.exporter.diagram.ReactionDiagramFactory;
 import org.reactome.server.tools.reaction.exporter.graph.ReactionGraphFactory;
 import org.reactome.server.tools.reaction.exporter.layout.LayoutFactory;
@@ -55,7 +55,7 @@ public class Main {
         if (jsap.messagePrinted()) System.exit(1);
 
         //Initialising ReactomeCore Neo4j configuration
-        ReactomeGraphCore.initialise(config.getString("host"), config.getString("user"), config.getString("password"));
+        ReactomeGraphCore.initialise(config.getString("host"), config.getString("user"), config.getString("password"), ReactomeNeo4jConfig.class);
 
         final File output = new File(config.getString("output"));
         if (!output.exists()) {
@@ -84,6 +84,8 @@ public class Main {
         } else {
             System.err.println("No targets found. Please check the parameters.");
         }
+
+        System.exit(0);
     }
 
     private static void generateJsonFiles(Event rle, AdvancedDatabaseObjectService ados, File dir) {
@@ -121,7 +123,6 @@ public class Main {
 
     private static Collection<? extends Event> getTargets(String[] target) {
         AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
-        DatabaseObjectService ds = ReactomeGraphCore.getService(DatabaseObjectService.class);
         String query;
         Map<String, Object> parametersMap = new HashMap<>();
         if (target.length > 1) {
@@ -166,7 +167,6 @@ public class Main {
         Collection<Event> rles = null;
         try {
             rles = ads.getCustomQueryResults(Event.class, query, parametersMap);
-            System.out.println(rles);
         } catch (CustomQueryException e) {
             e.printStackTrace();
         }
