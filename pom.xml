@@ -186,8 +186,7 @@
                         <configuration>
                             <excludes>
                                 <exclude>org/reactome/server/tools/reaction/exporter/Main.class</exclude>
-                                <exclude>org/reactome/server/tools/reaction/exporter/config/ReactomeNeo4jConfig.class
-                                </exclude>
+                                <exclude>org/reactome/server/tools/reaction/exporter/config/ReactomeNeo4jConfig.class</exclude>
                                 <exclude>**/logback.xml</exclude>
                             </excludes>
                         </configuration>
