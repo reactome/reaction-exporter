@@ -118,7 +118,7 @@ public class AppTest extends BaseTest {
             ReactionLikeEvent rle = databaseObjectService.findById(stId);
             final String pStId = rle.getEventOf().isEmpty() ? stId : rle.getEventOf().get(0).getStId();
 
-            final LayoutFactory layoutFactory = new LayoutFactory(ads);
+            final LayoutFactory layoutFactory = new LayoutFactory(ads, databaseObjectService);
             final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 

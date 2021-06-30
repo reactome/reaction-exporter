@@ -4,14 +4,12 @@ import org.reactome.server.graph.domain.model.Event;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
-import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.reaction.exporter.layout.algorithm.box.BoxAlgorithm;
 import org.reactome.server.tools.reaction.exporter.layout.model.EntityGlyph;
 import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.reactome.server.tools.reaction.exporter.layout.model.Role;
 import org.reactome.server.tools.reaction.exporter.layout.result.LayoutParticipants;
 import org.reactome.server.tools.reaction.exporter.layout.result.LayoutResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -130,12 +128,12 @@ public class LayoutFactory {
             "RETURN p.stId AS pathway, rle.stId AS reactionLikeEvent, ps AS participants " +
             "LIMIT 1"; // no matter how many lines, only the first one is used. Parse one line then.
 
-    // TODO MONDAY: INSTALL< TEST EVENT PDF ... MOVE ON
     private final AdvancedDatabaseObjectService ads;
+    private final DatabaseObjectService ds;
 
-    @Autowired
-    public LayoutFactory(AdvancedDatabaseObjectService ads) {
+    public LayoutFactory(AdvancedDatabaseObjectService ads, DatabaseObjectService ds) {
         this.ads = ads;
+        this.ds = ds;
     }
 
     /**
@@ -148,7 +146,7 @@ public class LayoutFactory {
     public Layout getReactionLikeEventLayout(Event rle, Style style) {
         if (rle == null) throw new NullPointerException("rle cannot be null");
 
-        DatabaseObjectService ds = ReactomeGraphCore.getService(DatabaseObjectService.class);
+//        DatabaseObjectService ds = ReactomeGraphCore.getService(DatabaseObjectService.class);
 
         Map<String, Object> params = new HashMap<>();
         params.put("stId", rle.getStId());

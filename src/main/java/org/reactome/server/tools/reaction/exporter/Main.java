@@ -6,6 +6,7 @@ import com.martiansoftware.jsap.*;
 import org.reactome.server.graph.domain.model.Event;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
+import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.util.DatabaseObjectUtils;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.diagram.data.graph.Graph;
@@ -68,6 +69,7 @@ public class Main {
         //Check if target rles are specified
         String[] target = config.getStringArray("target");
         AdvancedDatabaseObjectService ados = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
+        DatabaseObjectService dos = ReactomeGraphCore.getService(DatabaseObjectService.class);
 
         Collection<? extends Event> rles = getTargets(target);
         if (rles != null && !rles.isEmpty()) {
@@ -76,7 +78,7 @@ public class Main {
             System.out.printf("\r· Reaction exporter started:\n\t> Targeting %s reactions.\n%n", numberFormat.format(tot));
             for (Event rle : rles) {
                 ProgressBar.updateProgressBar(rle.getStId(), i++, tot);
-                generateJsonFiles(rle, ados, output);
+                generateJsonFiles(rle, ados, dos, output);
             }
             long time = System.currentTimeMillis() - start;
             ProgressBar.done(tot);
@@ -88,8 +90,8 @@ public class Main {
         System.exit(0);
     }
 
-    private static void generateJsonFiles(Event rle, AdvancedDatabaseObjectService ados, File dir) {
-        LayoutFactory layoutFactory = new LayoutFactory(ados);
+    private static void generateJsonFiles(Event rle, AdvancedDatabaseObjectService ados, DatabaseObjectService dos, File dir) {
+        LayoutFactory layoutFactory = new LayoutFactory(ados, dos);
         ReactionGraphFactory reactionGraphFactory = new ReactionGraphFactory(ados);
         final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);
 

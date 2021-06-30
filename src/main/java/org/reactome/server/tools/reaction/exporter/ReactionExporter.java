@@ -14,11 +14,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class ReactionExporter {
 
-    @Autowired
     private LayoutFactory layoutFactory;
 
-    @Autowired
     private ReactionGraphFactory graphFactory;
+
+    @Autowired
+    public ReactionExporter(LayoutFactory layoutFactory, ReactionGraphFactory graphFactory) {
+        this.layoutFactory = layoutFactory;
+        this.graphFactory = graphFactory;
+    }
 
     public Layout getReactionLayout(ReactionLikeEvent rle){
         return layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);
