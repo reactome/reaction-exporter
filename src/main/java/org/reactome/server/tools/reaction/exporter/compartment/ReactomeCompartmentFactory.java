@@ -2,6 +2,7 @@ package org.reactome.server.tools.reaction.exporter.compartment;
 
 import org.reactome.server.graph.domain.model.GO_CellularComponent;
 import org.reactome.server.graph.service.SchemaService;
+import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
 import org.reactome.server.tools.reaction.exporter.ontology.RelationshipType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class ReactomeCompartmentFactory {
      * @return a Reactome GO Cellular Component master containing <em>ids</em>
      */
     public static Map<String, GoTerm> getMasterTree() {
-//        if (schemaService == null) schemaService = ReactomeGraphCore.getService(SchemaService.class);
+        if (schemaService == null) schemaService = ReactomeGraphCore.getService(SchemaService.class);
 
         Collection<GO_CellularComponent> compartments = schemaService.getByClass(GO_CellularComponent.class);
 
