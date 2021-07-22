@@ -4,6 +4,7 @@ package org.reactome.server.tools.reaction.exporter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.martiansoftware.jsap.*;
 import org.reactome.server.graph.domain.model.Event;
+import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
@@ -71,12 +72,12 @@ public class Main {
         AdvancedDatabaseObjectService ados = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         DatabaseObjectService dos = ReactomeGraphCore.getService(DatabaseObjectService.class);
 
-        Collection<? extends Event> rles = getTargets(target);
+        Collection<? extends ReactionLikeEvent> rles = getTargets(target);
         if (rles != null && !rles.isEmpty()) {
             long start = System.currentTimeMillis();
             int i = 0, tot = rles.size();
             System.out.printf("\r· Reaction exporter started:\n\t> Targeting %s reactions.\n%n", numberFormat.format(tot));
-            for (Event rle : rles) {
+            for (ReactionLikeEvent rle : rles) {
                 ProgressBar.updateProgressBar(rle.getStId(), i++, tot);
                 generateJsonFiles(rle, ados, dos, output);
             }
@@ -123,7 +124,7 @@ public class Main {
         }
     }
 
-    private static Collection<? extends Event> getTargets(String[] target) {
+    private static Collection<? extends ReactionLikeEvent> getTargets(String[] target) {
         AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         String query;
         Map<String, Object> parametersMap = new HashMap<>();
@@ -146,11 +147,10 @@ public class Main {
             parametersMap.put("stIds", stIds);
         } else {
             String aux = target[0];
-            if (aux.toLowerCase().equals("all")) {
-                query = "MATCH (p:Pathway{hasDiagram:True})-[:species]->(s:Species) " +
-                        "WITH DISTINCT p, s " +
-                        "RETURN p " +
-                        "ORDER BY s.dbId, p.dbId";
+            if (aux.equalsIgnoreCase("all")) {
+                query = "MATCH (rle:ReactionLikeEvent) " +
+                        "RETURN DISTINCT rle " +
+                        "ORDER BY rle.dbId";
             } else if (DatabaseObjectUtils.isStId(aux)) {
                 query = "MATCH (rle:ReactionLikeEvent{stId:$stId}) RETURN DISTINCT rle";
                 parametersMap.put("stId", DatabaseObjectUtils.getIdentifier(aux));
@@ -166,9 +166,9 @@ public class Main {
         }
 
         System.out.print("· Retrieving target reactions...");
-        Collection<Event> rles = null;
+        Collection<ReactionLikeEvent> rles = null;
         try {
-            rles = ads.getCustomQueryResults(Event.class, query, parametersMap);
+            rles = ads.getCustomQueryResults(ReactionLikeEvent.class, query, parametersMap);
         } catch (CustomQueryException e) {
             e.printStackTrace();
         }
