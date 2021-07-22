@@ -10,7 +10,6 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@SuppressWarnings("unused")
 @Component
 public class ReactionExporter {
 
