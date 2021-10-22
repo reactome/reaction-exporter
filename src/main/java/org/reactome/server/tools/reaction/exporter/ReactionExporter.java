@@ -10,15 +10,18 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Layout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@SuppressWarnings("unused")
 @Component
 public class ReactionExporter {
 
-    @Autowired
     private LayoutFactory layoutFactory;
 
-    @Autowired
     private ReactionGraphFactory graphFactory;
+
+    @Autowired
+    public ReactionExporter(LayoutFactory layoutFactory, ReactionGraphFactory graphFactory) {
+        this.layoutFactory = layoutFactory;
+        this.graphFactory = graphFactory;
+    }
 
     public Layout getReactionLayout(ReactionLikeEvent rle){
         return layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);

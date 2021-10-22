@@ -11,24 +11,22 @@ Taking a single reaction, this library performs 3 steps:
 ## Usage:
 This project can be used as a standalone compiled tool through the provided _reaction-exporter.jar_ file.
 ```
-java -jar reaction-exporter.jar [--help] [(-h|--host) <host>] [(-p|--port) <port>] [(-u|--user) <user>] (-d|--password) <password> (-s|--stId) <stId> (-o|--path) <path> [(-f|--format) <format>]
+java -jar reaction-exporter-exec.jar [--help] [(-h|--host) <host>] [(-p|--port) <port>] [(-u|--user) <user>] (-d|--password) <password> (-s|--stId) <stId> (-o|--path) <path> [(-f|--format) <format>]
   [--help]
         Prints this help message.
 
   [(-h|--host) <host>]
-        The neo4j host (default: localhost)
-  [(-p|--port) <port>]
-        The neo4j port (default: 7474)
+        The neo4j host (default: bolt://localhost:7687)
   [(-u|--user) <user>]
         The neo4j user (default: neo4j)
   (-d|--password) <password>
         The neo4j password (default: neo4j)
 
-  (-s|--stId) <stId>
+  (-t|--target) <target>
         Reaction stable identifier
 
   (-o|--path) <path>
-        Output path. File will be named 'path'/'stId'.'format'
+        Output path. File will be named 'path'/'target'.'format'
 
   [(-f|--format) <format>]
         Output format (default: png)

@@ -1,7 +1,7 @@
 package org.reactome.server.tools.reaction.exporter.graph;
 
 
-import org.reactome.server.graph.domain.model.ReactionLikeEvent;
+import org.reactome.server.graph.domain.model.Event;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.tools.diagram.data.graph.EntityNode;
@@ -34,7 +34,7 @@ public class ReactionGraphFactory {
         this.ads = ads;
     }
 
-    public Graph getGraph(ReactionLikeEvent rle, Layout layout) {
+    public Graph getGraph(Event rle, Layout layout) {
         return new GraphImpl(
                 rle.getDbId(),
                 rle.getStId(),
@@ -46,9 +46,9 @@ public class ReactionGraphFactory {
         );
     }
 
-    private List<EntityNode> getGraphNodes(ReactionLikeEvent rle, Collection<EntityGlyph> entityGlyphs) {
+    private List<EntityNode> getGraphNodes(Event rle, Collection<EntityGlyph> entityGlyphs) {
         String query = "" +
-                "MATCH (rle:ReactionLikeEvent{dbId:{dbId}})-[:input|output|catalystActivity|physicalEntity|entityFunctionalStatus|diseaseEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate|repeatedUnit*]->(pe:PhysicalEntity) " +
+                "MATCH (rle:ReactionLikeEvent{dbId:$dbId})-[:input|output|catalystActivity|physicalEntity|entityFunctionalStatus|diseaseEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate|repeatedUnit*]->(pe:PhysicalEntity) " +
                 "WITH COLLECT(DISTINCT pe) AS pes " +
                 "UNWIND pes AS pe " +
                 "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|repeatedUnit]->(children:PhysicalEntity) " +
@@ -62,10 +62,8 @@ public class ReactionGraphFactory {
                 "       COLLECT(DISTINCT parent.dbId) AS parents, " +
                 "       CASE WHEN re.variantIdentifier IS NULL THEN re.identifier ELSE re.variantIdentifier END AS identifier, " +
                 "       re.geneName AS geneNames";
-        Map<String, Object> parametersMap = new HashMap<>();
-        parametersMap.put("dbId", rle.getDbId());
         try {
-            Collection<EntityNodeImpl> rtn = ads.getCustomQueryResults(EntityNodeImpl.class, query, parametersMap);
+            Collection<EntityNodeImpl> rtn = ads.getCustomQueryResults(EntityNodeImpl.class, query, Map.of("dbId", rle.getDbId()));
             Map<Long, List<Long>> map = getMap(entityGlyphs);
             rtn.forEach(node -> node.setDiagramIds(map.get(node.getDbId())));
             return new ArrayList<>(rtn);
@@ -75,9 +73,9 @@ public class ReactionGraphFactory {
         return null;
     }
 
-    private List<EventNode> getGraphEdges(ReactionLikeEvent rle, ReactionGlyph rxnGlyph) {
+    private List<EventNode> getGraphEdges(Event rle, ReactionGlyph rxnGlyph) {
         String query = "" +
-                "MATCH (rle:ReactionLikeEvent{dbId:{dbId}}) " +
+                "MATCH (rle:ReactionLikeEvent{dbId:$dbId}) " +
                 "OPTIONAL MATCH (rle)-[:input]->(i:PhysicalEntity) " +
                 "OPTIONAL MATCH (rle)-[:output]->(o:PhysicalEntity) " +
                 "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(c:PhysicalEntity) " +
@@ -95,10 +93,8 @@ public class ReactionGraphFactory {
                 "       CASE WHEN reg IS NULL THEN [] ELSE COLLECT(DISTINCT {type: reg.schemaClass, dbId: r.dbId}) END AS regulations, " +
                 "       COLLECT(DISTINCT pre.dbId) AS preceding, " +
                 "       COLLECT(DISTINCT fol.dbId) AS following";
-        Map<String, Object> parametersMap = new HashMap<>();
-        parametersMap.put("dbId", rle.getDbId());
         try {
-            EventNodeImpl rxn = ads.getCustomQueryResult(EventNodeImpl.class, query, parametersMap);
+            EventNodeImpl rxn = ads.getCustomQueryResult(EventNodeImpl.class, query, Map.of("dbId", rle.getDbId()));
             List<Long> diagramIds = Collections.singletonList(rxnGlyph.getDbId());
             rxn.setDiagramIds(diagramIds);
             return Collections.singletonList(rxn);

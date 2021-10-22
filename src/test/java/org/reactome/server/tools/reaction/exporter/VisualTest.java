@@ -3,12 +3,11 @@ package org.reactome.server.tools.reaction.exporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.batik.transcoder.TranscoderException;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
-import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.tools.diagram.data.graph.Graph;
@@ -32,13 +31,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.bind.JAXBException;
 import java.io.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 
 /**
  * Not intended for automatic testing, but for visual testing. This class will create and maintain a folder with the
  * generated images, as well as profiling files.
  */
-public class VisualTest extends BaseTest {
+public class VisualTest extends BaseTest{
 
     private static final File TEST_IMAGES = new File("test-images");
 
@@ -51,14 +53,14 @@ public class VisualTest extends BaseTest {
     private RasterExporter rasterExporter = new RasterExporter();
     private int total;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         logger.info("Running " + VisualTest.class.getName());
         if (!TEST_IMAGES.exists() && !TEST_IMAGES.mkdirs())
             logger.error("Couldn't create test folder " + TEST_IMAGES);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         // try {
         //     FileUtils.cleanDirectory(TEST_IMAGES);
@@ -67,7 +69,7 @@ public class VisualTest extends BaseTest {
         // }
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testOne() {
         try {
@@ -78,21 +80,21 @@ public class VisualTest extends BaseTest {
             e.printStackTrace();
         }
     }
+//
+//    @Disabled
+//    @Test
+//    public void testHomoSapiens() {
+//        Collection<String> identifiers = new ArrayList<>();
+//        try {
+//            // MATCH (rle:ReactionLikeEvent)-[:species]->(:Species{displayName:"Homo sapiens"}) RETURN count(rle) AS reactions 12047
+//            identifiers = ads.getCustomQueryResults(String.class, "MATCH (rle:ReactionLikeEvent)-[:species]->(:Species{displayName:\"Homo sapiens\"}) RETURN rle.stId");
+//        } catch (CustomQueryException e) {
+//            e.printStackTrace();
+//        }
+//        test(identifiers);
+//    }
 
-    @Ignore
-    @Test
-    public void testHomoSapiens() {
-        Collection<String> identifiers = new ArrayList<>();
-        try {
-            // MATCH (rle:ReactionLikeEvent)-[:species]->(:Species{displayName:"Homo sapiens"}) RETURN count(rle) AS reactions 12047
-            identifiers = ads.getCustomQueryResults(String.class, "MATCH (rle:ReactionLikeEvent)-[:species]->(:Species{displayName:\"Homo sapiens\"}) RETURN rle.stId");
-        } catch (CustomQueryException e) {
-            e.printStackTrace();
-        }
-        test(identifiers);
-    }
-
-    @Ignore
+    @Disabled
     @Test
     public void testFailedReactions() {
         test(new LinkedHashSet<>(Arrays.asList(
@@ -156,7 +158,7 @@ public class VisualTest extends BaseTest {
                 "R-NUL-9005752", "R-NUL-9606338")));
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testGoF() {
         test(new LinkedHashSet<>(Arrays.asList(
@@ -199,7 +201,7 @@ public class VisualTest extends BaseTest {
                 "R-HSA-5362450", "R-HSA-5683209")));
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testMostDifficult() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
@@ -285,7 +287,7 @@ public class VisualTest extends BaseTest {
         // TODO: 21/10/18 add resource
     }
 
-    @Ignore
+    @Disabled
     public void testOddities(){
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
                 "R-HSA-4839638", "R-NUL-9606338"
@@ -309,7 +311,7 @@ public class VisualTest extends BaseTest {
         }
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testPerformance() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
@@ -340,7 +342,7 @@ public class VisualTest extends BaseTest {
         test(identifiers);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void bruteForce() {
         String stId = "R-HSA-434650";
@@ -348,7 +350,7 @@ public class VisualTest extends BaseTest {
             ReactionLikeEvent rle = databaseObjectService.findById(stId);
             final String pStId = rle.getEventOf().isEmpty() ? stId : rle.getEventOf().get(0).getStId();
 
-            final LayoutFactory layoutFactory = new LayoutFactory(ads);
+            final LayoutFactory layoutFactory = new LayoutFactory(ads, databaseObjectService);
             final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BRUTE_FORCE);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
@@ -375,7 +377,7 @@ public class VisualTest extends BaseTest {
             ReactionLikeEvent rle = databaseObjectService.findById(stId);
             final String pStId = rle.getEventOf().isEmpty() ? stId : rle.getEventOf().get(0).getStId();
 
-            final LayoutFactory layoutFactory = new LayoutFactory(ads);
+            final LayoutFactory layoutFactory = new LayoutFactory(ads, databaseObjectService);
             final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 
@@ -449,5 +451,4 @@ public class VisualTest extends BaseTest {
         final long millis = nanoSeconds / 1_000_000L;
         return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
     }
-
 }

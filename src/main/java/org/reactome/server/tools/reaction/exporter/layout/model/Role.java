@@ -10,6 +10,14 @@ public class Role {
     private EntityRole type;
     private Integer n;
 
+    public Role() {
+    }
+
+    public Role(String type, Integer n) {
+        setType(type);
+        this.n = n;
+    }
+
     public Integer getStoichiometry() {
         return n;
     }

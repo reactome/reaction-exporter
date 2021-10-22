@@ -5,11 +5,14 @@ import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.reaction.exporter.ontology.GoTerm;
 import org.reactome.server.tools.reaction.exporter.ontology.RelationshipType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class ReactomeCompartmentFactory {
 
     private static SchemaService schemaService;
@@ -45,6 +48,7 @@ public class ReactomeCompartmentFactory {
         return rtn;
     }
 
+    @Autowired
     public static void setSchemaService(SchemaService schemaService) {
         ReactomeCompartmentFactory.schemaService = schemaService;
     }

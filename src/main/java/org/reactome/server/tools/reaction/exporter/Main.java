@@ -3,9 +3,11 @@ package org.reactome.server.tools.reaction.exporter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.martiansoftware.jsap.*;
+import org.reactome.server.graph.domain.model.Event;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
+import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.util.DatabaseObjectUtils;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.diagram.data.graph.Graph;
@@ -42,12 +44,12 @@ public class Main {
 
         SimpleJSAP jsap = new SimpleJSAP(Main.class.getName(), "Generates an image from a single reaction in reaction. Supports png, jpg, jpeg, gif, svg and pdf.",
                 new Parameter[]{
-                        new QualifiedSwitch("target",   JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 't', "target",   "Target rles to convert. Use either comma separated IDs, rles for a given species (e.g. 'Homo sapiens') or 'all' for every pathway").setList(true).setListSeparator(','),
-                        new FlaggedOption(  "output",   JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED,     'o', "output",   "The directory where the converted files are written to."),
-                        new FlaggedOption(  "host",     JSAP.STRING_PARSER,"localhost",  JSAP.NOT_REQUIRED, 'h',  "host",    "The neo4j host"),
-                        new FlaggedOption(  "port",     JSAP.STRING_PARSER,  "7474",     JSAP.NOT_REQUIRED, 'p',  "port",    "The neo4j port"),
-                        new FlaggedOption(  "user",     JSAP.STRING_PARSER,  "neo4j",    JSAP.NOT_REQUIRED, 'u',  "user",    "The neo4j user"),
-                        new FlaggedOption(  "password", JSAP.STRING_PARSER,  "neo4j",    JSAP.REQUIRED,     'd',  "password","The neo4j password")
+                        // QualifiedSwitch example -t:"R-HSA-70994"
+                        new QualifiedSwitch("target",   JSAP.STRING_PARSER, JSAP.NO_DEFAULT,            JSAP.NOT_REQUIRED, 't', "target",   "Target rles to convert. Use either comma separated IDs, rles for a given species (e.g. 'Homo sapiens') or 'all' for every pathway").setList(true).setListSeparator(','),
+                        new FlaggedOption(  "output",   JSAP.STRING_PARSER, JSAP.NO_DEFAULT,            JSAP.REQUIRED,     'o', "output",   "The directory where the converted files are written to."),
+                        new FlaggedOption(  "host",     JSAP.STRING_PARSER,"bolt://localhost:7687", JSAP.NOT_REQUIRED, 'h',  "host",    "The neo4j host"),
+                        new FlaggedOption(  "user",     JSAP.STRING_PARSER,  "neo4j",               JSAP.NOT_REQUIRED, 'u',  "user",    "The neo4j user"),
+                        new FlaggedOption(  "password", JSAP.STRING_PARSER,  "neo4j",               JSAP.REQUIRED,     'd',  "password","The neo4j password")
                 }
         );
 
@@ -55,7 +57,7 @@ public class Main {
         if (jsap.messagePrinted()) System.exit(1);
 
         //Initialising ReactomeCore Neo4j configuration
-        ReactomeGraphCore.initialise(config.getString("host"), config.getString("port"), config.getString("user"), config.getString("password"), ReactomeNeo4jConfig.class);
+        ReactomeGraphCore.initialise(config.getString("host"), config.getString("user"), config.getString("password"), ReactomeNeo4jConfig.class);
 
         final File output = new File(config.getString("output"));
         if (!output.exists()) {
@@ -68,26 +70,29 @@ public class Main {
         //Check if target rles are specified
         String[] target = config.getStringArray("target");
         AdvancedDatabaseObjectService ados = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
+        DatabaseObjectService dos = ReactomeGraphCore.getService(DatabaseObjectService.class);
 
-        Collection<ReactionLikeEvent> rles = getTargets(target);
+        Collection<? extends ReactionLikeEvent> rles = getTargets(target);
         if (rles != null && !rles.isEmpty()) {
-            Long start = System.currentTimeMillis();
+            long start = System.currentTimeMillis();
             int i = 0, tot = rles.size();
-            System.out.println(String.format("\r· Reaction exporter started:\n\t> Targeting %s reactions.\n", numberFormat.format(tot)));
+            System.out.printf("\r· Reaction exporter started:\n\t> Targeting %s reactions.\n%n", numberFormat.format(tot));
             for (ReactionLikeEvent rle : rles) {
                 ProgressBar.updateProgressBar(rle.getStId(), i++, tot);
-                generateJsonFiles(rle, ados, output);
+                generateJsonFiles(rle, ados, dos, output);
             }
-            Long time = System.currentTimeMillis() - start;
+            long time = System.currentTimeMillis() - start;
             ProgressBar.done(tot);
-            System.out.println(String.format("· Conversion finished: %s reactions have been successfully converted (%s)\n", numberFormat.format(tot), getTimeFormatted(time)));
+            System.out.printf("· Conversion finished: %s reactions have been successfully converted (%s)\n%n", numberFormat.format(tot), getTimeFormatted(time));
         } else {
             System.err.println("No targets found. Please check the parameters.");
         }
+
+        System.exit(0);
     }
 
-    private static void generateJsonFiles(ReactionLikeEvent rle, AdvancedDatabaseObjectService ados, File dir) {
-        LayoutFactory layoutFactory = new LayoutFactory(ados);
+    private static void generateJsonFiles(Event rle, AdvancedDatabaseObjectService ados, DatabaseObjectService dos, File dir) {
+        LayoutFactory layoutFactory = new LayoutFactory(ados, dos);
         ReactionGraphFactory reactionGraphFactory = new ReactionGraphFactory(ados);
         final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);
 
@@ -119,13 +124,13 @@ public class Main {
         }
     }
 
-    private static Collection<ReactionLikeEvent> getTargets(String[] target) {
+    private static Collection<? extends ReactionLikeEvent> getTargets(String[] target) {
         AdvancedDatabaseObjectService ads = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
         String query;
         Map<String, Object> parametersMap = new HashMap<>();
         if (target.length > 1) {
             query = "MATCH (rle:ReactionLikeEvent) " +
-                    "WHERE rle.dbId IN {dbIds} OR rle.stId IN {stIds} " +
+                    "WHERE rle.dbId IN $dbIds OR rle.stId IN $stIds " +
                     "RETURN DISTINCT rle " +
                     "ORDER BY rle.dbId";
             List<Long> dbIds = new ArrayList<>();
@@ -142,19 +147,18 @@ public class Main {
             parametersMap.put("stIds", stIds);
         } else {
             String aux = target[0];
-            if (aux.toLowerCase().equals("all")) {
-                query = "MATCH (p:Pathway{hasDiagram:True})-[:species]->(s:Species) " +
-                        "WITH DISTINCT p, s " +
-                        "RETURN p " +
-                        "ORDER BY s.dbId, p.dbId";
+            if (aux.equalsIgnoreCase("all")) {
+                query = "MATCH (rle:ReactionLikeEvent) " +
+                        "RETURN DISTINCT rle " +
+                        "ORDER BY rle.dbId";
             } else if (DatabaseObjectUtils.isStId(aux)) {
-                query = "MATCH (rle:ReactionLikeEvent{stId:{stId}}) RETURN DISTINCT rle";
+                query = "MATCH (rle:ReactionLikeEvent{stId:$stId}) RETURN DISTINCT rle";
                 parametersMap.put("stId", DatabaseObjectUtils.getIdentifier(aux));
             } else if (DatabaseObjectUtils.isDbId(aux)) {
-                query = "MATCH (rle:ReactionLikeEvent{dbId:{dbId}}) RETURN DISTINCT rle";
+                query = "MATCH (rle:ReactionLikeEvent{dbId:$dbId}) RETURN DISTINCT rle";
                 parametersMap.put("dbId", DatabaseObjectUtils.getIdentifier(aux));
             } else {
-                query = "MATCH (rle:ReactionLikeEvent{speciesName:{speciesName}}) " +
+                query = "MATCH (rle:ReactionLikeEvent{speciesName:$speciesName}) " +
                         "RETURN DISTINCT rle " +
                         "ORDER BY rle.dbId";
                 parametersMap.put("speciesName", aux);

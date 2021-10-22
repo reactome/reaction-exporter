@@ -4,11 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.batik.transcoder.TranscoderException;
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.*;
 import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
@@ -44,7 +40,7 @@ import java.util.LinkedHashSet;
 /**
  * Unit testing.
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
 public class AppTest extends BaseTest {
 
     private static final File TEST_IMAGES = new File("test-images");
@@ -58,14 +54,14 @@ public class AppTest extends BaseTest {
     private RasterExporter rasterExporter = new RasterExporter();
     private static int total;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
         logger.info("Running " + AppTest.class.getName());
         if (!TEST_IMAGES.exists() && !TEST_IMAGES.mkdirs())
             logger.error("Couldn't create test folder " + TEST_IMAGES);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         if (total > 0) {
             logger.error(String.format("Found %d errors", total));
@@ -122,7 +118,7 @@ public class AppTest extends BaseTest {
             ReactionLikeEvent rle = databaseObjectService.findById(stId);
             final String pStId = rle.getEventOf().isEmpty() ? stId : rle.getEventOf().get(0).getStId();
 
-            final LayoutFactory layoutFactory = new LayoutFactory(ads);
+            final LayoutFactory layoutFactory = new LayoutFactory(ads, databaseObjectService);
             final Layout layout = layoutFactory.getReactionLikeEventLayout(rle, LayoutFactory.Style.BOX);
             final Diagram diagram = ReactionDiagramFactory.get(layout);
 

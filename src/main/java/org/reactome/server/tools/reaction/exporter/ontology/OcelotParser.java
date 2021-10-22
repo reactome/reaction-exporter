@@ -1,12 +1,11 @@
 package org.reactome.server.tools.reaction.exporter.ontology;
 
-import org.apache.commons.io.IOUtils;
-
-import java.io.IOException;
+import java.io.BufferedReader;
 import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Consumes a .ocelot file.
@@ -19,13 +18,8 @@ class OcelotParser {
 
 	static OcelotElement readOcelot() {
 		final InputStream resource = OcelotParser.class.getResourceAsStream(CCO_OCELOT);
-		try {
-			final String text = IOUtils.toString(resource, Charset.defaultCharset()).replaceAll("\\s+", " ");
-			return parse(text);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
+		final String text = new BufferedReader(new InputStreamReader(resource)).lines().collect(Collectors.joining("\n")).replaceAll("\\s+", " ");
+		return parse(text);
 	}
 
 	private static OcelotElement parse(String text) {
