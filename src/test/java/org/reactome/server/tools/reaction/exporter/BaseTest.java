@@ -11,11 +11,13 @@ import org.reactome.server.tools.reaction.exporter.config.ReactomeNeo4jConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+@SpringBootTest
 @ContextConfiguration(classes = { ReactomeNeo4jConfig.class })
 @ExtendWith(SpringExtension.class)
 public abstract class BaseTest {
