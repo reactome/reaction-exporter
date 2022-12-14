@@ -5,20 +5,20 @@
 
     <groupId>org.reactome.server.tools</groupId>
     <artifactId>reaction-exporter</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
     <packaging>jar</packaging>
 
     <name>reaction-exporter</name>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-parent</artifactId>
-        <version>2.7.1</version>
+        <groupId>org.reactome.server</groupId>
+        <artifactId>reactome-parent</artifactId>
+        <version>1.0.0</version>
     </parent>
 
     <organization>
         <name>The European Bioinformatics Institute</name>
-        <url>http://www.ebi.ac.uk/</url>
+        <url>https://www.ebi.ac.uk/</url>
     </organization>
 
     <developers>
@@ -26,35 +26,20 @@
             <id>plorente</id>
             <name>Pascual Lorente</name>
             <email>plorente@ebi.ac.uk</email>
-            <organization>http://www.ebi.ac.uk/</organization>
+            <organization>https://www.ebi.ac.uk/</organization>
         </developer>
         <developer>
             <id>fabregat</id>
             <name>Antonio Fabregat</name>
             <email>fabregat@ebi.ac.uk</email>
-            <organization>http://www.ebi.ac.uk/</organization>
+            <organization>https://www.ebi.ac.uk/</organization>
         </developer>
     </developers>
 
     <properties>
-        <jdk.version>11</jdk.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <main.class>org.reactome.server.tools.reaction.exporter.Main</main.class>
 
-        <reactome.graph.core>2.0.4</reactome.graph.core>
-        <diagram.reader>1.2.0</diagram.reader>
-        <diagram.exporter>2.0.4</diagram.exporter>
-
-        <jasp.version>2.1</jasp.version>
-        <spring.test.version>5.3.6</spring.test.version>
-        <junit.version>5.8.0-M1</junit.version>
-        <jackson-dataformat.version>2.13.1</jackson-dataformat.version>
-
-        <maven.compiler.version>3.8.1</maven.compiler.version>
-        <maven.jar.version>3.2.0</maven.jar.version>
-        <maven.resources.version>3.2.0</maven.resources.version>
-        <maven.source.version>3.2.1</maven.source.version>
-        <maven.surefire.version>3.0.0-M5</maven.surefire.version>
     </properties>
 
     <dependencies>
@@ -62,19 +47,16 @@
         <dependency>
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
-            <version>${reactome.graph.core}</version>
         </dependency>
 
         <dependency>
             <groupId>org.reactome.server.tools</groupId>
             <artifactId>diagram-reader</artifactId>
-            <version>${diagram.reader}</version>
         </dependency>
 
         <dependency>
             <groupId>org.reactome.server.tools</groupId>
             <artifactId>diagram-exporter</artifactId>
-            <version>${diagram.exporter}</version>
             <scope>test</scope>
         </dependency>
 
@@ -82,7 +64,6 @@
         <dependency>
             <groupId>com.martiansoftware</groupId>
             <artifactId>jsap</artifactId>
-            <version>${jasp.version}</version>
         </dependency>
 
         <!--Spring junit test framework-->
@@ -113,7 +94,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>30.1.1-jre</version>
         </dependency>
 
         <!--        <dependency>-->
@@ -163,8 +143,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.version}</version>
                 <configuration>
-                    <source>${jdk.version}</source>
-                    <target>${jdk.version}</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 
@@ -203,7 +183,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${project.parent.version}</version>
+                <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>${main.class}</mainClass>
                     <classifier>exec</classifier>
@@ -264,22 +244,4 @@
             </snapshots>
         </repository>
     </repositories>
-
-    <!--Configures the distribution to nexus repository. mvn:deploy -->
-    <distributionManagement>
-        <!-- EBI repo -->
-        <repository>
-            <id>pst-release</id>
-            <name>EBI Nexus Repository</name>
-            <url>https://www.ebi.ac.uk/Tools/maven/repos/content/repositories/pst-release</url>
-        </repository>
-        <!-- EBI SNAPSHOT repo -->
-        <snapshotRepository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>pst-snapshots</id>
-            <name>EBI Nexus Snapshots Repository</name>
-            <url>https://www.ebi.ac.uk/Tools/maven/repos/content/repositories/pst-snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 </project>
