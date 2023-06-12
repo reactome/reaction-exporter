@@ -13,6 +13,7 @@ import org.reactome.server.tools.reaction.exporter.layout.LayoutFactory;
 public enum RenderableClass {
 
     ATTACHMENT("Attachement"),
+    CELL("Cell"),
     CHEMICAL("Chemical"),
     CHEMICAL_DRUG("ChemicalDrug"),
     COMPARTMENT("Compartment"),
@@ -82,6 +83,7 @@ public enum RenderableClass {
         if (databaseObject instanceof ChemicalDrug) return CHEMICAL_DRUG;
         if (databaseObject instanceof ProteinDrug) return PROTEIN_DRUG;
         if (databaseObject instanceof RNADrug) return RNA_DRUG;
+        if (databaseObject instanceof Cell) return CELL;
         if (databaseObject instanceof EntityWithAccessionedSequence) {
             EntityWithAccessionedSequence ewas = (EntityWithAccessionedSequence) databaseObject;
             ReferenceSequence rs = ewas.getReferenceEntity();

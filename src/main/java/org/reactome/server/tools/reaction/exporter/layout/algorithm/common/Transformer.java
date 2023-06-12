@@ -208,6 +208,11 @@ public class Transformer {
                 glyph.getBounds().setWidth(6 + textDimension.getWidth());
                 glyph.getBounds().setHeight(30 + textDimension.getHeight());
                 break;
+            case CELL:
+                double side = 30 + textDimension.getWidth(); // Square rendering
+                glyph.getBounds().setWidth(side);
+                glyph.getBounds().setHeight(side);
+                break;
         }
     }
 
