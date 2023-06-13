@@ -77,7 +77,7 @@ public class BoxAlgorithm {
     private void fixEntityWithNoCompartment(Layout layout) {
         if (layout.getCompartmentRoot() != null) {
             layout.getEntities().stream()
-                    .filter(entity -> entity.getCompartment() == null || entity.getCompartment().getChildren().isEmpty())
+                    .filter(entity -> entity.getCompartment() == null)
                     .forEach(entity -> {
                         entity.setCompartment(layout.getCompartmentRoot());
                         layout.getCompartmentRoot().addGlyph(entity);
