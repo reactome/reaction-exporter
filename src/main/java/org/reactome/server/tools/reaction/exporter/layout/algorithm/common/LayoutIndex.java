@@ -29,6 +29,7 @@ public class LayoutIndex {
             RenderableClass.RNA,
             RenderableClass.CHEMICAL,
             RenderableClass.GENE,
+            RenderableClass.CELL,
             RenderableClass.ENTITY);
     /**
      * Comparator that puts false (and null) elements before true elements.
