@@ -113,7 +113,7 @@ public class LayoutWithoutDbTest {
         input2.setStId(id + "");
         input2.setCompartment(Arrays.asList(compartment));
         input2.setName(Arrays.asList(name));
-        input2.setInDisease(false);
+        input2.setIsInDisease(false);
         return input2;
     }
 

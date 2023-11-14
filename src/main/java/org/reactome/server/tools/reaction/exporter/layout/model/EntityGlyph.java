@@ -131,7 +131,7 @@ public class EntityGlyph extends AbstractGlyph {
         this.dbId = pe.getDbId();
         this.stId = pe.getStId();
         this.name = pe.getName().get(0);
-        this.inDisease = pe.getInDisease();
+        this.inDisease = pe.getIsInDisease();
         this.compartments = pe.getCompartment();
         this.schemaClass = pe.getSchemaClass();
 
