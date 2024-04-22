@@ -37,94 +37,120 @@ public class LayoutFactory {
             "OPTIONAL MATCH (rle)-[i:input]->(pe:PhysicalEntity) " +
             "WHERE NOT (rle:FailedReaction) OR NOT (rle)-[:entityFunctionalStatus]->()-[:diseaseEntity|normalEntity]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: i.stoichiometry, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+            "WITH rle, nr, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: i.stoichiometry, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+
             "OPTIONAL MATCH (nr)-[i:input]->(pe:PhysicalEntity) " +
             "WHERE NOT (rle)-[:input]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: i.stoichiometry, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: i.stoichiometry, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
 
             "OPTIONAL MATCH (rle)-[o:output]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: o.stoichiometry, type: 'output'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: o.stoichiometry, type: 'output'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
+
             "OPTIONAL MATCH (nr)-[o:output]->(pe:PhysicalEntity) " +
             "WHERE NOT (rle)-[:output]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: o.stoichiometry, type: 'output'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: o.stoichiometry, type: 'output'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
 
             "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(pe:PhysicalEntity) " +
             "WHERE NOT (rle:FailedReaction) OR NOT (rle)-[:entityFunctionalStatus]->()-[:diseaseEntity|normalEntity]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
+
+
             "OPTIONAL MATCH (nr)-[:catalystActivity|physicalEntity*]->(pe:PhysicalEntity) " +
             "WHERE NOT (rle)-[:catalystActivity|physicalEntity*]->(pe) AND NOT (rle)-[:entityFunctionalStatus|diseaseEntity*]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
 
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(pe:PhysicalEntity) " +
             "WHERE NOT (rle:FailedReaction) OR NOT (rle)-[:entityFunctionalStatus]->()-[:diseaseEntity|normalEntity]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
+
             "OPTIONAL MATCH (nr)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(pe:PhysicalEntity) " +
             "WHERE NOT (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(pe) AND NOT (rle)-[:entityFunctionalStatus|normalEntity*]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
 
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pe:PhysicalEntity) " +
             "WHERE NOT (rle:FailedReaction) OR NOT (rle)-[:entityFunctionalStatus]->()-[:diseaseEntity|normalEntity]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
+
             "OPTIONAL MATCH (nr)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pe:PhysicalEntity) " +
             "WHERE NOT (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(pe) AND NOT (rle)-[:entityFunctionalStatus|normalEntity*]->(pe) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS ps " +
-
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, crossed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
 
             "OPTIONAL MATCH (nr)-[:input]->(:PhysicalEntity)<-[:normalEntity]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "WHERE (rle:FailedReaction) AND NOT (rle)-[:input]->(:PhysicalEntity)<-[:diseaseEntity|normalEntity]-(efs) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|diseaseEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
+
             "OPTIONAL MATCH (rle)-[:input]->(:PhysicalEntity)<-[:diseaseEntity|normalEntity]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "WHERE (rle:FailedReaction) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|diseaseEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'input'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
 
             "OPTIONAL MATCH (nr)-[:catalystActivity|physicalEntity*]->(:PhysicalEntity)<-[:normalEntity]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "WHERE (rle:FailedReaction) AND NOT (rle)-[:catalystActivity|physicalEntity*]->(:PhysicalEntity)<-[:diseaseEntity|normalEntity]-(efs) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|diseaseEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
+
             "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(:PhysicalEntity)<-[:diseaseEntity|normalEntity]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "WHERE (rle:FailedReaction) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|diseaseEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'catalyst'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
 
             "OPTIONAL MATCH (nr)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(:PhysicalEntity)<-[:normalEntity]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "WHERE (rle:FailedReaction) AND NOT (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(:PhysicalEntity)<-[:diseaseEntity|normalEntity]-(efs) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|diseaseEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
+
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:NegativeRegulation)-[:regulator]->(:PhysicalEntity)<-[:diseaseEntity|normalEntity]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "WHERE (rle:FailedReaction) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|diseaseEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, nr, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "WITH rle, nr, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'negative'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS newPS " +
+            "WITH rle, nr, ps + newPS AS ps " +
 
             "OPTIONAL MATCH (nr)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(:PhysicalEntity)<-[:normalEntity]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "WHERE (rle:FailedReaction) AND NOT (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(:PhysicalEntity)<-[:diseaseEntity|normalEntity]-(efs) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|diseaseEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "WITH rle, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS newPS " +
+            "WITH rle, ps + newPS AS ps " +
+
             "OPTIONAL MATCH (rle)-[:regulatedBy]->(:PositiveRegulation)-[:regulator]->(:PhysicalEntity)<-[:diseaseEntity|normalEntity]-(efs:EntityFunctionalStatus)<-[:entityFunctionalStatus]-(rle) " +
             "WHERE (rle:FailedReaction) " +
             "OPTIONAL MATCH (efs)-[:entityFunctionalStatus|diseaseEntity*]->(pe:PhysicalEntity) " +
             "OPTIONAL MATCH (pe)-[:hasComponent|hasMember|hasCandidate|proteinMarker|RNAMarker*]->(d:Drug) " +
-            "WITH rle, ps + COLLECT(DISTINCT CASE pe WHEN NULL THEN NULL ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS ps " +
+            "WITH rle, ps, collect(DISTINCT CASE WHEN pe IS NULL THEN null ELSE {physicalEntity: pe.stId, role:{n: 1, type: 'positive'}, drug: (pe:Drug) OR NOT d IS NULL, dashed:true} END) AS newPS " +
+            "WITH rle, ps + newPS AS ps " +
 
             "OPTIONAL MATCH path=(p:Pathway{hasDiagram:true})-[:hasEvent*]->(rle) " +
-            "WHERE SINGLE(x IN NODES(path) WHERE (x:Pathway) AND x.hasDiagram) " +
+            "WHERE single(x IN nodes(path) WHERE (x:Pathway) AND x.hasDiagram) " +
             "RETURN p.stId AS pathway, rle.stId AS reactionLikeEvent, ps AS participants " +
             "LIMIT 1"; // no matter how many lines, only the first one is used. Parse one line then.
 
