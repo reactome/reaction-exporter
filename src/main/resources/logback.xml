@@ -6,7 +6,7 @@
 <configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [reaction-exporter] [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -17,7 +17,7 @@
             <maxHistory>-1</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [reaction-exporter] [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
     <logger name="importLogger" level="INFO" additivity="false">
@@ -51,6 +51,8 @@
     <!-- Setting up neo4j and spring logging to ERROR -->
     <logger name="org.neo4j" level="ERROR" />
     <logger name="org.springframework" level="ERROR" />
+    <logger name="org.springframework.data.neo4j.cypher" level="ERROR"/>
+
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
