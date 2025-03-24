@@ -76,7 +76,7 @@ public class AppTest extends BaseTest {
     @Test
     public void testReactionConverter() {
         Collection<String> identifiers = new LinkedHashSet<>(Arrays.asList(
-                "R-HSA-68947", "R-HSA-69144", "R-HSA-70634", "R-HSA-71670", "R-HSA-72107", "R-HSA-74885",
+                "R-HSA-68947", "R-HSA-69144", "R-HSA-70634", "R-HSA-71670", "R-HSA-9770119", "R-HSA-74885",
                 "R-HSA-75097", "R-HSA-75849",
                 "R-HSA-111883", "R-HSA-111930", "R-HSA-112381", "R-HSA-139952", "R-HSA-158419", "R-HSA-194083",
                 "R-HSA-194121", "R-HSA-194130", "R-HSA-194153", "R-HSA-194187", "R-HSA-198440", "R-HSA-198513",
@@ -94,7 +94,7 @@ public class AppTest extends BaseTest {
                 "R-HSA-5656219", "R-HSA-5656248", "R-HSA-5656356", "R-HSA-5656438", "R-HSA-5656459", "R-HSA-5658001",
                 "R-HSA-6802921", "R-HSA-6802922", "R-HSA-6802925", "R-HSA-6802926", "R-HSA-6802927", "R-HSA-6802930",
                 "R-HSA-6802932", "R-HSA-6802933", "R-HSA-6802934", "R-HSA-6802935", "R-HSA-6802938", "R-HSA-6802942",
-                "R-HSA-6802943", "R-HSA-8851710", "R-HSA-8853313", "R-HSA-8853315", "R-HSA-8853317", "R-HSA-8853319",
+                "R-HSA-6802943", "R-HSA-8851710", "R-HSA-8853313", "R-HSA-5655270", "R-HSA-8853317", "R-HSA-8853319",
                 "R-HSA-8853320", "R-HSA-8853322", "R-HSA-8853325", "R-HSA-8854908", "R-HSA-8855062", "R-HSA-8856808",
                 "R-HSA-8863101", "R-HSA-8865275", "R-HSA-8865276", "R-HSA-8866856", "R-HSA-8867876", "R-HSA-8869241",
                 "R-HSA-8877620", "R-HSA-8948146", "R-HSA-8948832", "R-HSA-8949609", "R-HSA-8949687", "R-HSA-8949688",
