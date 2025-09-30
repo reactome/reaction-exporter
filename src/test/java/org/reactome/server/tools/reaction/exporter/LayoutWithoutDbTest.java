@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LayoutWithoutDbTest {
+public class LayoutWithoutDbTest extends BaseTest {
 
     Logger logger = Logger.getLogger(LayoutWithoutDbTest.class.getName());
 
