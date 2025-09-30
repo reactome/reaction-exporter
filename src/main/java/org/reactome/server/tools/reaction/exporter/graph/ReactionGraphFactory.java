@@ -47,6 +47,7 @@ public class ReactionGraphFactory {
     }
 
     private List<EntityNode> getGraphNodes(Event rle, Collection<EntityGlyph> entityGlyphs) {
+        //language=cypher
         String query = "" +
                 "MATCH (rle:ReactionLikeEvent{dbId:$dbId})-[:input|output|catalystActivity|physicalEntity|entityFunctionalStatus|diseaseEntity|regulatedBy|regulator|hasComponent|hasMember|hasCandidate|repeatedUnit|proteinMarker|RNAMarker*]->(pe:PhysicalEntity) " +
                 "WITH COLLECT(DISTINCT pe) AS pes " +
@@ -74,25 +75,42 @@ public class ReactionGraphFactory {
     }
 
     private List<EventNode> getGraphEdges(Event rle, ReactionGlyph rxnGlyph) {
+        //language=cypher
         String query = "" +
-                "MATCH (rle:ReactionLikeEvent{dbId:$dbId}) " +
+                "MATCH (rle:ReactionLikeEvent {dbId:$dbId}) " +
                 "OPTIONAL MATCH (rle)-[:input]->(i:PhysicalEntity) " +
                 "OPTIONAL MATCH (rle)-[:output]->(o:PhysicalEntity) " +
                 "OPTIONAL MATCH (rle)-[:catalystActivity|physicalEntity*]->(c:PhysicalEntity) " +
                 "OPTIONAL MATCH (rle)-[:entityFunctionalStatus|diseaseEntity*]->(e:PhysicalEntity) " +
                 "OPTIONAL MATCH (rle)-[:regulatedBy]->(reg:Regulation)-[:regulator]->(r:PhysicalEntity) " +
                 "OPTIONAL MATCH prep=(p)-[:hasEvent*]->(pre:ReactionLikeEvent)<-[:precedingEvent]-(rle) " +
-                "WHERE SINGLE(x IN NODES(prep) WHERE (x:Pathway) AND x.hasDiagram) " +
+                "  WHERE single(x IN nodes(prep) WHERE (x:Pathway AND coalesce(x.hasDiagram,false))) " +
                 "OPTIONAL MATCH folp=(p)-[:hasEvent*]->(fol:ReactionLikeEvent)-[:precedingEvent]->(rle) " +
-                "WHERE SINGLE(x IN NODES(folp) WHERE (x:Pathway) AND x.hasDiagram) " +
-                "RETURN rle.dbId AS dbId, rle.stId as stId, rle.displayName AS displayName, rle.schemaClass AS schemaClass, " +
-                "       COLLECT(DISTINCT i.dbId) AS inputs, " +
-                "       COLLECT(DISTINCT o.dbId) AS outputs, " +
-                "       COLLECT(DISTINCT c.dbId) AS catalysts, " +
-                "       COLLECT(DISTINCT e.dbId) AS efs, " +
-                "       CASE WHEN reg IS NULL THEN [] ELSE COLLECT(DISTINCT {type: reg.schemaClass, dbId: r.dbId}) END AS regulations, " +
-                "       COLLECT(DISTINCT pre.dbId) AS preceding, " +
-                "       COLLECT(DISTINCT fol.dbId) AS following";
+                "  WHERE single(x IN nodes(folp) WHERE (x:Pathway AND coalesce(x.hasDiagram,false))) " +
+                "WITH " +
+                "  rle.dbId AS dbId, " +
+                "  rle.stId AS stId, " +
+                "  rle.displayName AS displayName, " +
+                "  rle.schemaClass AS schemaClass, " +
+                "  collect(DISTINCT i.dbId) AS inputs, " +
+                "  collect(DISTINCT o.dbId) AS outputs, " +
+                "  collect(DISTINCT c.dbId) AS catalysts, " +
+                "  collect(DISTINCT e.dbId) AS efs, " +
+                "  collect(DISTINCT pre.dbId) AS preceding, " +
+                "  collect(DISTINCT fol.dbId) AS following, " +
+                "  collect(DISTINCT {type: reg.schemaClass, dbId: r.dbId}) AS regs " +
+                "RETURN " +
+                "  dbId, " +
+                "  stId, " +
+                "  displayName, " +
+                "  schemaClass, " +
+                "  inputs, " +
+                "  outputs, " +
+                "  catalysts, " +
+                "  efs, " +
+                "  CASE WHEN size(regs) = 0 THEN [] ELSE regs END AS regulations, " +
+                "  preceding, " +
+                "  following ";
         try {
             EventNodeImpl rxn = ads.getCustomQueryResult(EventNodeImpl.class, query, Map.of("dbId", rle.getDbId()));
             List<Long> diagramIds = Collections.singletonList(rxnGlyph.getDbId());
