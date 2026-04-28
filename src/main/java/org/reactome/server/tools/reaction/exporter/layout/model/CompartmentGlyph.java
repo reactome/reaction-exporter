@@ -34,7 +34,7 @@ public class CompartmentGlyph extends AbstractGlyph implements HasInitial {
         dbId = compartment.getDbId();
         schemaClass = compartment.getSchemaClass();
         name = compartment.getDisplayName();
-        accession = compartment.getAccession();
+        accession = compartment.getIdentifier();
     }
 
     public CompartmentGlyph(GoTerm term) {

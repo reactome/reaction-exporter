@@ -87,7 +87,7 @@ public class Layout implements HasBounds {
 
         //noinspection LoopStatementThatDoesntLoop
         for (Compartment compartment : rle.getCompartment()) {
-            String acc = compartment.getAccession();
+            String acc = compartment.getIdentifier();
             CompartmentGlyph cg = compartments.computeIfAbsent(acc, i -> new CompartmentGlyph(compartment));
             cg.addGlyph(reactionGlyph);
             reactionGlyph.setCompartment(cg);
@@ -114,7 +114,7 @@ public class Layout implements HasBounds {
         for (EntityGlyph participant : entities.values()) {
             //noinspection LoopStatementThatDoesntLoop
             for (Compartment compartment : participant.getCompartments()) {
-                String acc = compartment.getAccession();
+                String acc = compartment.getIdentifier();
                 CompartmentGlyph cg = compartments.computeIfAbsent(acc, i -> new CompartmentGlyph(compartment));
                 cg.addGlyph(participant);
                 participant.setCompartment(cg);

@@ -1,6 +1,17 @@
 package org.reactome.server.tools.reaction.exporter.layout;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import org.reactome.server.graph.domain.model.AbstractModifiedResidue;
+import org.reactome.server.graph.domain.model.EntityWithAccessionedSequence;
 import org.reactome.server.graph.domain.model.Event;
+import org.reactome.server.graph.domain.model.PhysicalEntity;
+import org.reactome.server.graph.domain.model.TranslationalModification;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.service.DatabaseObjectService;
@@ -11,12 +22,6 @@ import org.reactome.server.tools.reaction.exporter.layout.model.Role;
 import org.reactome.server.tools.reaction.exporter.layout.result.LayoutParticipants;
 import org.reactome.server.tools.reaction.exporter.layout.result.LayoutResult;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * Factory for single reaction {@link Layout}. Layout is computed with positions and dimensions already set for each
@@ -190,7 +195,12 @@ public class LayoutFactory {
                 EntityGlyph a = new EntityGlyph();
                 a.setDrug(layoutParticipant.isDrug());
                 a.setDashed(layoutParticipant.isDashed());
-                a.setPhysicalEntity(ds.findByIdNoRelations(layoutParticipant.getPhysicalEntity()));
+//                a.setPhysicalEntity(ds.findByIdNoRelations(layoutParticipant.getPhysicalEntity()));
+                // Not sure why the above is called. In order to get compartments and modifications, 
+                // we will need all relationships. The production server may do some normalization?
+                // However, the following call makes the query slower.
+                PhysicalEntity pe = loadPEFully(layoutParticipant.getPhysicalEntity());
+                a.setPhysicalEntity(pe);
                 a.setRole(new Role(layoutParticipant.getRole().getType(), layoutParticipant.getRole().getStoichiometry()));
                 participants.add(a);
             }
@@ -202,6 +212,29 @@ public class LayoutFactory {
             e.printStackTrace();
             return null;
         }
+    }
+    
+    private PhysicalEntity loadPEFully(String peStId) {
+        PhysicalEntity pe = this.ds.findById(peStId);
+        // Fully load modifications
+        if (pe instanceof EntityWithAccessionedSequence) {
+            EntityWithAccessionedSequence ewas = (EntityWithAccessionedSequence) pe;
+            List<AbstractModifiedResidue> modifications = ewas.getHasModifiedResidue();
+            if (modifications != null) {
+                List<AbstractModifiedResidue> copy = new ArrayList<>();
+                for (AbstractModifiedResidue res : modifications) {
+                    AbstractModifiedResidue loaded = ads.findById(res.getDbId(), 1);
+                    if (loaded instanceof TranslationalModification) {
+                        TranslationalModification tMod = (TranslationalModification) loaded;
+                        if (tMod.getPsiMod() != null && tMod.getPsiMod().getLabel() != null)
+                            tMod.setLabel(tMod.getPsiMod().getLabel());
+                    }
+                    copy.add(loaded);
+                }
+                ewas.setHasModifiedResidue(copy);
+            }
+        }
+        return pe;
     }
 
     public enum Style {

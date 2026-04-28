@@ -32,7 +32,7 @@ public class GoTreeFactory {
     static {
         Compartment compartment = new Compartment();
         compartment.setDisplayName("");
-        compartment.setAccession("");
+        compartment.setIdentifier("");
         compartment.setUrl("");
         NULL_COMPARTMENT = new GoTerm(compartment);
     }

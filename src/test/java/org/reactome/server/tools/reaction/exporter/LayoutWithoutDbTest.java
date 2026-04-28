@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -120,8 +121,8 @@ public class LayoutWithoutDbTest extends BaseTest {
     private Compartment createCompartment(String accession, String name) {
         long id = idCounter++;
         Compartment compartment = new Compartment();
-        compartment.setAccession(accession);
-        compartment.setName(name);
+        compartment.setIdentifier(accession);
+        compartment.setName(Collections.singletonList(name));
         compartment.setDatabaseName("GO");
 //        compartment.setId(id);
         compartment.setStId(id + "");

@@ -38,7 +38,7 @@ public class GoTerm implements Comparable<GoTerm> {
     }
 
     public GoTerm(GO_CellularComponent compartment){
-        this.id = compartment.getDatabaseName() + ":" + compartment.getAccession();
+        this.id = compartment.getDatabaseName() + ":" + compartment.getIdentifier();
         this.namespace = "cellular_component";
         this.name = compartment.getDisplayName();
         this.obsolete = false;
@@ -213,7 +213,9 @@ public class GoTerm implements Comparable<GoTerm> {
     }
 
     public void addParent(GoTerm parent) {
-        parents.add(parent);
+        if (!parents.contains(parent))
+            parents.add(parent);
+        // children is a set. No worry about duplications.
         parent.children.add(this);
     }
 
