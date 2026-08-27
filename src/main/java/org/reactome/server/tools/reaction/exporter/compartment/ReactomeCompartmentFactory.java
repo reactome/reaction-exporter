@@ -77,6 +77,10 @@ public class ReactomeCompartmentFactory {
     }
 
     private static String getGoIdentifier(ExternalOntology component) {
-        return component.getDatabaseName() + ":" + component.getIdentifier();
+        // component (and its instanceOf targets) are always GO_CellularComponent, sourced from the
+        // "GO" reference database. Hardcoded rather than derived from component.getDatabaseName(),
+        // since instanceOf targets are shallow-loaded (one hop from a different root node) and never
+        // have their own referenceDatabase relationship populated, which getDatabaseName() needs.
+        return "GO:" + component.getIdentifier();
     }
 }
